@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ACC Admin Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0a1628 !important;color:#e8edf8 !important;height:100%}
+:root{
+  --navy:#0a1628;--navy2:#0d1f3c;
+  --accent:#4f8ef7;--teal:#38d9a9;--warn:#f5a623;--err:#f05f5f;
+  --white:#fff;--text:#e8edf8;--muted:#8a9bbf;--border:#1e3a6b;
+  --font:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--mono:ui-monospace,'SF Mono','Courier New',monospace;
+  --sidebar:240px;--topbar:60px;
+}
+html{scroll-behavior:smooth}
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a1628;color:#e8edf8;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+
+#skip-nav{position:absolute;top:-999px;left:0;z-index:99999;
+  background:#4f8ef7;color:#fff;padding:10px 20px;font-weight:700;text-decoration:none}
+#skip-nav:focus{top:0}
+
+/* ── LAYOUT (CSS Grid — same as working client dashboard) ── */
+.dash-wrap{display:grid;grid-template-columns:240px 1fr;max-width:100vw;overflow-x:hidden;
+  grid-template-rows:60px 1fr;min-height:100vh}
+
+/* ── TOPBAR ── */
+.topbar{grid-column:1/-1;background:rgba(10,22,40,.98);
+  border-bottom:1px solid rgba(30,58,107,.6);
+  display:flex;align-items:center;padding:0 12px;gap:8px;
+  position:sticky;top:0;z-index:500;height:60px;overflow:hidden}
+.topbar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;
+  width:240px;flex-shrink:0;padding-right:16px}
+.topbar-logo-img{width:32px;height:32px;border-radius:7px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(79,142,247,.2);
+  overflow:hidden;display:flex;align-items:center;justify-content:center}
+.topbar-logo-img img{width:28px;height:28px;object-fit:contain}
+.topbar-logo-text{font-size:.75rem;font-weight:800;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.topbar-title{font-size:.82rem;font-weight:700;color:#e8edf8;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.topbar-mode{display:flex;align-items:center;gap:6px;
+  background:rgba(30,58,107,.5);border-radius:8px;padding:4px 10px;
+  font-size:.72rem;font-weight:700;flex-shrink:0;white-space:nowrap}
+.topbar-mode .dot{width:8px;height:8px;border-radius:50%;background:#f5a623}
+.topbar-user{display:flex;align-items:center;gap:6px;font-size:.75rem;color:#8a9bbf;flex-shrink:0}
+.topbar-avatar{width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,#f5a623,#f05f5f);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0}
+.topbar-logout{margin-left:4px;background:none;border:1px solid rgba(30,58,107,.6);
+  border-radius:7px;padding:4px 10px;color:#8a9bbf;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:.7rem;cursor:pointer;transition:all .2s;flex-shrink:0;white-space:nowrap}
+.topbar-logout:hover{color:#f05f5f;border-color:rgba(240,95,95,.4)}
+.hamburger-dash{display:none;background:none;border:none;cursor:pointer;
+  padding:6px;flex-direction:column;gap:4px}
+.hamburger-dash span{display:block;width:20px;height:2px;background:#e8edf8;border-radius:2px}
+
+/* ── SIDEBAR ── */
+.sidebar{background:#060d1a;border-right:1px solid rgba(30,58,107,.5);
+  padding:20px 0;overflow-y:auto;position:sticky;top:60px;
+  height:calc(100vh - 60px)}
+.sidebar-section{padding:0 12px;margin-bottom:8px}
+.sidebar-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(138,155,191,.4);
+  padding:8px 8px 4px;display:block}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-radius:9px;cursor:pointer;transition:all .2s;
+  font-size:.82rem;font-weight:600;color:#8a9bbf;
+  border:none;background:none;width:100%;text-align:left;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.nav-item:hover{background:rgba(79,142,247,.08);color:#e8edf8}
+.nav-item.active{background:rgba(79,142,247,.15);color:#4f8ef7}
+.nav-item.active .nav-icon{color:#4f8ef7}
+.nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:#4f8ef7;color:#fff;
+  border-radius:99px;padding:1px 7px;font-size:.65rem;font-weight:800}
+.nav-badge.warn{background:#f5a623}
+
+/* ── MAIN CONTENT ── */
+.dash-main{padding:24px;overflow-x:hidden;min-height:calc(100vh - 60px);max-width:100%;box-sizing:border-box;background:#0a1628}
+
+/* ── PANELS ── */
+.panel{display:none}
+.panel.active{display:block}
+.panel{max-width:100%;overflow-x:hidden}
+
+/* ── SHARED COMPONENTS ── */
+.page-header{margin-bottom:28px}
+.page-header h1{font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:6px}
+.page-header p{font-size:.88rem;color:#8a9bbf;max-width:600px}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:28px;width:100%}
+.stat-card{background:#0d1f3c;border:1px solid rgba(30,58,107,.8);
+  border-radius:14px;padding:20px;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:#4f8ef7}
+.stat-card.teal::after{background:#38d9a9}
+.stat-card.warn::after{background:#f5a623}
+.stat-card.err::after{background:#f05f5f}
+.stat-label{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8a9bbf;margin-bottom:10px}
+.stat-value{font-family:ui-monospace,'SF Mono','Courier New',monospace;font-size:1.8rem;font-weight:700;color:#fff;line-height:1}
+.stat-sub{font-size:.75rem;color:#8a9bbf;margin-top:6px}
+
+.card{background:#0d1f3c;border:1px solid rgba(30,58,107,.8);border-radius:14px;padding:24px;margin-bottom:20px;overflow-x:auto}
+.card h2{font-size:1rem;font-weight:800;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card h3{font-size:.88rem;font-weight:700;color:#e8edf8;margin:16px 0 8px}
+
+/* TABLES */
+.data-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.data-table th{text-align:left;padding:10px 14px;font-size:.7rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:#8a9bbf;
+  border-bottom:1px solid rgba(30,58,107,.6)}
+.data-table td{padding:12px 14px;border-bottom:1px solid rgba(30,58,107,.3);color:#e8edf8;vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:rgba(79,142,247,.04)}
+
+/* STATUS PILLS */
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:3px 10px;font-size:.72rem;font-weight:700}
+.pill.green{background:rgba(56,217,169,.12);color:#38d9a9;border:1px solid rgba(56,217,169,.2)}
+.pill.yellow{background:rgba(245,166,35,.12);color:#f5a623;border:1px solid rgba(245,166,35,.2)}
+.pill.red{background:rgba(240,95,95,.12);color:#f05f5f;border:1px solid rgba(240,95,95,.2)}
+.pill.blue{background:rgba(79,142,247,.12);color:#4f8ef7;border:1px solid rgba(79,142,247,.2)}
+.pill::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* BUTTONS */
+.btn-sm{padding:7px 14px;border-radius:8px;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;border:none}
+.btn-primary{background:#4f8ef7;color:#fff}
+.btn-primary:hover{opacity:.88}
+.btn-ghost{background:rgba(79,142,247,.1);color:#4f8ef7;border:1px solid rgba(79,142,247,.25)}
+.btn-ghost:hover{background:rgba(79,142,247,.2)}
+.btn-danger{background:rgba(240,95,95,.12);color:#f05f5f;border:1px solid rgba(240,95,95,.25)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* FORM ELEMENTS */
+.finput{background:rgba(10,22,40,.8);border:1.5px solid rgba(30,58,107,.8);
+  border-radius:9px;padding:10px 14px;color:#e8edf8;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:.85rem;outline:none;transition:border-color .2s;width:100%}
+.finput:focus{border-color:#4f8ef7}
+.finput::placeholder{color:rgba(138,155,191,.4)}
+select.finput{appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a9bbf' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+
+/* TOGGLE SWITCH */
+.toggle-wrap{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(30,58,107,.3)}
+.toggle-wrap:last-child{border-bottom:none}
+.toggle-info strong{display:block;font-size:.85rem;color:#e8edf8;font-weight:600}
+.toggle-info span{font-size:.75rem;color:#8a9bbf}
+.toggle{position:relative;width:42px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;cursor:pointer;background:rgba(30,58,107,.8);border-radius:99px;transition:.2s}
+.toggle input:checked + .toggle-slider{background:#4f8ef7}
+.toggle-slider::after{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked + .toggle-slider::after{transform:translateX(18px)}
+
+/* DOWNLOAD BTN */
+.dl-btn{display:inline-flex;align-items:center;gap:6px;
+  background:rgba(56,217,169,.1);border:1px solid rgba(56,217,169,.2);
+  border-radius:8px;padding:7px 14px;color:#38d9a9;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;text-decoration:none}
+.dl-btn:hover{background:rgba(56,217,169,.18)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:9000;
+  background:rgba(5,12,24,.9);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#0d1f3c;border:1px solid #1e3a6b;border-radius:20px;
+  max-width:520px;width:100%;max-height:85vh;overflow-y:auto;padding:32px;position:relative}
+.modal-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.06);
+  border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;
+  color:#8a9bbf;font-size:.9rem;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:rgba(255,255,255,.12)}
+.modal-box h2{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:16px}
+.fgroup{margin-bottom:16px}
+.fgroup label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#8a9bbf;margin-bottom:6px}
+
+/* PROGRESS BAR */
+.progress-bar{height:6px;background:rgba(30,58,107,.6);border-radius:99px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;border-radius:99px;background:#38d9a9;transition:width .4s}
+.progress-fill.warn{background:#f5a623}
+
+/* MOBILE */
+@media(max-width:768px){
+  .dash-wrap{grid-template-columns:1fr;grid-template-rows:60px 1fr}
+  .topbar{grid-column:1;grid-row:1}
+  .sidebar{display:none;position:fixed;left:0;top:60px;bottom:0;
+    width:260px;z-index:400;transform:translateX(-100%);transition:transform .3s;
+    grid-column:1;grid-row:2}
+  .sidebar.open{display:block;transform:translateX(0)}
+  .dash-main{grid-column:1;grid-row:2;padding:16px}
+  #topbar-user-name{display:none}
+  .topbar{padding:0 10px;gap:6px}
+  .hamburger-dash{display:flex}
+  .topbar-logo{width:auto}
+  .topbar-logo-text{display:none}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important}
+  [style*="grid-template-columns:repeat"]{grid-template-columns:1fr !important}
+}
+@media(max-width:500px){
+  .stat-grid{grid-template-columns:1fr}
+  .dash-main{padding:12px}
+}
+@media(max-width:600px){
+  .data-table{font-size:.75rem}
+  .data-table th,.data-table td{padding:8px 10px}
+}
+h1,h2,h3,h4,h5,h6{color:#fff !important}
+*{min-width:0}
+</style>
+</head>
+<body style="background:#0a1628 !important;color:#e8edf8 !important;font-family:Sora,sans-serif">
+
+<a href="#dash-content" id="skip-nav" data-acc-skip="1">Skip to main content</a>
+
+<div class="dash-wrap">
+
+  <!-- ── TOPBAR ── -->
+  <header class="topbar" role="banner">
+    <button class="hamburger-dash" id="ham-dash" aria-label="Toggle sidebar" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="index.html" class="topbar-logo" aria-label="ACC Home">
+      <div class="topbar-logo-img" aria-hidden="true">
+        <img src="data:image/png;base64,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" alt="" width="28" height="28"/>
+      </div>
+      <span class="topbar-logo-text">ACC Admin</span>
+    </a>
+    <span class="topbar-title" id="topbar-title">Admin Overview</span>
+    <div class="topbar-mode admin">
+      <span class="dot"></span>
+      <span>Admin</span>
+    </div>
+    <div class="topbar-user">
+      <div class="topbar-avatar" id="topbar-avatar">AD</div>
+      <span id="topbar-user-name">Admin</span>
+    </div>
+    <button class="topbar-logout btn-sm" onclick="signOut()">Sign Out</button>
+  </header>
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar" id="admin-sidebar" aria-label="Admin navigation">
+    <div class="sidebar-section">
+      <span class="sidebar-label">Admin</span>
+      <button class="nav-item active" id="nav-admin-overview" onclick="showPanel('admin-overview')" aria-current="page">
+        <span class="nav-icon">&#9881;</span> Overview
+      </button>
+      <button class="nav-item" id="nav-admin-clients" onclick="showPanel('admin-clients')">
+        <span class="nav-icon">&#128101;</span> Clients
+        <span class="nav-badge">12</span>
+      </button>
+      <button class="nav-item" id="nav-admin-billing" onclick="showPanel('admin-billing')">
+        <span class="nav-icon">&#128180;</span> Billing
+      </button>
+      <button class="nav-item" id="nav-admin-discounts" onclick="showPanel('admin-discounts')">
+        <span class="nav-icon">&#127991;</span> Discount Codes
+      </button>
+      <button class="nav-item" id="nav-admin-invoices" onclick="showPanel('admin-invoices')">
+        <span class="nav-icon">&#128196;</span> Custom Invoices
+      </button>
+      <button class="nav-item" id="nav-admin-widgets" onclick="showPanel('admin-widgets')">
+        <span class="nav-icon">&#9881;</span> Widget Deploy
+      </button>
+      <button class="nav-item" id="nav-admin-access" onclick="showPanel('admin-access')">
+        <span class="nav-icon">&#128274;</span> Access Control
+      </button>
+    </div>
+  </nav>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="dash-main" id="dash-content" role="main">
+
+    <!-- ══ ADMIN OVERVIEW ══ -->
+    <div class="panel active" id="panel-admin-overview">
+      <div class="page-header">
+        <h1>&#9881; Admin Overview</h1>
+        <p>Platform-wide status across all clients and subscriptions.</p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card teal">
+          <div class="stat-label">Active Clients</div>
+          <div class="stat-value">12</div>
+          <div class="stat-sub">2 pending activation</div>
+        </div>
+        <div class="stat-card warn">
+          <div class="stat-label">MRR</div>
+          <div class="stat-value">$1,834</div>
+          <div class="stat-sub">↑ $199 this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tier 1 Clients</div>
+          <div class="stat-value">7</div>
+          <div class="stat-sub">$69/mo each</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tier 2 Clients</div>
+          <div class="stat-value">4</div>
+          <div class="stat-sub">$199/mo each</div>
+        </div>
+        <div class="stat-card err">
+          <div class="stat-label">Overdue</div>
+          <div class="stat-value">1</div>
+          <div class="stat-sub">Action required</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-label">Widgets Live</div>
+          <div class="stat-value">10</div>
+          <div class="stat-sub">2 pending setup</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>&#128202; Recent Activity</h2>
+        <table class="data-table">
+          <thead><tr><th>Client</th><th>Event</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Acme Corp Inc.</td><td>New subscription — Tier 1</td><td>Mar 10, 2026</td><td><span class="pill green">Active</span></td></tr>
+            <tr><td>Maple Health Clinic</td><td>Upgraded to Tier 2</td><td>Mar 8, 2026</td><td><span class="pill green">Active</span></td></tr>
+            <tr><td>Northern Plumbing Co.</td><td>Payment overdue</td><td>Mar 1, 2026</td><td><span class="pill red">Overdue</span></td></tr>
+            <tr><td>Sunrise Legal</td><td>Widget deployed</td><td>Feb 28, 2026</td><td><span class="pill green">Live</span></td></tr>
+            <tr><td>Hartwell Dental</td><td>Onboarding started</td><td>Feb 25, 2026</td><td><span class="pill yellow">Pending</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ CLIENT MANAGEMENT ══ -->
+    <div class="panel" id="panel-admin-clients">
+      <div class="page-header">
+        <h1>&#128101; Client Management</h1>
+        <p>Manage all active and pending clients.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+          <input class="finput" id="client-search" placeholder="&#128269; Search by name or domain..." oninput="filterClients()" style="max-width:280px;flex:1">
+          <select class="finput" id="client-tier-filter" onchange="filterClients()" style="max-width:160px">
+            <option value="">All Tiers</option>
+            <option value="1">Tier 1</option>
+            <option value="2">Tier 2</option>
+            <option value="3">Tier 3</option>
+          </select>
+          <select class="finput" id="client-status-filter" onchange="filterClients()" style="max-width:160px">
+            <option value="">All Statuses</option>
+            <option value="current">Current</option>
+            <option value="overdue">Overdue</option>
+            <option value="pending">Pending</option>
+          </select>
+          <button class="btn-sm btn-primary" onclick="openModal('add-client-modal')">+ Add Client</button>
+          <button class="btn-sm btn-ghost" onclick="exportClients()">&#8659; CSV</button>
+        </div>
+        <p style="font-size:.75rem;color:#8a9bbf;margin-bottom:12px">Showing <span id="client-count">12</span> clients</p>
+        <table class="data-table" id="client-table">
+          <thead><tr><th>Client</th><th>Tier</th><th>Domain</th><th>Renews</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="client-tbody">
+            <tr data-name="acme corp" data-tier="1" data-status="current">
+              <td><strong>Acme Corp Inc.</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00142</div></td>
+              <td><span class="pill blue">Tier 1</span></td>
+              <td style="font-size:.8rem;color:#8a9bbf">acmecorp.ca</td>
+              <td style="font-size:.8rem">Apr 10, 2026</td>
+              <td><span class="pill green">Current</span></td>
+              <td class="client-actions" style="white-space:nowrap">
+                <button class="btn-sm btn-ghost" onclick="openModal('client-detail-modal')" title="View">&#128065;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('roadmap-editor-modal')" title="Roadmap">&#128204;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('template-editor-modal')" title="Templates">&#128196;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('binder-editor-modal')" title="Binder">&#128193;</button>
+              </td>
+            </tr>
+            <tr data-name="maple health" data-tier="2" data-status="current">
+              <td><strong>Maple Health Clinic</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00189</div></td>
+              <td><span class="pill blue">Tier 2</span></td>
+              <td style="font-size:.8rem;color:#8a9bbf">maplehealth.ca</td>
+              <td style="font-size:.8rem">Apr 8, 2026</td>
+              <td><span class="pill green">Current</span></td>
+              <td class="client-actions" style="white-space:nowrap">
+                <button class="btn-sm btn-ghost" onclick="openModal('client-detail-modal')" title="View">&#128065;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('roadmap-editor-modal')" title="Roadmap">&#128204;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('template-editor-modal')" title="Templates">&#128196;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('binder-editor-modal')" title="Binder">&#128193;</button>
+              </td>
+            </tr>
+            <tr data-name="northern plumbing" data-tier="1" data-status="overdue">
+              <td><strong>Northern Plumbing Co.</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00201</div></td>
+              <td><span class="pill blue">Tier 1</span></td>
+              <td style="font-size:.8rem;color:#8a9bbf">northernplumbing.ca</td>
+              <td style="font-size:.8rem">Mar 1, 2026</td>
+              <td><span class="pill red">Overdue</span></td>
+              <td class="client-actions" style="white-space:nowrap">
+                <button class="btn-sm btn-ghost" onclick="openModal('client-detail-modal')" title="View">&#128065;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('roadmap-editor-modal')" title="Roadmap">&#128204;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('template-editor-modal')" title="Templates">&#128196;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('binder-editor-modal')" title="Binder">&#128193;</button>
+              </td>
+            </tr>
+            <tr data-name="sunrise legal" data-tier="2" data-status="current">
+              <td><strong>Sunrise Legal</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00215</div></td>
+              <td><span class="pill blue">Tier 2</span></td>
+              <td style="font-size:.8rem;color:#8a9bbf">sunriselegal.ca</td>
+              <td style="font-size:.8rem">Apr 28, 2026</td>
+              <td><span class="pill green">Current</span></td>
+              <td class="client-actions" style="white-space:nowrap">
+                <button class="btn-sm btn-ghost" onclick="openModal('client-detail-modal')" title="View">&#128065;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('roadmap-editor-modal')" title="Roadmap">&#128204;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('template-editor-modal')" title="Templates">&#128196;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('binder-editor-modal')" title="Binder">&#128193;</button>
+              </td>
+            </tr>
+            <tr data-name="hartwell dental" data-tier="1" data-status="pending">
+              <td><strong>Hartwell Dental</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00228</div></td>
+              <td><span class="pill blue">Tier 1</span></td>
+              <td style="font-size:.8rem;color:#8a9bbf">hartwelldental.ca</td>
+              <td style="font-size:.8rem">—</td>
+              <td><span class="pill yellow">Pending</span></td>
+              <td class="client-actions" style="white-space:nowrap">
+                <button class="btn-sm btn-ghost" onclick="openModal('client-detail-modal')" title="View">&#128065;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('roadmap-editor-modal')" title="Roadmap">&#128204;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('template-editor-modal')" title="Templates">&#128196;</button>
+                <button class="btn-sm btn-ghost" onclick="openModal('binder-editor-modal')" title="Binder">&#128193;</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ BILLING ══ -->
+    <div class="panel" id="panel-admin-billing">
+      <div class="page-header">
+        <h1>&#128180; Billing Overview</h1>
+        <p>Monthly recurring revenue and transaction history.</p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card warn"><div class="stat-label">MRR</div><div class="stat-value">$1,834</div><div class="stat-sub">7× Tier 1 + 4× Tier 2</div></div>
+        <div class="stat-card teal"><div class="stat-label">Collected MTD</div><div class="stat-value">$1,635</div><div class="stat-sub">Missing 1 payment</div></div>
+        <div class="stat-card err"><div class="stat-label">Overdue</div><div class="stat-value">$69</div><div class="stat-sub">Northern Plumbing</div></div>
+        <div class="stat-card"><div class="stat-label">ARR (Projected)</div><div class="stat-value">$22k</div><div class="stat-sub">Based on current MRR</div></div>
+      </div>
+      <div class="card">
+        <h2>&#128203; Recent Transactions</h2>
+        <table class="data-table">
+          <thead><tr><th>Client</th><th>Amount</th><th>Date</th><th>Method</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Acme Corp Inc.</td><td>$69.00</td><td>Mar 10, 2026</td><td>Stripe</td><td><span class="pill green">Paid</span></td></tr>
+            <tr><td>Maple Health Clinic</td><td>$199.00</td><td>Mar 8, 2026</td><td>Stripe</td><td><span class="pill green">Paid</span></td></tr>
+            <tr><td>Northern Plumbing Co.</td><td>$69.00</td><td>Mar 1, 2026</td><td>Stripe</td><td><span class="pill red">Failed</span></td></tr>
+            <tr><td>Sunrise Legal</td><td>$199.00</td><td>Feb 28, 2026</td><td>Stripe</td><td><span class="pill green">Paid</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h2>&#9993; Zoho Email Automation</h2>
+        <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Automated AODA compliance reminders sent from <a href="mailto:compliance@accessibilitycompliance.ca" style="color:#4f8ef7">compliance@accessibilitycompliance.ca</a></p>
+        <table class="data-table">
+          <thead><tr><th>Date</th><th>Template</th><th>Recipients</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Dec 1, 2026</td><td>First Notice</td><td>All active clients</td><td><span class="pill blue">Scheduled</span></td></tr>
+            <tr><td>Dec 15, 2026</td><td>Deadline Approaching</td><td>All active clients</td><td><span class="pill blue">Scheduled</span></td></tr>
+            <tr><td>Dec 28, 2026</td><td>Final Notice</td><td>All active clients</td><td><span class="pill blue">Scheduled</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ DISCOUNT CODES ══ -->
+    <div class="panel" id="panel-admin-discounts">
+      <div class="page-header">
+        <h1>&#127991; Discount Codes</h1>
+        <p>Generate and manage promotional discount codes.</p>
+      </div>
+      <div class="card">
+        <h2>&#10133; Generate New Code</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="fgroup">
+            <label for="dc-code">Code</label>
+            <div style="display:flex;gap:8px">
+              <input class="finput" id="dc-code" placeholder="e.g. SPRING25" style="flex:1">
+              <button class="btn-sm btn-ghost" onclick="generateCode()">Generate</button>
+            </div>
+          </div>
+          <div class="fgroup">
+            <label for="dc-pct">Discount %</label>
+            <select class="finput" id="dc-pct">
+              <option>10</option><option>15</option><option>20</option><option selected>25</option><option>50</option><option>100</option>
+            </select>
+          </div>
+          <div class="fgroup">
+            <label for="dc-uses">Max Uses</label>
+            <input class="finput" id="dc-uses" type="number" placeholder="e.g. 10 (blank = unlimited)">
+          </div>
+          <div class="fgroup">
+            <label for="dc-expiry">Expiry Date</label>
+            <input class="finput" id="dc-expiry" type="date">
+          </div>
+        </div>
+        <button class="btn-sm btn-primary" onclick="createDiscountCode()">&#10003; Create Code</button>
+      </div>
+      <div class="card">
+        <h2>&#128203; Active Codes</h2>
+        <table class="data-table" id="discount-table">
+          <thead><tr><th>Code</th><th>Discount</th><th>Uses</th><th>Expiry</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="discount-tbody">
+            <tr><td><strong>SPRING25</strong></td><td>25%</td><td>3 / 10</td><td>Apr 30, 2026</td><td><span class="pill green">Active</span></td><td><button class="btn-sm btn-danger" onclick="deactivateCode(this,'SPRING25')">Deactivate</button></td></tr>
+            <tr><td><strong>PARTNER50</strong></td><td>50%</td><td>1 / 5</td><td>Dec 31, 2026</td><td><span class="pill green">Active</span></td><td><button class="btn-sm btn-danger" onclick="deactivateCode(this,'PARTNER50')">Deactivate</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ CUSTOM INVOICES ══ -->
+    <div class="panel" id="panel-admin-invoices">
+      <div class="page-header">
+        <h1>&#128196; Custom Invoices</h1>
+        <p>Generate one-off invoices for custom work or onboarding fees.</p>
+      </div>
+      <div class="card">
+        <h2>&#10133; New Invoice</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="fgroup">
+            <label for="inv-client">Client</label>
+            <select class="finput" id="inv-client">
+              <option>Acme Corp Inc.</option>
+              <option>Maple Health Clinic</option>
+              <option>Northern Plumbing Co.</option>
+              <option>Sunrise Legal</option>
+            </select>
+          </div>
+          <div class="fgroup">
+            <label for="inv-amount">Amount ($)</label>
+            <input class="finput" id="inv-amount" type="number" placeholder="e.g. 250.00">
+          </div>
+          <div class="fgroup" style="grid-column:1/-1">
+            <label for="inv-desc">Description</label>
+            <input class="finput" id="inv-desc" placeholder="e.g. AODA Audit — Q1 2026">
+          </div>
+          <div class="fgroup">
+            <label for="inv-date">Invoice Date</label>
+            <input class="finput" id="inv-date" type="date">
+          </div>
+          <div class="fgroup">
+            <label for="inv-due">Due Date</label>
+            <input class="finput" id="inv-due" type="date">
+          </div>
+        </div>
+        <button class="btn-sm btn-primary" onclick="alert('Invoice generated and sent via Stripe!')">&#128228; Generate &amp; Send</button>
+      </div>
+    </div>
+
+    <!-- ══ WIDGET DEPLOY ══ -->
+    <div class="panel" id="panel-admin-widgets">
+      <div class="page-header">
+        <h1>&#9881; Widget Deployment</h1>
+        <p>Monitor widget status across all client sites.</p>
+      </div>
+      <div class="card">
+        <h2>&#128202; Deployment Status</h2>
+        <table class="data-table">
+          <thead><tr><th>Client</th><th>Domain</th><th>Widget Version</th><th>Last Seen</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Acme Corp Inc.</td><td>acmecorp.ca</td><td>v12</td><td>Today</td><td><span class="pill green">Live</span></td></tr>
+            <tr><td>Maple Health Clinic</td><td>maplehealth.ca</td><td>v12</td><td>Today</td><td><span class="pill green">Live</span></td></tr>
+            <tr><td>Northern Plumbing Co.</td><td>northernplumbing.ca</td><td>v11</td><td>Mar 1</td><td><span class="pill yellow">Outdated</span></td></tr>
+            <tr><td>Sunrise Legal</td><td>sunriselegal.ca</td><td>v12</td><td>Today</td><td><span class="pill green">Live</span></td></tr>
+            <tr><td>Hartwell Dental</td><td>hartwelldental.ca</td><td>—</td><td>—</td><td><span class="pill red">Not Deployed</span></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:16px">
+          <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:8px">CDN URL:</p>
+          <code style="font-family:ui-monospace,'SF Mono','Courier New',monospace;font-size:.78rem;color:#38d9a9;background:#060d1a;padding:8px 12px;border-radius:8px;display:block;word-break:break-all">https://cdn.jsdelivr.net/gh/ACC-Widget.js</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ACCESS CONTROL ══ -->
+    <div class="panel" id="panel-admin-access">
+      <div class="page-header">
+        <h1>&#128274; Access Control</h1>
+        <p>Control which dashboard tabs are visible per tier, with per-client overrides.</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+        <button class="btn-sm btn-primary" onclick="showAccessTab('tier')" id="acc-tab-tier">&#127381; By Tier</button>
+        <button class="btn-sm btn-ghost" onclick="showAccessTab('client')" id="acc-tab-client">&#128100; Per Client Override</button>
+      </div>
+      <div id="acc-view-tier">
+        <div class="card">
+          <h2>&#128101; Tier 1 — Essential ($69/mo)</h2>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Dashboard Overview</strong><span>Main compliance snapshot</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Widget Settings</strong><span>Customize widget</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Embed Code</strong><span>Widget installation</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Audit Reports</strong><span>Monthly WCAG reports</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Evidence Binder</strong><span>Annual compliance binder</span></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>3-Year Roadmap</strong><span>Long-term plan</span></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Template Standards</strong><span>Policy templates</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Training Portal</strong><span>AODA staff training</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        </div>
+        <div class="card">
+          <h2>&#128101; Tier 2 — Managed ($199/mo)</h2>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Dashboard Overview</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Widget Settings</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Embed Code</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Audit Reports</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Evidence Binder</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>3-Year Roadmap</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Template Standards</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-wrap"><div class="toggle-info"><strong>Training Portal</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        </div>
+        <button class="btn-sm btn-primary" onclick="alert('Tier settings saved!')">&#10003; Save Settings</button>
+      </div>
+      <div id="acc-view-client" style="display:none">
+        <div class="card">
+          <h2>&#128100; Per-Client Override</h2>
+          <div class="fgroup" style="max-width:340px;margin-bottom:16px">
+            <label for="override-client-sel">Select Client</label>
+            <select class="finput" id="override-client-sel" onchange="loadClientOverride(this.value)">
+              <option value="">— Choose a client —</option>
+              <option value="CLI-00142">CLI-00142 — Acme Corp Inc. (Tier 1)</option>
+              <option value="CLI-00189">CLI-00189 — Maple Health Clinic (Tier 2)</option>
+              <option value="CLI-00201">CLI-00201 — Northern Plumbing Co. (Tier 1)</option>
+              <option value="CLI-00215">CLI-00215 — Sunrise Legal (Tier 2)</option>
+            </select>
+          </div>
+          <div id="client-override-panel" style="display:none">
+            <p id="client-override-label" style="font-size:.82rem;color:#4f8ef7;margin-bottom:12px;font-weight:600"></p>
+            <div id="client-override-toggles"></div>
+            <div class="btn-row" style="margin-top:16px">
+              <button class="btn-sm btn-primary" onclick="alert('Override saved!')">&#10003; Save Override</button>
+              <button class="btn-sm btn-ghost" onclick="alert('Reset to tier defaults.')">&#8635; Reset to Default</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+
+<!-- ══ MODALS ══ -->
+
+<!-- Add Client -->
+<div class="modal-overlay" id="add-client-modal" role="dialog" aria-modal="true" aria-label="Add Client">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('add-client-modal')" aria-label="Close">&#10005;</button>
+    <h2>&#128101; Add New Client</h2>
+    <div class="fgroup"><label for="nc-name">Business Name</label><input class="finput" id="nc-name" placeholder="e.g. Acme Corp Inc."></div>
+    <div class="fgroup"><label for="nc-domain">Domain</label><input class="finput" id="nc-domain" placeholder="e.g. acmecorp.ca"></div>
+    <div class="fgroup"><label for="nc-email">Contact Email</label><input class="finput" id="nc-email" type="email" placeholder="contact@company.ca"></div>
+    <div class="fgroup"><label for="nc-tier">Tier</label>
+      <select class="finput" id="nc-tier">
+        <option value="1">Tier 1 — Essential ($69/mo)</option>
+        <option value="2">Tier 2 — Managed ($199/mo)</option>
+        <option value="3">Tier 3 — Enterprise (Custom)</option>
+      </select>
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn-sm btn-primary" onclick="addClient()">&#10003; Create Client</button>
+      <button class="btn-sm btn-ghost" onclick="closeModal('add-client-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Client Full Editor -->
+<div class="modal-overlay" id="client-detail-modal" role="dialog" aria-modal="true" aria-label="Edit Client">
+  <div class="modal-box" style="max-width:680px;width:100%">
+    <button class="modal-close" onclick="closeModal('client-detail-modal')" aria-label="Close">&#10005;</button>
+    <h2 id="client-modal-title">&#128100; Edit Client</h2>
+    <!-- Tab bar -->
+    <div style="display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid rgba(30,58,107,.5);padding-bottom:10px;margin-bottom:16px">
+      <button class="btn-sm btn-primary" id="ctab-info"    onclick="showClientTab('info')"    style="font-size:.72rem">&#128100; Info</button>
+      <button class="btn-sm btn-ghost"   id="ctab-billing" onclick="showClientTab('billing')" style="font-size:.72rem">&#128180; Billing</button>
+      <button class="btn-sm btn-ghost"   id="ctab-roadmap" onclick="showClientTab('roadmap')" style="font-size:.72rem">&#128204; Roadmap</button>
+      <button class="btn-sm btn-ghost"   id="ctab-templates" onclick="showClientTab('templates')" style="font-size:.72rem">&#128196; Templates</button>
+      <button class="btn-sm btn-ghost"   id="ctab-binder"  onclick="showClientTab('binder')"  style="font-size:.72rem">&#128193; Binder</button>
+      <button class="btn-sm btn-ghost"   id="ctab-access"  onclick="showClientTab('access')"  style="font-size:.72rem">&#128274; Access</button>
+      <button class="btn-sm btn-ghost"   id="ctab-notes"   onclick="showClientTab('notes')"   style="font-size:.72rem">&#128221; Notes</button>
+    </div>
+
+    <!-- INFO TAB -->
+    <div id="ctab-panel-info">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fgroup" style="grid-column:1/-1"><label>Business Name</label><input class="finput" id="ce-name" value="Acme Corp Inc."></div>
+        <div class="fgroup"><label>Client ID</label><input class="finput" id="ce-id" value="CLI-00142" readonly style="opacity:.6"></div>
+        <div class="fgroup"><label>Domain</label><input class="finput" id="ce-domain" value="acmecorp.ca"></div>
+        <div class="fgroup"><label>Contact Name</label><input class="finput" id="ce-contact" value="Jane Smith"></div>
+        <div class="fgroup"><label>Contact Email</label><input class="finput" id="ce-email" value="admin@acmecorp.ca"></div>
+        <div class="fgroup"><label>Phone</label><input class="finput" id="ce-phone" value="(416) 555-0100"></div>
+        <div class="fgroup"><label>Tier</label>
+          <select class="finput" id="ce-tier">
+            <option value="1" selected>Tier 1 — Essential ($69/mo)</option>
+            <option value="2">Tier 2 — Managed ($199/mo)</option>
+            <option value="3">Tier 3 — Enterprise (Custom)</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>Status</label>
+          <select class="finput" id="ce-status">
+            <option selected>Current</option><option>Pending</option><option>Overdue</option><option>Cancelled</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>Start Date</label><input class="finput" type="date" id="ce-start" value="2026-01-10"></div>
+        <div class="fgroup"><label>Next Renewal</label><input class="finput" type="date" id="ce-renewal" value="2026-04-10"></div>
+        <div class="fgroup" style="grid-column:1/-1"><label>Billing Notes</label><input class="finput" id="ce-billing-note" placeholder="e.g. invoice by email, net 30"></div>
+      </div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn-sm btn-primary" onclick="saveClientInfo()">&#10003; Save Info</button>
+        <button class="btn-sm btn-danger" onclick="if(confirm('Delete this client?'))alert('Client deleted.')">&#128465; Delete Client</button>
+      </div>
+    </div>
+
+    <!-- BILLING TAB -->
+    <div id="ctab-panel-billing" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="fgroup"><label>Monthly Rate ($)</label><input class="finput" id="ce-rate" type="number" value="69"></div>
+        <div class="fgroup"><label>Billing Cycle</label>
+          <select class="finput" id="ce-cycle"><option selected>Monthly</option><option>Annual</option></select>
+        </div>
+        <div class="fgroup"><label>Discount Code Applied</label><input class="finput" id="ce-discount" placeholder="e.g. SPRING25 or blank"></div>
+        <div class="fgroup"><label>Payment Method</label>
+          <select class="finput" id="ce-payment"><option selected>Stripe</option><option>Invoice</option><option>Cheque</option></select>
+        </div>
+        <div class="fgroup" style="grid-column:1/-1"><label>Custom Invoice Notes</label><textarea class="finput" id="ce-inv-notes" rows="2" placeholder="Notes that appear on invoices"></textarea></div>
+      </div>
+      <h3 style="font-size:.88rem;margin-bottom:10px">&#128203; Payment History</h3>
+      <table class="data-table" style="font-size:.8rem">
+        <thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>Mar 10, 2026</td><td>$69.00</td><td><span class="pill green">Paid</span></td><td><button class="btn-sm btn-ghost" style="padding:3px 8px;font-size:.7rem">Receipt</button></td></tr>
+          <tr><td>Feb 10, 2026</td><td>$69.00</td><td><span class="pill green">Paid</span></td><td><button class="btn-sm btn-ghost" style="padding:3px 8px;font-size:.7rem">Receipt</button></td></tr>
+          <tr><td>Jan 10, 2026</td><td>$69.00</td><td><span class="pill green">Paid</span></td><td><button class="btn-sm btn-ghost" style="padding:3px 8px;font-size:.7rem">Receipt</button></td></tr>
+        </tbody>
+      </table>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn-sm btn-primary" onclick="alert('Billing saved!')">&#10003; Save Billing</button>
+        <button class="btn-sm btn-ghost" onclick="alert('Invoice sent via Stripe!')">&#128228; Send Invoice</button>
+      </div>
+    </div>
+
+    <!-- ROADMAP TAB -->
+    <div id="ctab-panel-roadmap" style="display:none">
+      <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:12px">Edit milestones exactly as they appear on the client's dashboard. Each row maps 1:1 to what the client sees.</p>
+
+      <!-- Phase + notes -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div class="fgroup" style="margin:0"><label>Current Phase</label>
+          <select class="finput" id="ce-phase">
+            <option selected>Phase 1 — Onboarding</option>
+            <option>Phase 2 — Implementation</option>
+            <option>Phase 3 — Compliance</option>
+            <option>Phase 4 — Maintenance</option>
+          </select>
+        </div>
+        <div class="fgroup" style="margin:0"><label>Internal Notes</label>
+          <input class="finput" id="ce-roadmap-notes" placeholder="Notes (admin only, not shown to client)">
+        </div>
+      </div>
+
+      <!-- ── 2026 Milestones ── -->
+      <div style="background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <strong style="color:#e8edf8;font-size:.88rem">&#128197; 2026 — Foundation Year</strong>
+          <button class="btn-sm btn-ghost" style="padding:3px 10px;font-size:.72rem" onclick="addMilestoneRow('milestones-2026')">+ Add Row</button>
+        </div>
+        <table class="data-table" style="font-size:.78rem" id="milestones-2026">
+          <thead><tr><th style="width:45%">Milestone</th><th style="width:22%">Target Date</th><th style="width:20%">Status</th><th style="width:13%"></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="ACC Widget deployed"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Jan 2026"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Initial WCAG audit"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Jan 2026"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Accessibility Statement published"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Feb 2026"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Staff accessibility training (all)"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Mar 2026"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option selected>In Progress</option><option>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="WCAG 2.1 AA full conformance"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Jun 2026"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Annual Evidence Binder"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Dec 1, 2026"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="AODA filing deadline"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Dec 31, 2026"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── 2027 Milestones ── -->
+      <div style="background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <strong style="color:#e8edf8;font-size:.88rem">&#128197; 2027 — Optimization Year</strong>
+          <button class="btn-sm btn-ghost" style="padding:3px 10px;font-size:.72rem" onclick="addMilestoneRow('milestones-2027')">+ Add Row</button>
+        </div>
+        <table class="data-table" style="font-size:.78rem" id="milestones-2027">
+          <thead><tr><th style="width:45%">Milestone</th><th style="width:22%">Target Date</th><th style="width:20%">Status</th><th style="width:13%"></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="WCAG 2.2 gap analysis"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Q1 2027"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="User testing with assistive tech users"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Q2 2027"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Advanced staff training refresh"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Q3 2027"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Annual Evidence Binder 2027"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Dec 1, 2027"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── 2028 Milestones ── -->
+      <div style="background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <strong style="color:#e8edf8;font-size:.88rem">&#128197; 2028 — Leadership Year</strong>
+          <button class="btn-sm btn-ghost" style="padding:3px 10px;font-size:.72rem" onclick="addMilestoneRow('milestones-2028')">+ Add Row</button>
+        </div>
+        <table class="data-table" style="font-size:.78rem" id="milestones-2028">
+          <thead><tr><th style="width:45%">Milestone</th><th style="width:22%">Target Date</th><th style="width:20%">Status</th><th style="width:13%"></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="WCAG 2.2 full conformance"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Q1 2028"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Internal accessibility champion program"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Q2 2028"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+            <tr>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Annual Evidence Binder 2028"></td>
+              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Dec 1, 2028"></td>
+              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
+              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button class="btn-sm btn-primary" onclick="saveRoadmap()">&#10003; Save Roadmap</button>
+    </div>
+
+    <!-- TEMPLATES TAB -->
+    <div id="ctab-panel-templates" style="display:none">
+      <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:14px">Control which policy templates this client can download. Toggle access and add custom notes.</p>
+      <div id="template-access-list">
+        <div class="toggle-wrap"><div class="toggle-info"><strong>Disruption of Services Notice</strong><span>Required — Ontario Reg. 191/11 s.27</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        <div class="toggle-wrap"><div class="toggle-info"><strong>Service Animal &amp; Support Person Policy</strong><span>Required — Ontario Reg. 191/11 s.3–5</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        <div class="toggle-wrap"><div class="toggle-info"><strong>Emergency Response Plan</strong><span>Required — Ontario Reg. 191/11 s.27</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        <div class="toggle-wrap"><div class="toggle-info"><strong>Multi-Year Accessibility Plan</strong><span>Required for 20+ employees</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        <div class="toggle-wrap"><div class="toggle-info"><strong>Staff Training Registry Template</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        <div class="toggle-wrap"><div class="toggle-info"><strong>Accessible Formats Request Procedure</strong><span>Additional service — charged separately</span></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-wrap"><div class="toggle-info"><strong>Customer Feedback Form</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        <div class="toggle-wrap"><div class="toggle-info"><strong>Accessibility Statement Template</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      </div>
+      <div class="fgroup" style="margin-top:14px"><label>Template Notes (shown to client)</label><textarea class="finput" id="ce-tmpl-notes" rows="2" placeholder="e.g. Your disruption notice template has been pre-filled with your organization details."></textarea></div>
+      <button class="btn-sm btn-primary" onclick="alert('Template access saved!')">&#10003; Save</button>
+    </div>
+
+    <!-- BINDER TAB -->
+    <div id="ctab-panel-binder" style="display:none">
+      <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:14px">Manage the AODA Evidence Binder items for this client.</p>
+      <div id="binder-items-list" style="display:grid;gap:8px;margin-bottom:14px">
+        <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div><div style="font-size:.85rem;font-weight:600">AODA Accessibility Report 2026</div><div style="font-size:.72rem;color:#8a9bbf">Uploaded Mar 1, 2026 · Verified</div></div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px"><option selected>Verified</option><option>Pending Review</option><option>Missing</option></select>
+            <button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest('div[style]').remove()">&#10005;</button>
+          </div>
+        </div>
+        <div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div><div style="font-size:.85rem;font-weight:600">Staff Training Certificates — 3 employees</div><div style="font-size:.72rem;color:#8a9bbf">Mar 5, 2026 · On File</div></div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px"><option>Verified</option><option selected>On File</option><option>Pending Review</option><option>Missing</option></select>
+            <button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest('div[style]').remove()">&#10005;</button>
+          </div>
+        </div>
+        <div style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <div><div style="font-size:.85rem;font-weight:600">Emergency Response Plan</div><div style="font-size:.72rem;color:#f5a623">Missing — action required</div></div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px"><option>Verified</option><option>On File</option><option>Pending Review</option><option selected>Missing</option></select>
+            <button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest('div[style]').remove()">&#10005;</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+        <input class="finput" id="binder-new-item" placeholder="Add binder item (document name)" style="flex:1">
+        <button class="btn-sm btn-ghost" onclick="addBinderItem()">+ Add</button>
+      </div>
+      <button class="btn-sm btn-primary" onclick="alert('Binder saved!')">&#10003; Save Binder</button>
+    </div>
+
+    <!-- ACCESS TAB -->
+    <div id="ctab-panel-access" style="display:none">
+      <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:14px">Override which dashboard tabs this client can see, regardless of tier defaults.</p>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>Dashboard Overview</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>Widget Settings</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>Embed Code</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>Audit Reports</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>Evidence Binder</strong></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>3-Year Roadmap</strong></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>Template Standards</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>Training Portal</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>Feedback Logs</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>Accessibility Statement</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn-sm btn-primary" onclick="alert('Access saved!')">&#10003; Save</button>
+        <button class="btn-sm btn-ghost" onclick="alert('Reset to tier defaults.')">&#8635; Reset to Tier Default</button>
+      </div>
+    </div>
+
+    <!-- NOTES TAB -->
+    <div id="ctab-panel-notes" style="display:none">
+      <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:14px">Internal notes visible only to ACC admin.</p>
+      <div class="fgroup"><label>Onboarding Notes</label><textarea class="finput" id="ce-onboard-notes" rows="3" placeholder="e.g. Client needs extra hand-holding on widget setup. Preferred contact: Jane."></textarea></div>
+      <div class="fgroup"><label>Compliance Flags</label><textarea class="finput" id="ce-flags" rows="2" placeholder="e.g. Missing emergency response plan. Follow up by Apr 1."></textarea></div>
+      <div class="fgroup"><label>Last Contact Date</label><input class="finput" type="date" id="ce-last-contact"></div>
+      <div class="fgroup"><label>Next Follow-Up</label><input class="finput" type="date" id="ce-followup"></div>
+      <button class="btn-sm btn-primary" onclick="alert('Notes saved!')">&#10003; Save Notes</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Roadmap Editor -->
+<div class="modal-overlay" id="roadmap-editor-modal" role="dialog" aria-modal="true" aria-label="Edit Roadmap">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('roadmap-editor-modal')" aria-label="Close">&#10005;</button>
+    <h2>&#128204; Edit 3-Year Roadmap</h2>
+    <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Acme Corp Inc. — CLI-00142</p>
+    <div class="fgroup"><label>Year 1 Focus</label><input class="finput" value="WCAG 2.1 AA widget deployment and staff training"></div>
+    <div class="fgroup"><label>Year 2 Focus</label><input class="finput" value="Full AODA report filing and evidence binder completion"></div>
+    <div class="fgroup"><label>Year 3 Focus</label><input class="finput" value="WCAG 2.2 upgrade and ongoing compliance monitoring"></div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn-sm btn-primary" onclick="alert('Roadmap saved!');closeModal('roadmap-editor-modal')">&#10003; Save</button>
+      <button class="btn-sm btn-ghost" onclick="closeModal('roadmap-editor-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Template Editor -->
+<div class="modal-overlay" id="template-editor-modal" role="dialog" aria-modal="true" aria-label="Edit Templates">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('template-editor-modal')" aria-label="Close">&#10005;</button>
+    <h2>&#128196; Template Access</h2>
+    <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Control which policy templates this client can access.</p>
+    <div class="toggle-wrap"><div class="toggle-info"><strong>Disruption Plan</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+    <div class="toggle-wrap"><div class="toggle-info"><strong>Service Animal Policy</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+    <div class="toggle-wrap"><div class="toggle-info"><strong>Emergency Response</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn-sm btn-primary" onclick="alert('Template access saved!');closeModal('template-editor-modal')">&#10003; Save</button>
+      <button class="btn-sm btn-ghost" onclick="closeModal('template-editor-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Binder Editor -->
+<div class="modal-overlay" id="binder-editor-modal" role="dialog" aria-modal="true" aria-label="Edit Binder">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('binder-editor-modal')" aria-label="Close">&#10005;</button>
+    <h2>&#128193; Evidence Binder</h2>
+    <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Acme Corp Inc. — CLI-00142</p>
+    <div style="display:grid;gap:10px;margin-bottom:16px">
+      <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:.85rem;font-weight:600">AODA Accessibility Report 2026</div><div style="font-size:.75rem;color:#8a9bbf">Uploaded Mar 1, 2026</div></div>
+        <span class="pill green">Verified</span>
+      </div>
+      <div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:.85rem;font-weight:600">Staff Training Certificates</div><div style="font-size:.75rem;color:#8a9bbf">3 records</div></div>
+        <span class="pill blue">On File</span>
+      </div>
+    </div>
+    <div class="fgroup"><label for="bi-title">Add Item</label><input class="finput" id="bi-title" placeholder="Document title"></div>
+    <div class="btn-row">
+      <button class="btn-sm btn-primary" onclick="alert('Item added to binder!');closeModal('binder-editor-modal')">+ Add</button>
+      <button class="btn-sm btn-ghost" onclick="closeModal('binder-editor-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Panel switching ──
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  var panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(function(b){
+    b.classList.remove('active');
+    b.removeAttribute('aria-current');
+  });
+  var navBtn = document.getElementById('nav-' + id);
+  if (navBtn) { navBtn.classList.add('active'); navBtn.setAttribute('aria-current','page'); }
+
+  var titles = {
+    'admin-overview':'Admin Overview',
+    'admin-clients':'Client Management',
+    'admin-billing':'Billing',
+    'admin-discounts':'Discount Codes',
+    'admin-invoices':'Custom Invoices',
+    'admin-widgets':'Widget Deployment',
+    'admin-access':'Access Control'
+  };
+  var t = document.getElementById('topbar-title');
+  if (t) t.textContent = titles[id] || id;
+
+  // Scroll to top — reliable on iOS Safari
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
+  if (window.innerWidth < 769) closeSidebar();
+}
+
+// ── Sidebar ──
+function toggleSidebar() {
+  document.getElementById('admin-sidebar').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('admin-sidebar').classList.remove('open');
+}
+
+// ── Modals ──
+function openModal(id) {
+  var m = document.getElementById(id);
+  if (!m) return;
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ var c = m.querySelector('.modal-close'); if(c) c.focus(); }, 50);
+}
+function closeModal(id) {
+  var m = document.getElementById(id);
+  if (m) { m.style.display = 'none'; }
+  document.body.style.overflow = '';
+}
+document.querySelectorAll('.modal-overlay').forEach(function(m){
+  m.addEventListener('click', function(e){ if(e.target === m) closeModal(m.id); });
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay').forEach(function(m){
+      if (m.style.display === 'flex') closeModal(m.id);
+    });
+  }
+});
+
+// ── Client filter ──
+function filterClients() {
+  var search = (document.getElementById('client-search').value || '').toLowerCase();
+  var tier = document.getElementById('client-tier-filter').value;
+  var status = document.getElementById('client-status-filter').value;
+  var rows = document.querySelectorAll('#client-tbody tr');
+  var count = 0;
+  rows.forEach(function(row){
+    var name = (row.dataset.name || '').toLowerCase();
+    var rt = row.dataset.tier || '';
+    var rs = row.dataset.status || '';
+    var show = (!search || name.includes(search)) &&
+               (!tier || rt === tier) &&
+               (!status || rs === status);
+    row.style.display = show ? '' : 'none';
+    if (show) count++;
+  });
+  var el = document.getElementById('client-count');
+  if (el) el.textContent = count;
+}
+
+function exportClients() {
+  alert('Client list exported as CSV.');
+}
+
+function addClient() {
+  var name = document.getElementById('nc-name').value.trim();
+  if (!name) { alert('Please enter a business name.'); return; }
+  alert('Client ' + name + ' created successfully!');
+  closeModal('add-client-modal');
+}
+
+// ── Discount codes ──
+function generateCode() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code = '';
+  for (var i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  document.getElementById('dc-code').value = code;
+}
+
+function createDiscountCode() {
+  var code = document.getElementById('dc-code').value.trim().toUpperCase();
+  var pct = document.getElementById('dc-pct').value;
+  var uses = document.getElementById('dc-uses').value || '∞';
+  var expiry = document.getElementById('dc-expiry').value;
+  if (!code) { alert('Please enter a code.'); return; }
+  var expDisplay = expiry ? new Date(expiry + 'T00:00:00').toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'}) : 'No expiry';
+  var tbody = document.getElementById('discount-tbody');
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<td><strong>' + code + '</strong></td><td>' + pct + '%</td><td>0 / ' + uses + '</td><td>' + expDisplay + '</td><td><span class="pill green">Active</span></td><td><button class="btn-sm btn-danger" onclick="deactivateCode(this,\'' + code + '\')">Deactivate</button></td>';
+  tbody.insertBefore(tr, tbody.firstChild);
+  document.getElementById('dc-code').value = '';
+  document.getElementById('dc-uses').value = '';
+  document.getElementById('dc-expiry').value = '';
+  alert('Code ' + code + ' created!');
+}
+
+function deactivateCode(btn, code) {
+  if (confirm('Deactivate code ' + code + '?')) {
+    btn.closest('tr').style.opacity = '.4';
+    btn.disabled = true;
+    btn.textContent = 'Deactivated';
+  }
+}
+
+// ── Access control ──
+function showAccessTab(tab) {
+  document.getElementById('acc-view-tier').style.display = tab === 'tier' ? 'block' : 'none';
+  document.getElementById('acc-view-client').style.display = tab === 'client' ? 'block' : 'none';
+  document.getElementById('acc-tab-tier').className = tab === 'tier' ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
+  document.getElementById('acc-tab-client').className = tab === 'client' ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
+}
+
+var TABS = ['Dashboard Overview','Widget Settings','Embed Code','Audit Reports','Evidence Binder','3-Year Roadmap','Template Standards','Training Portal'];
+
+function loadClientOverride(clientId) {
+  var panel = document.getElementById('client-override-panel');
+  if (!clientId) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  var sel = document.getElementById('override-client-sel');
+  document.getElementById('client-override-label').textContent = sel.options[sel.selectedIndex].text + ' — Custom Access';
+  document.getElementById('client-override-toggles').innerHTML = TABS.map(function(tab){
+    return '<div class="toggle-wrap"><div class="toggle-info"><strong>' + tab + '</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>';
+  }).join('');
+}
+
+// ── Auth ──
+function signOut() {
+  if (confirm('Sign out of admin?')) {
+    sessionStorage.removeItem('acc_admin_auth');
+    window.location.href = 'admin-login.html';
+  }
+}
+
+// ── Auth guard ──
+(function(){
+  var proto = window.location.protocol;
+  var isFile = proto === 'file:' || proto === 'blob:';
+  if (!isFile && sessionStorage.getItem('acc_admin_auth') !== 'true') {
+    window.location.href = 'admin-login.html';
+  }
+})();
+
+// ── Client modal tabs ──
+function showClientTab(tab) {
+  var tabs = ['info','billing','roadmap','templates','binder','access','notes'];
+  tabs.forEach(function(t) {
+    var panel = document.getElementById('ctab-panel-' + t);
+    var btn = document.getElementById('ctab-' + t);
+    if (!panel || !btn) return;
+    if (t === tab) {
+      panel.style.display = 'block';
+      btn.className = 'btn-sm btn-primary';
+      btn.style.fontSize = '.72rem';
+    } else {
+      panel.style.display = 'none';
+      btn.className = 'btn-sm btn-ghost';
+      btn.style.fontSize = '.72rem';
+    }
+  });
+}
+
+function saveClientInfo() {
+  var name = document.getElementById('ce-name').value.trim();
+  if (!name) { alert('Please enter a business name.'); return; }
+  document.getElementById('client-modal-title').textContent = '\u{1F464} ' + name;
+  var toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0d1f3c;border:1px solid #1e3a6b;border-radius:10px;padding:12px 20px;color:#38d9a9;font-size:.82rem;font-weight:700;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4)';
+  toast.textContent = '\u2713 Client info saved: ' + name;
+  document.body.appendChild(toast);
+  setTimeout(function(){ toast.remove(); }, 2500);
+}
+
+function addMilestoneRow(tableId) {
+  var tbody = document.querySelector('#' + tableId + ' tbody');
+  if (!tbody) return;
+  var row = document.createElement('tr');
+  row.innerHTML = '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" placeholder="Milestone description"></td>' +
+    '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" placeholder="e.g. Q1 2026"></td>' +
+    '<td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Planned</option><option>In Progress</option><option>Done</option><option>Blocked</option></select></td>' +
+    '<td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest(\'tr\').remove()">✕</button></td>';
+  tbody.appendChild(row);
+}
+
+function saveRoadmap() {
+  showAdminToast('Roadmap saved — client dashboard will reflect updates on next login.');
+}
+
+function showAdminToast(msg) {
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0d1f3c;border:1px solid #1e3a6b;border-radius:10px;padding:12px 20px;color:#38d9a9;font-size:.82rem;font-weight:700;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 3000);
+}
+
+function addBinderItem() {
+  var input = document.getElementById('binder-new-item');
+  var val = input.value.trim();
+  if (!val) return;
+  var list = document.getElementById('binder-items-list');
+  var div = document.createElement('div');
+  div.style.cssText = 'background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px';
+  var sel = document.createElement('select');
+  sel.className = 'finput';
+  sel.style.cssText = 'padding:3px 8px;font-size:.72rem;width:110px';
+  ['Pending Review','Verified','On File','Missing'].forEach(function(o){ var opt=document.createElement('option'); opt.textContent=o; sel.appendChild(opt); });
+  var del = document.createElement('button');
+  del.className = 'btn-sm btn-danger';
+  del.style.padding = '4px 8px';
+  del.textContent = '✕';
+  del.onclick = function(){ this.closest('div').remove(); };
+  var info = document.createElement('div');
+  info.innerHTML = '<div style="font-size:.85rem;font-weight:600">' + val + '</div><div style="font-size:.72rem;color:#8a9bbf">Added today</div>';
+  var ctrl = document.createElement('div');
+  ctrl.style.cssText = 'display:flex;gap:6px;flex-shrink:0';
+  ctrl.appendChild(sel); ctrl.appendChild(del);
+  div.appendChild(info); div.appendChild(ctrl);
+  list.appendChild(div);
+  input.value = '';
+}
+
+// ── Auth guard ──
+(function(){
+  var proto = window.location.protocol;
+  if (proto !== 'file:' && proto !== 'blob:' && sessionStorage.getItem('acc_admin_auth') !== 'true') {
+    window.location.href = 'admin-login.html';
+  }
+})();
+
+// ── Sign out ──
+function signOut() {
+  if (confirm('Sign out of admin?')) {
+    sessionStorage.removeItem('acc_admin_auth');
+    window.location.href = 'admin-login.html';
+  }
+}
+</script>
+</body>
+</html>

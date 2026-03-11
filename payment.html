@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#0a1628"/>
+<meta name="color-scheme" content="dark"/>
+<title>Sign Up | Accessibility Compliance Canada Inc.</title>
+<meta name="description" content="Sign up for ACC accessibility compliance services. AODA and WCAG 2.1 AA compliance for Ontario businesses."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0a1628 !important;color:#e8edf8 !important}
+:root{
+  --navy:#0a1628;--navy2:#0d1f3c;
+  --accent:#4f8ef7;--teal:#38d9a9;--warn:#f5a623;--err:#f05f5f;
+  --white:#fff;--text:#e8edf8;--muted:#8a9bbf;--border:#1e3a6b;
+  --font:'Sora',sans-serif;--mono:'JetBrains Mono',monospace;
+  --nav-h:68px;--card:#0d1f3c;--input-bg:#0a1e38;
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:'Sora',sans-serif;background:#0a1628;color:#e8edf8;
+  overflow-x:hidden;line-height:1.6;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  min-height:100vh}
+
+/* SKIP */
+#skip-nav{position:absolute;top:-999px;left:0;z-index:99999;
+  background:#4f8ef7;color:#fff;padding:10px 20px;
+  border-radius:0 0 10px 0;font-weight:700;text-decoration:none;font-size:1rem}
+#skip-nav:focus{top:0}
+
+/* NAV */
+#main-nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  background:rgba(10,22,40,.97);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(79,142,247,.12);
+  height:68px;
+  display:flex;align-items:center;padding:0 32px;gap:16px;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.nav-logo-img{width:38px;height:38px;border-radius:8px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(79,142,247,.25);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.nav-logo-img img{width:34px;height:34px;object-fit:contain;display:block}
+.nav-logo-text strong{font-size:.82rem;font-weight:800;color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.nav-logo-text{overflow:hidden;text-overflow:ellipsis}
+.nav-back{margin-left:auto;color:#8a9bbf;text-decoration:none;
+  font-size:.78rem;font-weight:600;letter-spacing:.02em;text-transform:uppercase;
+  display:flex;align-items:center;gap:6px;transition:color .2s;
+  white-space:nowrap;flex-shrink:0;padding-left:12px}
+.nav-back:hover{color:#4f8ef7}
+
+/* PAGE LAYOUT */
+main{padding-top:68px;min-height:100vh;
+  display:grid;grid-template-columns:1fr 420px;gap:0;
+  max-width:1100px;margin:0 auto;padding-left:32px;padding-right:32px}
+
+/* LEFT — Plan Summary */
+.plan-summary{padding:60px 48px 60px 0;border-right:1px solid rgba(30,58,107,.5)}
+.plan-badge{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.3);
+  border-radius:99px;padding:5px 12px;margin-bottom:28px;
+  font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:#4f8ef7;white-space:nowrap;max-width:fit-content}
+.plan-summary h1{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;
+  color:#fff;line-height:1.2;margin-bottom:12px}
+.plan-summary h1 em{color:#38d9a9;font-style:normal}
+.plan-desc{color:#8a9bbf;font-size:.92rem;margin-bottom:36px;max-width:420px}
+
+.tier-card{background:#0d1f3c;border:1px solid rgba(30,58,107,.8);
+  border-radius:16px;padding:28px;margin-bottom:24px;position:relative;overflow:hidden}
+.tier-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,#4f8ef7,#38d9a9)}
+.tier-label{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:#4f8ef7;margin-bottom:8px}
+.tier-name{font-size:1.2rem;font-weight:800;color:#fff;margin-bottom:4px}
+.tier-emp{font-size:.82rem;color:#8a9bbf;margin-bottom:20px}
+.tier-price{display:flex;align-items:baseline;gap:6px;margin-bottom:20px}
+.tier-price .amount{font-family:'JetBrains Mono',monospace;font-size:2.4rem;font-weight:700;color:#fff}
+.tier-price .period{font-size:.85rem;color:#8a9bbf}
+.tier-price .caddy{font-size:.78rem;color:#8a9bbf;margin-left:2px}
+.tier-annual{font-size:.78rem;color:#38d9a9;margin-top:-12px;margin-bottom:20px}
+.tier-features{list-style:none;display:flex;flex-direction:column;gap:10px}
+.tier-features li{display:flex;align-items:flex-start;gap:10px;font-size:.85rem;color:#e8edf8}
+.tier-features li::before{content:'✓';color:#38d9a9;font-weight:800;flex-shrink:0;margin-top:1px}
+
+.change-plan{display:inline-flex;align-items:center;gap:6px;
+  color:#8a9bbf;font-size:.8rem;font-weight:600;text-decoration:none;
+  border:1px solid rgba(30,58,107,.8);border-radius:8px;padding:8px 16px;
+  transition:all .2s;cursor:pointer;background:none}
+.change-plan:hover{color:#4f8ef7;border-color:rgba(79,142,247,.4)}
+
+/* SECURE BADGES */
+.trust-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+.trust-badge{display:flex;align-items:center;gap:6px;
+  font-size:.75rem;color:#8a9bbf;font-weight:600}
+.trust-badge span.icon{font-size:1rem}
+
+/* RIGHT — Payment Form */
+.payment-form-wrap{padding:60px 0 60px 48px}
+.form-section-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:#4f8ef7;margin-bottom:20px;
+  padding-bottom:10px;border-bottom:1px solid rgba(30,58,107,.6)}
+
+/* FORM ELEMENTS */
+.fgroup{margin-bottom:20px}
+.fgroup label{display:block;font-size:.78rem;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:#8a9bbf;margin-bottom:8px}
+.fgroup label .req{color:#f05f5f}
+.finput{width:100%;background:#0a1e38;border:1.5px solid #1e3a6b;
+  border-radius:10px;padding:13px 16px;color:#e8edf8;font-family:'Sora',sans-serif;
+  font-size:.92rem;transition:border-color .2s,box-shadow .2s;outline:none}
+.finput:focus{border-color:#4f8ef7;box-shadow:0 0 0 3px rgba(79,142,247,.15)}
+.finput::placeholder{color:rgba(138,155,191,.5)}
+.finput.error{border-color:#f05f5f}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.frow-3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px}
+select.finput{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9bbf' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 16px center;padding-right:40px;cursor:pointer}
+.ferr{font-size:.75rem;color:#f05f5f;margin-top:5px;display:none}
+.ferr.show{display:block}
+
+/* CARD INPUT STYLED */
+.card-field-wrap{position:relative}
+.card-icons{position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  display:flex;gap:4px;align-items:center}
+.card-icon{width:32px;height:20px;border-radius:3px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;font-weight:800;color:rgba(255,255,255,.5);letter-spacing:.02em}
+.card-icon.visa{color:#1a72bb;background:rgba(26,114,187,.15)}
+.card-icon.mc{color:#eb001b;background:rgba(235,0,27,.1)}
+.card-icon.amex{color:#2e77bc;background:rgba(46,119,188,.1)}
+
+/* DISCOUNT */
+.discount-row{display:flex;gap:10px;align-items:flex-end}
+.discount-row .fgroup{flex:1;margin-bottom:0}
+.discount-btn{background:rgba(79,142,247,.12);border:1.5px solid rgba(79,142,247,.3);
+  border-radius:10px;padding:13px 20px;color:#4f8ef7;font-family:'Sora',sans-serif;
+  font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap}
+.discount-btn:hover{background:rgba(79,142,247,.2);border-color:#4f8ef7}
+.discount-success{display:none;align-items:center;gap:6px;
+  font-size:.8rem;color:#38d9a9;font-weight:600;margin-top:8px}
+.discount-success.show{display:flex}
+
+/* ORDER SUMMARY */
+.order-summary{background:rgba(10,30,56,.6);border:1px solid rgba(30,58,107,.6);
+  border-radius:12px;padding:20px;margin:24px 0}
+.order-row{display:flex;justify-content:space-between;align-items:center;
+  font-size:.85rem;padding:8px 0;border-bottom:1px solid rgba(30,58,107,.4)}
+.order-row:last-child{border-bottom:none;padding-top:14px;margin-top:4px}
+.order-row .label{color:#8a9bbf}
+.order-row .value{color:#e8edf8;font-weight:600;font-family:'JetBrains Mono',monospace}
+.order-row.total .label{color:#fff;font-weight:700;font-size:.95rem}
+.order-row.total .value{color:#38d9a9;font-size:1.1rem;font-weight:800}
+.order-row.discount .value{color:#38d9a9}
+.order-row.hidden-row{display:none}
+
+/* LEGAL CHECKBOX */
+.legal-check{display:flex;gap:12px;align-items:flex-start;margin:20px 0}
+.legal-check input[type=checkbox]{
+  width:18px;height:18px;flex-shrink:0;margin-top:2px;
+  accent-color:#4f8ef7;cursor:pointer}
+.legal-check label{font-size:.8rem;color:#8a9bbf;line-height:1.5;cursor:pointer}
+.legal-check a{color:#4f8ef7;text-decoration:none}
+.legal-check a:hover{text-decoration:underline}
+
+/* SUBMIT */
+.submit-btn{width:100%;padding:16px;background:linear-gradient(135deg,#4f8ef7,#3a7aed);
+  border:none;border-radius:12px;color:#fff;font-family:'Sora',sans-serif;
+  font-size:1rem;font-weight:800;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:opacity .2s,transform .15s;letter-spacing:.02em}
+.submit-btn:hover{opacity:.92;transform:translateY(-1px)}
+.submit-btn:active{transform:translateY(0)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.submit-btn .lock{font-size:1rem}
+.submit-note{text-align:center;font-size:.75rem;color:#8a9bbf;margin-top:12px}
+
+/* SUCCESS STATE */
+#success-screen{display:none;text-align:center;padding:80px 32px}
+#success-screen .success-icon{font-size:4rem;margin-bottom:24px}
+#success-screen h2{font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:12px}
+#success-screen p{color:#8a9bbf;max-width:420px;margin:0 auto 32px}
+.next-steps{background:#0d1f3c;border:1px solid rgba(30,58,107,.8);
+  border-radius:16px;padding:28px;text-align:left;max-width:480px;margin:0 auto}
+.next-steps h3{font-size:.85rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.08em;color:#4f8ef7;margin-bottom:16px}
+.step-item{display:flex;gap:14px;align-items:flex-start;padding:10px 0;
+  border-bottom:1px solid rgba(30,58,107,.4)}
+.step-item:last-child{border-bottom:none}
+.step-num{width:26px;height:26px;border-radius:50%;background:rgba(79,142,247,.15);
+  border:1px solid rgba(79,142,247,.3);display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:800;color:#4f8ef7;flex-shrink:0}
+.step-text strong{display:block;font-size:.85rem;color:#fff;font-weight:700}
+.step-text span{font-size:.78rem;color:#8a9bbf}
+
+/* FOOTER */
+footer{background:#060d1a;border-top:1px solid rgba(30,58,107,.5);
+  padding:20px 32px;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px}
+.footer-copy{font-size:.78rem;color:#8a9bbf}
+.footer-links{display:flex;gap:16px;flex-wrap:wrap}
+.footer-links button{color:#8a9bbf;background:none;border:none;
+  font-size:.78rem;font-family:'Sora',sans-serif;cursor:pointer;transition:color .2s}
+.footer-links button:hover{color:#4f8ef7}
+.footer-sep{color:rgba(138,155,191,.3)}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:9000;
+  background:rgba(5,12,24,.85);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#0d1f3c;border:1px solid #1e3a6b;border-radius:20px;
+  max-width:560px;width:100%;max-height:80vh;overflow-y:auto;padding:36px;position:relative}
+.modal-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.06);
+  border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;
+  color:#8a9bbf;font-size:1rem;display:flex;align-items:center;justify-content:center;
+  transition:background .2s}
+.modal-close:hover{background:rgba(255,255,255,.12)}
+.modal-box h2{font-size:1.4rem;font-weight:800;color:#fff;margin-bottom:6px}
+.modal-box h3{font-size:.95rem;font-weight:700;color:#e8edf8;margin:20px 0 8px}
+.modal-box p,.modal-box li{font-size:.88rem;color:#8a9bbf;line-height:1.7}
+.modal-box ul{padding-left:18px;margin:8px 0}
+.modal-box li{margin-bottom:4px}
+.modal-date{font-size:.78rem;color:#8a9bbf;margin-bottom:20px}
+.mlabel{display:inline-block;background:rgba(79,142,247,.12);
+  border:1px solid rgba(79,142,247,.25);border-radius:6px;
+  padding:3px 10px;font-size:.72rem;font-weight:700;color:#4f8ef7;
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
+.a11y-row{display:flex;gap:12px;align-items:flex-start;
+  padding:8px 0;border-bottom:1px solid rgba(30,58,107,.3)}
+.a11y-row:last-of-type{border-bottom:none}
+
+/* MOBILE */
+@media(max-width:768px){
+  main{grid-template-columns:1fr;padding:88px 20px 20px}
+  .plan-summary{padding:40px 0 32px;border-right:none;border-bottom:1px solid rgba(30,58,107,.5);overflow:visible}
+  .payment-form-wrap{padding:32px 0 60px}
+  .frow,.frow-3{grid-template-columns:1fr}
+  #main-nav{padding:0 16px}
+  .nav-logo-text strong{max-width:180px;font-size:.78rem}
+}
+@media(max-width:480px){
+  main{padding:88px 20px 20px}
+  footer{flex-direction:column;gap:10px;text-align:center}
+  #main-nav{padding:0 12px;gap:8px}
+  .nav-logo-text{display:none}
+  .nav-back{font-size:.78rem;white-space:nowrap}
+}
+
+/* GLOBAL HEADINGS */
+h1,h2,h3,h4,h5,h6{color:#fff !important}
+</style>
+</head>
+<body style="background:#0a1628 !important;color:#e8edf8 !important;font-family:Sora,sans-serif">
+
+<a href="#main-content" id="skip-nav" data-acc-skip="1">Skip to main content</a>
+
+<nav id="main-nav" role="navigation" aria-label="Main navigation">
+  <a href="index.html" class="nav-logo" aria-label="Accessibility Compliance Canada Inc. — Home">
+    <div class="nav-logo-img" aria-hidden="true">
+      <img src="data:image/png;base64,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" alt="ACC logo" width="34" height="34"/>
+    </div>
+    <div class="nav-logo-text">
+      <strong>Accessibility Compliance Canada Inc.&#x2122;</strong>
+    </div>
+  </a>
+  <a href="index.html" class="nav-back" aria-label="Back to main page">
+    &#8592; Back to Plans
+  </a>
+</nav>
+
+<main id="main-content" role="main">
+
+  <!-- LEFT: Plan Summary -->
+  <aside class="plan-summary" aria-label="Selected plan summary">
+    <div class="plan-badge">&#9679; Secure Checkout</div>
+    <h1>You&rsquo;re one step away from <em>full compliance</em></h1>
+    <p class="plan-desc">Complete your registration below. Your account is activated instantly and your widget embed code will be emailed within minutes.</p>
+
+    <!-- Tier card — populated by JS -->
+    <div class="tier-card" id="selected-tier-card">
+      <div class="tier-label" id="tc-label">Tier 1 &mdash; Essential</div>
+      <div class="tier-name" id="tc-name">Essential</div>
+      <div class="tier-emp" id="tc-emp">1&ndash;19 Employees</div>
+      <div class="tier-price">
+        <span class="amount" id="tc-amount">$69</span>
+        <span class="caddy">CAD</span>
+        <span class="period">/ month</span>
+      </div>
+      <div class="tier-annual" id="tc-annual">or $690 / year (save 2 months)</div>
+      <ul class="tier-features" id="tc-features">
+        <li>AI Accessibility Widget &amp; Scans</li>
+        <li>Accessibility Policy Template</li>
+        <li>Monthly Compliance Reports</li>
+        <li>Annual Evidence Binder</li>
+        <li>AODA Staff Training Portal</li>
+        <li>Client Dashboard Access</li>
+      </ul>
+    </div>
+
+    <button class="change-plan" onclick="toggleTier()" aria-label="Switch selected plan">
+      &#8646; Switch Plan
+    </button>
+
+    <div class="trust-row" role="list" aria-label="Security and compliance badges">
+      <div class="trust-badge" role="listitem"><span class="icon">&#128274;</span> 256-bit SSL</div>
+      <div class="trust-badge" role="listitem"><span class="icon">&#9989;</span> PIPEDA Compliant</div>
+      <div class="trust-badge" role="listitem"><span class="icon">&#127464;&#127462;</span> Canadian Hosted</div>
+      <div class="trust-badge" role="listitem"><span class="icon">&#128203;</span> WCAG 2.1 AA</div>
+    </div>
+  </aside>
+
+  <!-- RIGHT: Payment Form -->
+  <section class="payment-form-wrap" aria-label="Payment and registration form">
+
+    <!-- Account Details -->
+    <div class="form-section-title">1. Account Details</div>
+
+    <div class="frow">
+      <div class="fgroup">
+        <label for="f-fname">First Name <span class="req" aria-hidden="true">*</span></label>
+        <input class="finput" type="text" id="f-fname" name="first_name"
+          placeholder="Jane" autocomplete="given-name" required aria-required="true"/>
+        <div class="ferr" id="err-fname" role="alert">Please enter your first name.</div>
+      </div>
+      <div class="fgroup">
+        <label for="f-lname">Last Name <span class="req" aria-hidden="true">*</span></label>
+        <input class="finput" type="text" id="f-lname" name="last_name"
+          placeholder="Smith" autocomplete="family-name" required aria-required="true"/>
+        <div class="ferr" id="err-lname" role="alert">Please enter your last name.</div>
+      </div>
+    </div>
+
+    <div class="fgroup">
+      <label for="f-email">Work Email <span class="req" aria-hidden="true">*</span></label>
+      <input class="finput" type="email" id="f-email" name="email"
+        placeholder="jane@company.ca" autocomplete="email" required aria-required="true"/>
+      <div class="ferr" id="err-email" role="alert">Please enter a valid email address.</div>
+    </div>
+
+    <div class="fgroup">
+      <label for="f-company">Company Name <span class="req" aria-hidden="true">*</span></label>
+      <input class="finput" type="text" id="f-company" name="company"
+        placeholder="Acme Corp Inc." autocomplete="organization" required aria-required="true"/>
+      <div class="ferr" id="err-company" role="alert">Please enter your company name.</div>
+    </div>
+
+    <div class="frow">
+      <div class="fgroup">
+        <label for="f-website">Website URL <span class="req" aria-hidden="true">*</span></label>
+        <input class="finput" type="url" id="f-website" name="website"
+          placeholder="https://yoursite.ca" autocomplete="url" required aria-required="true"/>
+        <div class="ferr" id="err-website" role="alert">Please enter your website URL.</div>
+      </div>
+      <div class="fgroup">
+        <label for="f-phone">Phone Number</label>
+        <input class="finput" type="tel" id="f-phone" name="phone"
+          placeholder="(416) 555-0100" autocomplete="tel"/>
+      </div>
+    </div>
+
+    <div class="fgroup">
+      <label for="f-password">Create Password <span class="req" aria-hidden="true">*</span></label>
+      <input class="finput" type="password" id="f-password" name="password"
+        placeholder="Min. 8 characters" autocomplete="new-password" required aria-required="true"
+        aria-describedby="pw-hint"/>
+      <div id="pw-hint" style="font-size:.75rem;color:var(--muted);margin-top:5px">
+        Must be 8+ characters with at least one number.
+      </div>
+      <div class="ferr" id="err-password" role="alert">Password must be at least 8 characters with a number.</div>
+    </div>
+
+    <!-- Payment Details -->
+    <div class="form-section-title" style="margin-top:36px">2. Payment Details</div>
+
+    <div class="fgroup">
+      <label for="f-card">Card Number <span class="req" aria-hidden="true">*</span></label>
+      <div class="card-field-wrap">
+        <input class="finput" type="text" id="f-card" name="card_number"
+          placeholder="1234 5678 9012 3456" maxlength="19"
+          inputmode="numeric" autocomplete="cc-number" required aria-required="true"/>
+        <div class="card-icons" aria-hidden="true">
+          <div class="card-icon visa">VISA</div>
+          <div class="card-icon mc">MC</div>
+          <div class="card-icon amex">AMEX</div>
+        </div>
+      </div>
+      <div class="ferr" id="err-card" role="alert">Please enter a valid card number.</div>
+    </div>
+
+    <div class="frow-3">
+      <div class="fgroup">
+        <label for="f-name-card">Name on Card <span class="req" aria-hidden="true">*</span></label>
+        <input class="finput" type="text" id="f-name-card" name="card_name"
+          placeholder="JANE SMITH" autocomplete="cc-name" required aria-required="true"/>
+        <div class="ferr" id="err-name-card" role="alert">Required.</div>
+      </div>
+      <div class="fgroup">
+        <label for="f-expiry">Expiry <span class="req" aria-hidden="true">*</span></label>
+        <input class="finput" type="text" id="f-expiry" name="card_expiry"
+          placeholder="MM / YY" maxlength="7" inputmode="numeric"
+          autocomplete="cc-exp" required aria-required="true"/>
+        <div class="ferr" id="err-expiry" role="alert">Required.</div>
+      </div>
+      <div class="fgroup">
+        <label for="f-cvv">CVV <span class="req" aria-hidden="true">*</span></label>
+        <input class="finput" type="text" id="f-cvv" name="card_cvv"
+          placeholder="123" maxlength="4" inputmode="numeric"
+          autocomplete="cc-csc" required aria-required="true"
+          aria-describedby="cvv-hint"/>
+        <div id="cvv-hint" style="font-size:.75rem;color:var(--muted);margin-top:5px">3-4 digits</div>
+        <div class="ferr" id="err-cvv" role="alert">Required.</div>
+      </div>
+    </div>
+
+    <div class="fgroup">
+      <label for="f-billing">Billing Address <span class="req" aria-hidden="true">*</span></label>
+      <input class="finput" type="text" id="f-billing" name="billing_address"
+        placeholder="123 Main St, Toronto, ON M5V 1A1" autocomplete="street-address"
+        required aria-required="true"/>
+      <div class="ferr" id="err-billing" role="alert">Please enter your billing address.</div>
+    </div>
+
+    <!-- Discount Code -->
+    <div class="form-section-title" style="margin-top:36px">3. Discount Code <span style="color:var(--muted);font-size:.65rem;font-weight:500;text-transform:none;letter-spacing:0">(optional)</span></div>
+
+    <div class="discount-row">
+      <div class="fgroup">
+        <label for="f-discount" class="sr-only">Discount or promo code</label>
+        <input class="finput" type="text" id="f-discount" name="discount_code"
+          placeholder="Enter promo code" autocomplete="off" style="text-transform:uppercase"/>
+      </div>
+      <button class="discount-btn" type="button" onclick="applyDiscount()"
+        aria-label="Apply discount code">Apply</button>
+    </div>
+    <div class="discount-success" id="discount-msg" role="status" aria-live="polite">
+      <span>&#10003;</span> <span id="discount-text">Code applied!</span>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="order-summary" role="region" aria-label="Order summary" aria-live="polite">
+      <div class="order-row">
+        <span class="label" id="os-plan-label">Essential Plan (monthly)</span>
+        <span class="value" id="os-plan-price">$69.00 CAD</span>
+      </div>
+      <div class="order-row hidden-row" id="os-discount-row">
+        <span class="label">Discount</span>
+        <span class="value discount" id="os-discount-val">-$0.00</span>
+      </div>
+      <div class="order-row">
+        <span class="label">HST (13%)</span>
+        <span class="value" id="os-tax">$8.97 CAD</span>
+      </div>
+      <div class="order-row total">
+        <span class="label">Total Due Today</span>
+        <span class="value" id="os-total">$77.97 CAD</span>
+      </div>
+    </div>
+
+    <!-- Legal Consent -->
+    <div class="legal-check">
+      <input type="checkbox" id="chk-terms" name="terms" required aria-required="true"/>
+      <label for="chk-terms">
+        I agree to the <button type="button" onclick="openModal('terms-modal')"
+          style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:.8rem;padding:0;font-family:var(--font);text-decoration:underline">Terms of Service</button>
+        and <button type="button" onclick="openModal('privacy-modal')"
+          style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:.8rem;padding:0;font-family:var(--font);text-decoration:underline">Privacy Policy</button>.
+        I consent to recurring monthly billing until cancelled. I acknowledge this service supports AODA compliance but does not constitute legal advice.
+      </label>
+    </div>
+    <div class="legal-check">
+      <input type="checkbox" id="chk-casl" name="casl_consent"/>
+      <label for="chk-casl">
+        I consent to receive email updates about my compliance status, product changes, and AODA regulatory news from Accessibility Compliance Canada Inc. (CASL express consent — unsubscribe anytime).
+      </label>
+    </div>
+
+    <!-- Submit -->
+    <button class="submit-btn" id="submit-btn" type="button" onclick="submitPayment()">
+      <span class="lock">&#128274;</span>
+      <span id="submit-label">Complete Registration &amp; Pay</span>
+    </button>
+    <p class="submit-note">
+      Your card is charged <strong id="submit-note-amt">$77.97 CAD</strong> today. Cancel anytime from your dashboard. No setup fees.
+    </p>
+
+  </section>
+
+  <!-- Success Screen (hidden until submit) -->
+  <div id="success-screen" style="grid-column:1/-1" role="status" aria-live="assertive">
+    <div class="success-icon" aria-hidden="true">&#127881;</div>
+    <h2>Welcome to ACC!</h2>
+    <p>Your account has been created and your widget embed code is on its way to <strong id="success-email"></strong>. Check your inbox within 5 minutes.</p>
+    <div class="next-steps" aria-label="Next steps">
+      <h3>What happens next</h3>
+      <div class="step-item">
+        <div class="step-num" aria-hidden="true">1</div>
+        <div class="step-text">
+          <strong>Check your email</strong>
+          <span>Your widget embed code and login credentials are on their way.</span>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num" aria-hidden="true">2</div>
+        <div class="step-text">
+          <strong>Embed the widget</strong>
+          <span>Paste one line of code before &lt;/body&gt; on your website.</span>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num" aria-hidden="true">3</div>
+        <div class="step-text">
+          <strong>Access your dashboard</strong>
+          <span>Log in to customize your widget, view reports and evidence binder.</span>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num" aria-hidden="true">4</div>
+        <div class="step-text">
+          <strong>Your first audit report</strong>
+          <span>Generated within 24 hours. Monthly reports follow automatically.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer role="contentinfo">
+  <div class="footer-copy">
+    &copy; 2026 Accessibility Compliance Canada Inc.&#x2122; &middot;
+    2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON L6H 5V1
+  </div>
+  <nav class="footer-links" aria-label="Footer policy links">
+    <button onclick="openModal('a11y-modal')" aria-haspopup="dialog">Accessibility</button>
+    <span class="footer-sep" aria-hidden="true">|</span>
+    <button onclick="openModal('privacy-modal')" aria-haspopup="dialog">Privacy Policy</button>
+    <span class="footer-sep" aria-hidden="true">|</span>
+    <button onclick="openModal('terms-modal')" aria-haspopup="dialog">Terms of Service</button>
+  </nav>
+</footer>
+
+<!-- PRIVACY MODAL -->
+<div id="privacy-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="priv-title">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('privacy-modal')" aria-label="Close privacy policy">&#x2715;</button>
+    <h2 id="priv-title">Privacy Policy</h2>
+    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Effective: January 1, 2026</p>
+    <span class="mlabel">Overview</span>
+    <p>We are committed to protecting personal information in compliance with CASL and Canadian privacy law.</p>
+    <h3>1. Information We Collect</h3>
+    <ul>
+      <li><strong>Registration:</strong> Name, company, email, website, billing address, phone.</li>
+      <li><strong>Payment:</strong> Card details processed via PCI-DSS Level 1 processor. We do not store raw card data.</li>
+      <li><strong>Technical:</strong> IP address, browser type, pages visited. No advertising trackers.</li>
+    </ul>
+    <h3>2. How We Use It</h3>
+    <ul>
+      <li>To provision your account and deliver compliance services.</li>
+      <li>To process recurring billing and issue receipts.</li>
+      <li>To send compliance status emails and AODA updates (with consent).</li>
+    </ul>
+    <h3>3. CASL &amp; Consent Records</h3>
+    <p>We only send commercial emails with express consent. Consent records include: email, date/time, method, and IP, stored with CASL compliance mode enabled. Withdraw consent anytime via unsubscribe link or by emailing <a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a>.</p>
+    <h3>4. Security</h3>
+    <p>AES-256 encryption at rest, TLS 1.3 in transit. PCI-DSS Level 1 compliant payment processing. We do not sell personal data.</p>
+    <h3>5. Your Rights (PIPEDA)</h3>
+    <p>You may access, correct, or request deletion of your data at any time from your dashboard or by contacting us.</p>
+    <h3>6. Contact</h3>
+    <p>2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON L6H 5V1<br>
+    <a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a></p>
+  </div>
+</div>
+
+<!-- ACCESSIBILITY STATEMENT MODAL -->
+<div id="a11y-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="a11y-title">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('a11y-modal')" aria-label="Close accessibility statement">&#x2715;</button>
+    <h2 id="a11y-title">Accessibility Statement</h2>
+    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Last reviewed: March 2026</p>
+    <span class="mlabel">Our Commitment</span>
+    <p>We are committed to ensuring digital accessibility for people with disabilities and continually improve the experience for all users.</p>
+    <h3>Conformance</h3>
+    <div class="a11y-row"><span>&#9989;</span><span><strong>WCAG 2.1 Level AA</strong> &mdash; Exceeds the current AODA minimum of WCAG 2.0 AA.</span></div>
+    <div class="a11y-row"><span>&#9989;</span><span><strong>Keyboard Navigation</strong> &mdash; All interactive elements keyboard accessible; skip-to-content link provided.</span></div>
+    <div class="a11y-row"><span>&#9989;</span><span><strong>Screen Reader Support</strong> &mdash; Semantic HTML, ARIA roles, labels, and live regions throughout.</span></div>
+    <div class="a11y-row"><span>&#9989;</span><span><strong>Touch Targets</strong> &mdash; All interactive elements meet the 44&times;44px minimum touch target.</span></div>
+    <div class="a11y-row"><span>&#9989;</span><span><strong>Reduced Motion</strong> &mdash; Animations suppressed with prefers-reduced-motion.</span></div>
+    <div class="a11y-row"><span>&#9989;</span><span><strong>Accessible Forms</strong> &mdash; Labels, aria-describedby errors, role="alert" validation.</span></div>
+    <div class="a11y-row"><span>&#9989;</span><span><strong>Color Contrast</strong> &mdash; All text meets WCAG 2.1 AA minimum 4.5:1 contrast ratio.</span></div>
+    <h3>ACCWidget</h3>
+    <p>This page includes the ACC Accessibility Widget for adjusting font size, contrast, spacing, dyslexia fonts, and reading guides.</p>
+    <h3>Feedback</h3>
+    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--teal)">partner@accessibilitycompliance.ca</a> &middot; (416) 526-9645</p>
+  </div>
+</div>
+
+<!-- TERMS OF SERVICE MODAL -->
+<div id="terms-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('terms-modal')" aria-label="Close terms of service">&#x2715;</button>
+    <h2 id="terms-title">Terms of Service</h2>
+    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Effective: January 1, 2026</p>
+    <span class="mlabel">Agreement</span>
+    <p>By completing registration you agree to the following terms governing your use of ACC services.</p>
+    <h3>1. Service Description</h3>
+    <p>ACC provides accessibility compliance tooling including the ACC Widget, dashboard, audit reports, training portal, and evidence binder. Services support AODA and WCAG 2.1 AA compliance but do not constitute legal advice.</p>
+    <h3>2. Billing &amp; Cancellation</h3>
+    <ul>
+      <li>Monthly subscriptions are billed on the same date each month in CAD + applicable HST.</li>
+      <li>Annual subscriptions are billed upfront and are non-refundable after 30 days.</li>
+      <li>Cancel anytime from your dashboard. Cancellation takes effect at the end of the billing period.</li>
+      <li>No partial refunds for unused months.</li>
+    </ul>
+    <h3>3. Acceptable Use</h3>
+    <p>The ACC Widget may only be installed on domains registered to your account. Redistribution or resale of the widget without written consent is prohibited.</p>
+    <h3>4. Limitation of Liability</h3>
+    <p>ACC is not liable for regulatory fines, penalties, or third-party claims arising from use or non-use of the service. Compliance outcomes depend on correct implementation.</p>
+    <h3>5. Data &amp; Privacy</h3>
+    <p>Governed by our Privacy Policy and applicable Canadian law including PIPEDA and CASL.</p>
+    <h3>6. Governing Law</h3>
+    <p>These terms are governed by the laws of Ontario, Canada. Disputes shall be resolved in Ontario courts.</p>
+    <h3>7. Contact</h3>
+    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a></p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/gh/harpsinghd89/ACC-Widget@main/ACC-Widget.js?v=12" id="ACCWidget"></script>
+<script>
+// ── Tier Data ──
+var TIERS = {
+  t1: {
+    label:'Tier 1 — Essential', name:'Essential', emp:'1–19 Employees',
+    amount:'$69', annual:'or $690 / year (save 2 months)',
+    monthly:69, tax_rate:0.13,
+    features:['AI Accessibility Widget & Scans','Accessibility Policy Template',
+      'Monthly Compliance Reports','Annual Evidence Binder',
+      'AODA Staff Training Portal','Client Dashboard Access']
+  },
+  t2: {
+    label:'Tier 2 — Managed', name:'Managed', emp:'20–50 Employees',
+    amount:'$199', annual:'or $1,990 / year (save 2 months)',
+    monthly:199, tax_rate:0.13,
+    features:['AI Widget + Daily Health Scans','Automated AODA Staff Training Portal',
+      'Hosted Accessible Feedback Page','3-Year Compliance Roadmap',
+      'Filing Template Kit','Annual Evidence Binder',
+      'Priority Support','Client Dashboard Access']
+  }
+};
+
+var currentTier = 't1';
+var discountPct = 0;
+
+// Read tier from URL param
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var t = params.get('tier');
+  if (t === '2' || t === 't2') currentTier = 't2';
+  renderTier();
+})();
+
+function renderTier() {
+  var t = TIERS[currentTier];
+  document.getElementById('tc-label').textContent = t.label;
+  document.getElementById('tc-name').textContent = t.name;
+  document.getElementById('tc-emp').textContent = t.emp;
+  document.getElementById('tc-amount').textContent = t.amount;
+  document.getElementById('tc-annual').textContent = t.annual;
+  var ul = document.getElementById('tc-features');
+  ul.innerHTML = t.features.map(f => '<li>' + f + '</li>').join('');
+  updateOrderSummary();
+}
+
+function toggleTier() {
+  currentTier = currentTier === 't1' ? 't2' : 't1';
+  renderTier();
+}
+
+function updateOrderSummary() {
+  var t = TIERS[currentTier];
+  var base = t.monthly;
+  var disc = Math.round(base * discountPct * 100) / 100;
+  var discounted = base - disc;
+  var tax = Math.round(discounted * t.tax_rate * 100) / 100;
+  var total = discounted + tax;
+
+  document.getElementById('os-plan-label').textContent = t.name + ' Plan (monthly)';
+  document.getElementById('os-plan-price').textContent = '$' + base.toFixed(2) + ' CAD';
+  document.getElementById('os-tax').textContent = '$' + tax.toFixed(2) + ' CAD';
+  document.getElementById('os-total').textContent = '$' + total.toFixed(2) + ' CAD';
+  document.getElementById('submit-note-amt').textContent = '$' + total.toFixed(2) + ' CAD';
+
+  var discRow = document.getElementById('os-discount-row');
+  if (disc > 0) {
+    discRow.classList.remove('hidden-row');
+    document.getElementById('os-discount-val').textContent = '-$' + disc.toFixed(2);
+  } else {
+    discRow.classList.add('hidden-row');
+  }
+}
+
+// ── Discount codes ──
+var DISCOUNT_CODES = { 'AODA2026':0.10, 'ACC20':0.20, 'LAUNCH15':0.15 };
+
+function applyDiscount() {
+  var code = document.getElementById('f-discount').value.trim().toUpperCase();
+  var msg = document.getElementById('discount-msg');
+  var txt = document.getElementById('discount-text');
+  if (DISCOUNT_CODES[code]) {
+    discountPct = DISCOUNT_CODES[code];
+    txt.textContent = (discountPct * 100) + '% discount applied!';
+    msg.classList.add('show');
+    updateOrderSummary();
+  } else {
+    discountPct = 0;
+    txt.textContent = 'Invalid code. Try AODA2026 for 10% off.';
+    msg.classList.add('show');
+    msg.style.color = 'var(--err)';
+    updateOrderSummary();
+  }
+}
+
+// ── Card formatting ──
+document.getElementById('f-card').addEventListener('input', function(e) {
+  var v = e.target.value.replace(/\D/g,'').substring(0,16);
+  e.target.value = v.replace(/(.{4})/g,'$1 ').trim();
+});
+document.getElementById('f-expiry').addEventListener('input', function(e) {
+  var v = e.target.value.replace(/\D/g,'').substring(0,4);
+  if (v.length >= 2) v = v.substring(0,2) + ' / ' + v.substring(2);
+  e.target.value = v;
+});
+
+// ── Validation ──
+function validateField(id, errId, test) {
+  var el = document.getElementById(id);
+  var err = document.getElementById(errId);
+  var ok = test(el.value.trim());
+  el.classList.toggle('error', !ok);
+  if (err) err.classList.toggle('show', !ok);
+  return ok;
+}
+
+function submitPayment() {
+  var ok = true;
+  ok = validateField('f-fname','err-fname', v => v.length > 0) && ok;
+  ok = validateField('f-lname','err-lname', v => v.length > 0) && ok;
+  ok = validateField('f-email','err-email', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) && ok;
+  ok = validateField('f-company','err-company', v => v.length > 0) && ok;
+  ok = validateField('f-website','err-website', v => v.length > 3) && ok;
+  ok = validateField('f-password','err-password', v => v.length >= 8 && /\d/.test(v)) && ok;
+  ok = validateField('f-card','err-card', v => v.replace(/\s/g,'').length >= 15) && ok;
+  ok = validateField('f-name-card','err-name-card', v => v.length > 0) && ok;
+  ok = validateField('f-expiry','err-expiry', v => v.length >= 4) && ok;
+  ok = validateField('f-cvv','err-cvv', v => v.length >= 3) && ok;
+  ok = validateField('f-billing','err-billing', v => v.length > 5) && ok;
+
+  var terms = document.getElementById('chk-terms');
+  if (!terms.checked) {
+    ok = false;
+    terms.focus();
+    alert('Please accept the Terms of Service and Privacy Policy to continue.');
+  }
+
+  if (!ok) return;
+
+  // Simulate submission
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  document.getElementById('submit-label').textContent = 'Processing…';
+
+  setTimeout(function() {
+    // Show success
+    document.querySelector('.plan-summary').style.display = 'none';
+    document.querySelector('.payment-form-wrap').style.display = 'none';
+    var ss = document.getElementById('success-screen');
+    ss.style.display = 'block';
+    document.getElementById('success-email').textContent =
+      document.getElementById('f-email').value;
+    window.scrollTo(0, 0);
+  }, 1800);
+}
+
+// ── Modals ──
+function openModal(id) {
+  var m = document.getElementById(id);
+  m.classList.add('open');
+  m.querySelector('.modal-close').focus();
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.querySelectorAll('.modal-overlay').forEach(function(m) {
+  m.addEventListener('click', function(e) { if (e.target === m) closeModal(m.id); });
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(function(m) {
+      closeModal(m.id);
+    });
+  }
+});
+</script>
+</body>
+</html>
