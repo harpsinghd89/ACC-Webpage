@@ -944,7 +944,33 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 <!-- Binder Editor -->
 >
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// ── Supabase + Auth Guard ──
+var _sb = window.supabase.createClient(
+  'https://wfyzvmfvlukawidowuym.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M'
+);
+
+(async function() {
+  try {
+    var s = await _sb.auth.getSession();
+    if (!s.data || !s.data.session) {
+      window.location.replace('admin-login.html');
+      return;
+    }
+    var ar = await _sb.from('admins').select('id,name').eq('email', s.data.session.user.email).single();
+    if (ar.error || !ar.data) {
+      await _sb.auth.signOut();
+      window.location.replace('admin-login.html');
+      return;
+    }
+    // Auth passed — dashboard loads normally
+  } catch(e) {
+    window.location.replace('admin-login.html');
+  }
+})();
+
 // ── Panel switching ──
 function showPanel(id) {
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
@@ -1203,17 +1229,6 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// ── Auth guard ──
-(function(){
-  var proto = window.location.protocol;
-  var isFile = proto === 'file:' || proto === 'blob:';
-  if (!isFile && sessionStorage.getItem('acc_admin_auth') !== 'true') {
-    window.location.href = 'admin-login.html';
-  }
-})();
 </script>
-
-
-
 </body>
 </html>
