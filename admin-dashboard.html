@@ -359,12 +359,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
               <td style="font-size:.8rem;color:#8a9bbf">acmecorp.ca</td>
               <td style="font-size:.8rem">Apr 10, 2026</td>
               <td><span class="pill green">Current</span></td>
-              <td class="client-actions" style="white-space:nowrap">
-                <button class="btn-sm btn-ghost" onclick="openModal('client-detail-modal')" title="View">&#128065;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('roadmap-editor-modal')" title="Roadmap">&#128204;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('template-editor-modal')" title="Templates">&#128196;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('binder-editor-modal')" title="Binder">&#128193;</button>
-              </td>
+              <td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:5px 12px">&#9998; Edit</button></td>
             </tr>
             <tr data-name="maple health" data-tier="2" data-status="current">
               <td><strong>Maple Health Clinic</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00189</div></td>
@@ -372,12 +367,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
               <td style="font-size:.8rem;color:#8a9bbf">maplehealth.ca</td>
               <td style="font-size:.8rem">Apr 8, 2026</td>
               <td><span class="pill green">Current</span></td>
-              <td class="client-actions" style="white-space:nowrap">
-                <button class="btn-sm btn-ghost" onclick="openModal('client-detail-modal')" title="View">&#128065;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('roadmap-editor-modal')" title="Roadmap">&#128204;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('template-editor-modal')" title="Templates">&#128196;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('binder-editor-modal')" title="Binder">&#128193;</button>
-              </td>
+              <td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:5px 12px">&#9998; Edit</button></td>
             </tr>
             <tr data-name="northern plumbing" data-tier="1" data-status="overdue">
               <td><strong>Northern Plumbing Co.</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00201</div></td>
@@ -385,12 +375,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
               <td style="font-size:.8rem;color:#8a9bbf">northernplumbing.ca</td>
               <td style="font-size:.8rem">Mar 1, 2026</td>
               <td><span class="pill red">Overdue</span></td>
-              <td class="client-actions" style="white-space:nowrap">
-                <button class="btn-sm btn-ghost" onclick="openModal('client-detail-modal')" title="View">&#128065;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('roadmap-editor-modal')" title="Roadmap">&#128204;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('template-editor-modal')" title="Templates">&#128196;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('binder-editor-modal')" title="Binder">&#128193;</button>
-              </td>
+              <td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:5px 12px">&#9998; Edit</button></td>
             </tr>
             <tr data-name="sunrise legal" data-tier="2" data-status="current">
               <td><strong>Sunrise Legal</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00215</div></td>
@@ -398,12 +383,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
               <td style="font-size:.8rem;color:#8a9bbf">sunriselegal.ca</td>
               <td style="font-size:.8rem">Apr 28, 2026</td>
               <td><span class="pill green">Current</span></td>
-              <td class="client-actions" style="white-space:nowrap">
-                <button class="btn-sm btn-ghost" onclick="openModal('client-detail-modal')" title="View">&#128065;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('roadmap-editor-modal')" title="Roadmap">&#128204;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('template-editor-modal')" title="Templates">&#128196;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('binder-editor-modal')" title="Binder">&#128193;</button>
-              </td>
+              <td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:5px 12px">&#9998; Edit</button></td>
             </tr>
             <tr data-name="hartwell dental" data-tier="1" data-status="pending">
               <td><strong>Hartwell Dental</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00228</div></td>
@@ -411,12 +391,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
               <td style="font-size:.8rem;color:#8a9bbf">hartwelldental.ca</td>
               <td style="font-size:.8rem">—</td>
               <td><span class="pill yellow">Pending</span></td>
-              <td class="client-actions" style="white-space:nowrap">
-                <button class="btn-sm btn-ghost" onclick="openModal('client-detail-modal')" title="View">&#128065;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('roadmap-editor-modal')" title="Roadmap">&#128204;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('template-editor-modal')" title="Templates">&#128196;</button>
-                <button class="btn-sm btn-ghost" onclick="openModal('binder-editor-modal')" title="Binder">&#128193;</button>
-              </td>
+              <td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:5px 12px">&#9998; Edit</button></td>
             </tr>
           </tbody>
         </table>
@@ -565,7 +540,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </table>
         <div style="margin-top:16px">
           <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:8px">CDN URL:</p>
-          <code style="font-family:ui-monospace,'SF Mono','Courier New',monospace;font-size:.78rem;color:#38d9a9;background:#060d1a;padding:8px 12px;border-radius:8px;display:block;word-break:break-all">https://cdn.jsdelivr.net/gh/ACC-Widget.js</code>
+          <code style="font-family:ui-monospace,'SF Mono','Courier New',monospace;font-size:.78rem;color:#38d9a9;background:#060d1a;padding:8px 12px;border-radius:8px;display:block;word-break:break-all">https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js?v=12</code>
         </div>
       </div>
     </div>
@@ -961,60 +936,13 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 </div>
 
 <!-- Roadmap Editor -->
-<div class="modal-overlay" id="roadmap-editor-modal" role="dialog" aria-modal="true" aria-label="Edit Roadmap">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('roadmap-editor-modal')" aria-label="Close">&#10005;</button>
-    <h2>&#128204; Edit 3-Year Roadmap</h2>
-    <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Acme Corp Inc. — CLI-00142</p>
-    <div class="fgroup"><label>Year 1 Focus</label><input class="finput" value="WCAG 2.1 AA widget deployment and staff training"></div>
-    <div class="fgroup"><label>Year 2 Focus</label><input class="finput" value="Full AODA report filing and evidence binder completion"></div>
-    <div class="fgroup"><label>Year 3 Focus</label><input class="finput" value="WCAG 2.2 upgrade and ongoing compliance monitoring"></div>
-    <div class="btn-row" style="margin-top:8px">
-      <button class="btn-sm btn-primary" onclick="alert('Roadmap saved!');closeModal('roadmap-editor-modal')">&#10003; Save</button>
-      <button class="btn-sm btn-ghost" onclick="closeModal('roadmap-editor-modal')">Cancel</button>
-    </div>
-  </div>
-</div>
+>
 
 <!-- Template Editor -->
-<div class="modal-overlay" id="template-editor-modal" role="dialog" aria-modal="true" aria-label="Edit Templates">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('template-editor-modal')" aria-label="Close">&#10005;</button>
-    <h2>&#128196; Template Access</h2>
-    <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Control which policy templates this client can access.</p>
-    <div class="toggle-wrap"><div class="toggle-info"><strong>Disruption Plan</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-    <div class="toggle-wrap"><div class="toggle-info"><strong>Service Animal Policy</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-    <div class="toggle-wrap"><div class="toggle-info"><strong>Emergency Response</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-    <div class="btn-row" style="margin-top:16px">
-      <button class="btn-sm btn-primary" onclick="alert('Template access saved!');closeModal('template-editor-modal')">&#10003; Save</button>
-      <button class="btn-sm btn-ghost" onclick="closeModal('template-editor-modal')">Cancel</button>
-    </div>
-  </div>
-</div>
+>
 
 <!-- Binder Editor -->
-<div class="modal-overlay" id="binder-editor-modal" role="dialog" aria-modal="true" aria-label="Edit Binder">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('binder-editor-modal')" aria-label="Close">&#10005;</button>
-    <h2>&#128193; Evidence Binder</h2>
-    <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Acme Corp Inc. — CLI-00142</p>
-    <div style="display:grid;gap:10px;margin-bottom:16px">
-      <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center">
-        <div><div style="font-size:.85rem;font-weight:600">AODA Accessibility Report 2026</div><div style="font-size:.75rem;color:#8a9bbf">Uploaded Mar 1, 2026</div></div>
-        <span class="pill green">Verified</span>
-      </div>
-      <div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center">
-        <div><div style="font-size:.85rem;font-weight:600">Staff Training Certificates</div><div style="font-size:.75rem;color:#8a9bbf">3 records</div></div>
-        <span class="pill blue">On File</span>
-      </div>
-    </div>
-    <div class="fgroup"><label for="bi-title">Add Item</label><input class="finput" id="bi-title" placeholder="Document title"></div>
-    <div class="btn-row">
-      <button class="btn-sm btn-primary" onclick="alert('Item added to binder!');closeModal('binder-editor-modal')">+ Add</button>
-      <button class="btn-sm btn-ghost" onclick="closeModal('binder-editor-modal')">Close</button>
-    </div>
-  </div>
-</div>
+>
 
 <script>
 // ── Panel switching ──
@@ -1182,101 +1110,6 @@ function signOut() {
     window.location.href = 'admin-login.html';
   }
 })();
-
-// ── Client modal tabs ──
-function showClientTab(tab) {
-  var tabs = ['info','billing','roadmap','templates','binder','access','notes'];
-  tabs.forEach(function(t) {
-    var panel = document.getElementById('ctab-panel-' + t);
-    var btn = document.getElementById('ctab-' + t);
-    if (!panel || !btn) return;
-    if (t === tab) {
-      panel.style.display = 'block';
-      btn.className = 'btn-sm btn-primary';
-      btn.style.fontSize = '.72rem';
-    } else {
-      panel.style.display = 'none';
-      btn.className = 'btn-sm btn-ghost';
-      btn.style.fontSize = '.72rem';
-    }
-  });
-}
-
-function saveClientInfo() {
-  var name = document.getElementById('ce-name').value.trim();
-  if (!name) { alert('Please enter a business name.'); return; }
-  document.getElementById('client-modal-title').textContent = '\u{1F464} ' + name;
-  var toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0d1f3c;border:1px solid #1e3a6b;border-radius:10px;padding:12px 20px;color:#38d9a9;font-size:.82rem;font-weight:700;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4)';
-  toast.textContent = '\u2713 Client info saved: ' + name;
-  document.body.appendChild(toast);
-  setTimeout(function(){ toast.remove(); }, 2500);
-}
-
-function addMilestoneRow(tableId) {
-  var tbody = document.querySelector('#' + tableId + ' tbody');
-  if (!tbody) return;
-  var row = document.createElement('tr');
-  row.innerHTML = '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" placeholder="Milestone description"></td>' +
-    '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" placeholder="e.g. Q1 2026"></td>' +
-    '<td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Planned</option><option>In Progress</option><option>Done</option><option>Blocked</option></select></td>' +
-    '<td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest(\'tr\').remove()">✕</button></td>';
-  tbody.appendChild(row);
-}
-
-function saveRoadmap() {
-  showAdminToast('Roadmap saved — client dashboard will reflect updates on next login.');
-}
-
-function showAdminToast(msg) {
-  var t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0d1f3c;border:1px solid #1e3a6b;border-radius:10px;padding:12px 20px;color:#38d9a9;font-size:.82rem;font-weight:700;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4)';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(function(){ t.remove(); }, 3000);
-}
-
-function addBinderItem() {
-  var input = document.getElementById('binder-new-item');
-  var val = input.value.trim();
-  if (!val) return;
-  var list = document.getElementById('binder-items-list');
-  var div = document.createElement('div');
-  div.style.cssText = 'background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px';
-  var sel = document.createElement('select');
-  sel.className = 'finput';
-  sel.style.cssText = 'padding:3px 8px;font-size:.72rem;width:110px';
-  ['Pending Review','Verified','On File','Missing'].forEach(function(o){ var opt=document.createElement('option'); opt.textContent=o; sel.appendChild(opt); });
-  var del = document.createElement('button');
-  del.className = 'btn-sm btn-danger';
-  del.style.padding = '4px 8px';
-  del.textContent = '✕';
-  del.onclick = function(){ this.closest('div').remove(); };
-  var info = document.createElement('div');
-  info.innerHTML = '<div style="font-size:.85rem;font-weight:600">' + val + '</div><div style="font-size:.72rem;color:#8a9bbf">Added today</div>';
-  var ctrl = document.createElement('div');
-  ctrl.style.cssText = 'display:flex;gap:6px;flex-shrink:0';
-  ctrl.appendChild(sel); ctrl.appendChild(del);
-  div.appendChild(info); div.appendChild(ctrl);
-  list.appendChild(div);
-  input.value = '';
-}
-
-// ── Auth guard ──
-(function(){
-  var proto = window.location.protocol;
-  if (proto !== 'file:' && proto !== 'blob:' && sessionStorage.getItem('acc_admin_auth') !== 'true') {
-    window.location.href = 'admin-login.html';
-  }
-})();
-
-// ── Sign out ──
-function signOut() {
-  if (confirm('Sign out of admin?')) {
-    sessionStorage.removeItem('acc_admin_auth');
-    window.location.href = 'admin-login.html';
-  }
-}
 </script>
 </body>
 </html>

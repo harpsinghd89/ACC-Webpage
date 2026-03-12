@@ -291,16 +291,13 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="tier-price">
         <span class="amount" id="tc-amount">$69</span>
         <span class="caddy">CAD</span>
-        <span class="period">/ month</span>
+        <span class="period" id="tc-period">/ month</span>
       </div>
       <div class="tier-annual" id="tc-annual">or $690 / year (save 2 months)</div>
       <ul class="tier-features" id="tc-features">
         <li>AI Accessibility Widget &amp; Scans</li>
         <li>Accessibility Policy Template</li>
-        <li>Monthly Compliance Reports</li>
-        <li>Annual Evidence Binder</li>
-        <li>AODA Staff Training Portal</li>
-        <li>Client Dashboard Access</li>
+        <li>Monthly Health Reports</li>
       </ul>
     </div>
 
@@ -567,14 +564,14 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <li>To send compliance status emails and AODA updates (with consent).</li>
     </ul>
     <h3>3. CASL &amp; Consent Records</h3>
-    <p>We only send commercial emails with express consent. Consent records include: email, date/time, method, and IP, stored with CASL compliance mode enabled. Withdraw consent anytime via unsubscribe link or by emailing <a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a>.</p>
+    <p>We only send commercial emails with express consent. Consent records include: email, date/time, method, and IP, stored with CASL compliance mode enabled. Withdraw consent anytime via unsubscribe link or by emailing <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a>.</p>
     <h3>4. Security</h3>
     <p>AES-256 encryption at rest, TLS 1.3 in transit. PCI-DSS Level 1 compliant payment processing. We do not sell personal data.</p>
     <h3>5. Your Rights (PIPEDA)</h3>
     <p>You may access, correct, or request deletion of your data at any time from your dashboard or by contacting us.</p>
     <h3>6. Contact</h3>
     <p>2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON L6H 5V1<br>
-    <a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a></p>
+    <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
   </div>
 </div>
 
@@ -597,7 +594,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <h3>ACCWidget</h3>
     <p>This page includes the ACC Accessibility Widget for adjusting font size, contrast, spacing, dyslexia fonts, and reading guides.</p>
     <h3>Feedback</h3>
-    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--teal)">partner@accessibilitycompliance.ca</a> &middot; (416) 526-9645</p>
+    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a> &middot; (416) 526-9645</p>
   </div>
 </div>
 
@@ -627,11 +624,11 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <h3>6. Governing Law</h3>
     <p>These terms are governed by the laws of Ontario, Canada. Disputes shall be resolved in Ontario courts.</p>
     <h3>7. Contact</h3>
-    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a></p>
+    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/gh/harpsinghd89/ACC-Widget@main/ACC-Widget.js?v=12" id="ACCWidget"></script>
+<script src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js?v=12" id="ACCWidget"></script>
 <script>
 // ── Tier Data ──
 var TIERS = {
@@ -639,21 +636,39 @@ var TIERS = {
     label:'Tier 1 — Essential', name:'Essential', emp:'1–19 Employees',
     amount:'$69', annual:'or $690 / year (save 2 months)',
     monthly:69, tax_rate:0.13,
-    features:['AI Accessibility Widget & Scans','Accessibility Policy Template',
-      'Monthly Compliance Reports','Annual Evidence Binder',
-      'AODA Staff Training Portal','Client Dashboard Access']
+    features:[
+      'AI Accessibility Widget & Scans',
+      'Accessibility Policy Template',
+      'Monthly Health Reports'
+    ]
   },
   t2: {
     label:'Tier 2 — Managed', name:'Managed', emp:'20–50 Employees',
     amount:'$199', annual:'or $1,990 / year (save 2 months)',
     monthly:199, tax_rate:0.13,
-    features:['AI Widget + Daily Health Scans','Automated AODA Staff Training Portal',
-      'Hosted Accessible Feedback Page','3-Year Compliance Roadmap',
-      'Filing Template Kit','Annual Evidence Binder',
-      'Priority Support','Client Dashboard Access']
+    features:[
+      'AI Widget + Daily Health Scans',
+      'Automated AODA Staff Training Portal',
+      'Hosted Accessible Feedback Page',
+      '3-Year Compliance Roadmap',
+      'Filing Template Kit',
+      'Annual Evidence Binder'
+    ]
+  },
+  t3: {
+    label:'Tier 3 — Enterprise', name:'Enterprise', emp:'50+ Employees',
+    amount:'Custom', annual:'Contact us for a tailored quote',
+    monthly:null, tax_rate:0.13,
+    features:[
+      'AI + Human Remediation',
+      'Custom Staff Workshops',
+      'Integrated Feedback Systems',
+      'Multi-Year Accessibility Plan',
+      'Bespoke Policy Drafting',
+      'VPAT & Full Audit Defense'
+    ]
   }
 };
-
 var currentTier = 't1';
 var discountPct = 0;
 
@@ -671,19 +686,45 @@ function renderTier() {
   document.getElementById('tc-name').textContent = t.name;
   document.getElementById('tc-emp').textContent = t.emp;
   document.getElementById('tc-amount').textContent = t.amount;
+  var periodEl = document.getElementById('tc-period');
+  if (periodEl) periodEl.style.display = t.monthly ? '' : 'none';
   document.getElementById('tc-annual').textContent = t.annual;
   var ul = document.getElementById('tc-features');
-  ul.innerHTML = t.features.map(f => '<li>' + f + '</li>').join('');
+  ul.innerHTML = t.features.map(function(f){ return '<li>' + f + '</li>'; }).join('');
+  // Show/hide payment form vs contact CTA for Enterprise
+  var payWrap = document.getElementById('payment-wrap');
+  var t3Cta   = document.getElementById('t3-contact-cta');
+  if (currentTier === 't3') {
+    if (payWrap) payWrap.style.display = 'none';
+    if (t3Cta)   t3Cta.style.display   = 'block';
+  } else {
+    if (payWrap) payWrap.style.display = '';
+    if (t3Cta)   t3Cta.style.display   = 'none';
+  }
   updateOrderSummary();
 }
 
 function toggleTier() {
-  currentTier = currentTier === 't1' ? 't2' : 't1';
+  if (currentTier === 't1') currentTier = 't2';
+  else if (currentTier === 't2') currentTier = 't3';
+  else currentTier = 't1';
   renderTier();
 }
 
 function updateOrderSummary() {
   var t = TIERS[currentTier];
+  if (!t.monthly) {
+    // Enterprise — no price calculation
+    document.getElementById('os-plan-label').textContent = t.name + ' Plan';
+    document.getElementById('os-plan-price').textContent = 'Custom';
+    document.getElementById('os-tax').textContent = '—';
+    document.getElementById('os-total').textContent = 'Custom';
+    var snEl = document.getElementById('submit-note-amt');
+    if (snEl) snEl.textContent = 'Custom';
+    var discRow = document.getElementById('os-discount-row');
+    if (discRow) discRow.classList.add('hidden-row');
+    return;
+  }
   var base = t.monthly;
   var disc = Math.round(base * discountPct * 100) / 100;
   var discounted = base - disc;
@@ -694,7 +735,8 @@ function updateOrderSummary() {
   document.getElementById('os-plan-price').textContent = '$' + base.toFixed(2) + ' CAD';
   document.getElementById('os-tax').textContent = '$' + tax.toFixed(2) + ' CAD';
   document.getElementById('os-total').textContent = '$' + total.toFixed(2) + ' CAD';
-  document.getElementById('submit-note-amt').textContent = '$' + total.toFixed(2) + ' CAD';
+  var snEl = document.getElementById('submit-note-amt');
+  if (snEl) snEl.textContent = '$' + total.toFixed(2) + ' CAD';
 
   var discRow = document.getElementById('os-discount-row');
   if (disc > 0) {
@@ -782,32 +824,10 @@ function submitPayment() {
     var ss = document.getElementById('success-screen');
     ss.style.display = 'block';
     document.getElementById('success-email').textContent =
-      document.getElementById('f-email').value;
-    window.scrollTo(0, 0);
+      document.getElementById('p-email').value.trim();
+    document.getElementById('success-tier').textContent = TIERS[currentTier] ? TIERS[currentTier].label : '';
   }, 1800);
 }
-
-// ── Modals ──
-function openModal(id) {
-  var m = document.getElementById(id);
-  m.classList.add('open');
-  m.querySelector('.modal-close').focus();
-  document.body.style.overflow = 'hidden';
-}
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-  document.body.style.overflow = '';
-}
-document.querySelectorAll('.modal-overlay').forEach(function(m) {
-  m.addEventListener('click', function(e) { if (e.target === m) closeModal(m.id); });
-});
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal-overlay.open').forEach(function(m) {
-      closeModal(m.id);
-    });
-  }
-});
 </script>
 </body>
 </html>
