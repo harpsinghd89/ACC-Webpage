@@ -148,7 +148,7 @@ select.finput{appearance:none;cursor:pointer;
 .toggle-info span{font-size:.75rem;color:#8a9bbf}
 .toggle{position:relative;width:42px;height:24px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;inset:0;cursor:pointer;background:rgba(30,58,107,.8);border-radius:99px;transition:.2s}
+.toggle-slider{position:absolute;top:0;right:0;bottom:0;left:0;cursor:pointer;background:rgba(30,58,107,.8);border-radius:99px;transition:.2s}
 .toggle input:checked + .toggle-slider{background:#4f8ef7}
 .toggle-slider::after{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
 .toggle input:checked + .toggle-slider::after{transform:translateX(18px)}
@@ -161,7 +161,7 @@ select.finput{appearance:none;cursor:pointer;
 .dl-btn:hover{background:rgba(56,217,169,.18)}
 
 /* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;z-index:9000;
+.modal-overlay{display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:9000;
   background:rgba(5,12,24,.9);backdrop-filter:blur(8px);
   align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
@@ -634,7 +634,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 </div>
 
 <!-- Client Full Editor -->
-<div class="modal-overlay" id="client-detail-modal" role="dialog" aria-modal="true" aria-label="Edit Client">
+<div class="modal-overlay" id="client-detail-modal" style="display:none" role="dialog" aria-modal="true" aria-label="Edit Client">
   <div class="modal-box" style="max-width:680px;width:100%">
     <button class="modal-close" onclick="closeModal('client-detail-modal')" aria-label="Close">&#10005;</button>
     <h2 id="client-modal-title">&#128100; Edit Client</h2>
@@ -1102,6 +1102,107 @@ function signOut() {
   }
 }
 
+
+// ── Client Editor (full tabbed modal) ──
+var _editingRow = null;
+
+function openClientEditor(btn) {
+  var row = btn.closest('tr');
+  _editingRow = row;
+  var cells = row.querySelectorAll('td');
+
+  var nameEl = cells[0].querySelector('strong');
+  var idEl   = cells[0].querySelector('div');
+  var name   = nameEl ? nameEl.textContent.trim() : '';
+  var cid    = idEl   ? idEl.textContent.trim()   : '';
+  var domain = cells[2] ? cells[2].textContent.trim() : '';
+  var renews = cells[3] ? cells[3].textContent.trim() : '';
+  var tier   = row.getAttribute('data-tier') || '1';
+  var status = (row.getAttribute('data-status') || 'current');
+
+  // Populate Info tab
+  document.getElementById('client-modal-title').textContent = '✎ Edit — ' + name;
+  var f = function(id, val) { var el = document.getElementById(id); if(el) el.value = val; };
+  f('ce-name',    name);
+  f('ce-id',      cid);
+  f('ce-domain',  domain);
+  f('ce-tier',    tier);
+  f('ce-renewal', '');  // date input — renews is text like "Apr 10, 2026"
+
+  // Set status select by matching text
+  var statusSel = document.getElementById('ce-status');
+  if (statusSel) {
+    var capStatus = status.charAt(0).toUpperCase() + status.slice(1);
+    for (var i = 0; i < statusSel.options.length; i++) {
+      if (statusSel.options[i].text === capStatus || statusSel.options[i].value === status) {
+        statusSel.selectedIndex = i; break;
+      }
+    }
+  }
+
+  // Open modal on Info tab
+  showClientTab('info');
+  var modal = document.getElementById('client-detail-modal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ var el = document.getElementById('ce-name'); if(el) el.focus(); }, 50);
+}
+
+function showClientTab(tab) {
+  var tabs = ['info','billing','roadmap','templates','binder','access','notes'];
+  tabs.forEach(function(t) {
+    var btn   = document.getElementById('ctab-' + t);
+    var panel = document.getElementById('ctab-panel-' + t);
+    if (btn)   btn.className   = t === tab ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
+    if (panel) panel.style.display = t === tab ? '' : 'none';
+  });
+}
+
+function saveClientInfo() {
+  if (!_editingRow) return;
+  var cells = _editingRow.querySelectorAll('td');
+
+  var name   = (document.getElementById('ce-name')   || {}).value || '';
+  var domain = (document.getElementById('ce-domain') || {}).value || '';
+  var tier   = (document.getElementById('ce-tier')   || {}).value || '1';
+  var statusEl = document.getElementById('ce-status');
+  var status = statusEl ? statusEl.options[statusEl.selectedIndex].text.toLowerCase() : 'current';
+
+  if (!name) { alert('Business Name is required.'); return; }
+
+  var tierLabels  = {'1':'Tier 1','2':'Tier 2','3':'Tier 3'};
+  var statusColors = {current:'green', overdue:'red', pending:'yellow', cancelled:'red'};
+  var statusLabels = {current:'Current', overdue:'Overdue', pending:'Pending', cancelled:'Cancelled'};
+
+  // Update table row
+  var nameEl = cells[0].querySelector('strong');
+  if (nameEl) nameEl.textContent = name;
+  cells[1].innerHTML = '<span class="pill blue">' + (tierLabels[tier]||'Tier '+tier) + '</span>';
+  cells[2].textContent = domain;
+  var statusText = statusEl ? statusEl.options[statusEl.selectedIndex].text : 'Current';
+  var statusKey  = statusText.toLowerCase();
+  cells[4].innerHTML = '<span class="pill ' + (statusColors[statusKey]||'blue') + '">' + statusText + '</span>';
+
+  // Update row data-attributes for filtering
+  _editingRow.setAttribute('data-name',   name.toLowerCase());
+  _editingRow.setAttribute('data-tier',   tier);
+  _editingRow.setAttribute('data-status', statusKey);
+
+  closeModal('client-detail-modal');
+  document.body.style.overflow = '';
+  _editingRow = null;
+}
+
+// Close on backdrop click
+document.addEventListener('click', function(e) {
+  var modal = document.getElementById('client-detail-modal');
+  if (modal && e.target === modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    _editingRow = null;
+  }
+});
+
 // ── Auth guard ──
 (function(){
   var proto = window.location.protocol;
@@ -1111,5 +1212,8 @@ function signOut() {
   }
 })();
 </script>
+
+
+
 </body>
 </html>

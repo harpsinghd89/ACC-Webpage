@@ -211,7 +211,7 @@ footer{background:#060d1a;border-top:1px solid rgba(30,58,107,.5);
 .footer-sep{color:rgba(138,155,191,.3)}
 
 /* MODALS */
-.modal-overlay{display:none;position:fixed;inset:0;z-index:9000;
+.modal-overlay{display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:9000;
   background:rgba(5,12,24,.85);backdrop-filter:blur(8px);
   align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
@@ -544,7 +544,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 </footer>
 
 <!-- PRIVACY MODAL -->
-<div id="privacy-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="priv-title">
+<div id="privacy-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="priv-title">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('privacy-modal')" aria-label="Close privacy policy">&#x2715;</button>
     <h2 id="priv-title">Privacy Policy</h2>
@@ -576,7 +576,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 </div>
 
 <!-- ACCESSIBILITY STATEMENT MODAL -->
-<div id="a11y-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="a11y-title">
+<div id="a11y-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="a11y-title">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('a11y-modal')" aria-label="Close accessibility statement">&#x2715;</button>
     <h2 id="a11y-title">Accessibility Statement</h2>
@@ -599,7 +599,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 </div>
 
 <!-- TERMS OF SERVICE MODAL -->
-<div id="terms-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+<div id="terms-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="terms-title">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('terms-modal')" aria-label="Close terms of service">&#x2715;</button>
     <h2 id="terms-title">Terms of Service</h2>
@@ -630,43 +630,52 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
 <script src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js?v=12" id="ACCWidget"></script>
 <script>
+function openModal(id) {
+  var m = document.getElementById(id);
+  if (!m) return;
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ var c = m.querySelector('.modal-close'); if(c) c.focus(); }, 50);
+}
+function closeModal(id) {
+  var m = document.getElementById(id);
+  if (!m) return;
+  m.style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay').forEach(function(m) {
+      m.style.display = 'none';
+    });
+    document.body.style.overflow = '';
+  }
+});
+</script>
+<script>
 // ── Tier Data ──
 var TIERS = {
   t1: {
     label:'Tier 1 — Essential', name:'Essential', emp:'1–19 Employees',
     amount:'$69', annual:'or $690 / year (save 2 months)',
     monthly:69, tax_rate:0.13,
-    features:[
-      'AI Accessibility Widget & Scans',
-      'Accessibility Policy Template',
-      'Monthly Health Reports'
-    ]
+    features:['AI Accessibility Widget & Scans','Accessibility Policy Template','Monthly Health Reports']
   },
   t2: {
     label:'Tier 2 — Managed', name:'Managed', emp:'20–50 Employees',
     amount:'$199', annual:'or $1,990 / year (save 2 months)',
     monthly:199, tax_rate:0.13,
-    features:[
-      'AI Widget + Daily Health Scans',
-      'Automated AODA Staff Training Portal',
-      'Hosted Accessible Feedback Page',
-      '3-Year Compliance Roadmap',
-      'Filing Template Kit',
-      'Annual Evidence Binder'
-    ]
+    features:['AI Widget + Daily Health Scans','Automated AODA Staff Training Portal',
+      'Hosted Accessible Feedback Page','3-Year Compliance Roadmap',
+      'Filing Template Kit','Annual Evidence Binder']
   },
   t3: {
     label:'Tier 3 — Enterprise', name:'Enterprise', emp:'50+ Employees',
     amount:'Custom', annual:'Contact us for a tailored quote',
     monthly:null, tax_rate:0.13,
-    features:[
-      'AI + Human Remediation',
-      'Custom Staff Workshops',
-      'Integrated Feedback Systems',
-      'Multi-Year Accessibility Plan',
-      'Bespoke Policy Drafting',
-      'VPAT & Full Audit Defense'
-    ]
+    features:['AI + Human Remediation','Custom Staff Workshops',
+      'Integrated Feedback Systems','Multi-Year Accessibility Plan',
+      'Bespoke Policy Drafting','VPAT & Full Audit Defense']
   }
 };
 var currentTier = 't1';
@@ -691,15 +700,14 @@ function renderTier() {
   document.getElementById('tc-annual').textContent = t.annual;
   var ul = document.getElementById('tc-features');
   ul.innerHTML = t.features.map(function(f){ return '<li>' + f + '</li>'; }).join('');
-  // Show/hide payment form vs contact CTA for Enterprise
   var payWrap = document.getElementById('payment-wrap');
-  var t3Cta   = document.getElementById('t3-contact-cta');
+  var t3Cta = document.getElementById('t3-contact-cta');
   if (currentTier === 't3') {
     if (payWrap) payWrap.style.display = 'none';
-    if (t3Cta)   t3Cta.style.display   = 'block';
+    if (t3Cta) t3Cta.style.display = 'block';
   } else {
     if (payWrap) payWrap.style.display = '';
-    if (t3Cta)   t3Cta.style.display   = 'none';
+    if (t3Cta) t3Cta.style.display = 'none';
   }
   updateOrderSummary();
 }
@@ -714,15 +722,14 @@ function toggleTier() {
 function updateOrderSummary() {
   var t = TIERS[currentTier];
   if (!t.monthly) {
-    // Enterprise — no price calculation
     document.getElementById('os-plan-label').textContent = t.name + ' Plan';
     document.getElementById('os-plan-price').textContent = 'Custom';
     document.getElementById('os-tax').textContent = '—';
     document.getElementById('os-total').textContent = 'Custom';
     var snEl = document.getElementById('submit-note-amt');
     if (snEl) snEl.textContent = 'Custom';
-    var discRow = document.getElementById('os-discount-row');
-    if (discRow) discRow.classList.add('hidden-row');
+    var dr = document.getElementById('os-discount-row');
+    if (dr) dr.classList.add('hidden-row');
     return;
   }
   var base = t.monthly;
@@ -730,21 +737,17 @@ function updateOrderSummary() {
   var discounted = base - disc;
   var tax = Math.round(discounted * t.tax_rate * 100) / 100;
   var total = discounted + tax;
-
   document.getElementById('os-plan-label').textContent = t.name + ' Plan (monthly)';
   document.getElementById('os-plan-price').textContent = '$' + base.toFixed(2) + ' CAD';
   document.getElementById('os-tax').textContent = '$' + tax.toFixed(2) + ' CAD';
   document.getElementById('os-total').textContent = '$' + total.toFixed(2) + ' CAD';
   var snEl = document.getElementById('submit-note-amt');
   if (snEl) snEl.textContent = '$' + total.toFixed(2) + ' CAD';
-
-  var discRow = document.getElementById('os-discount-row');
+  var dr = document.getElementById('os-discount-row');
   if (disc > 0) {
-    discRow.classList.remove('hidden-row');
+    dr.classList.remove('hidden-row');
     document.getElementById('os-discount-val').textContent = '-$' + disc.toFixed(2);
-  } else {
-    discRow.classList.add('hidden-row');
-  }
+  } else { dr.classList.add('hidden-row'); }
 }
 
 // ── Discount codes ──
