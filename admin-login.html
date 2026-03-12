@@ -106,6 +106,8 @@ body{font-family:'Sora',sans-serif;background:#060d1a;color:var(--text);min-heig
       <button onclick="openModal('a11y-modal')" aria-haspopup="dialog">Accessibility</button>
       <span class="footer-sep" aria-hidden="true">|</span>
       <button onclick="openModal('privacy-modal')" aria-haspopup="dialog">Privacy Policy</button>
+    <span class="footer-sep" aria-hidden="true">|</span>
+    <button onclick="openModal('terms-modal')" aria-haspopup="dialog">Terms of Service</button>
       <span class="footer-sep" aria-hidden="true">|</span>
       <a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--muted)">Contact Us</a>
       <span class="footer-sep" aria-hidden="true">|</span>
@@ -228,39 +230,68 @@ async function doAdminLogin() {
     _attempts++;
     err.textContent = 'Incorrect credentials. Access denied. (Attempt ' + _attempts + ' of 5)';
     err.style.display = 'block';
-    btn.textContent = 'Access Admin Dashboard';
-    if (_attempts >= 3) document.getElementById('attempt-warn').style.display = 'block';
+extContent = 'Verify →';
+    btn.disabled = false;
     if (_attempts >= 5) {
       btn.disabled = true;
-      btn.textContent = 'Account Locked';
-      err.textContent = 'Too many failed attempts. Contact your administrator.';
-    } else {
-      btn.disabled = false;
+      err.textContent = 'Too many failed attempts. Please wait 15 minutes.';
     }
   }
 }
 
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') doAdminLogin();
-});
-
-
 function openModal(id) {
   var m = document.getElementById(id);
-  if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+  if (!m) return;
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ var c = m.querySelector('.modal-close'); if(c) c.focus(); }, 50);
 }
 function closeModal(id) {
   var m = document.getElementById(id);
-  if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
+  if (!m) return;
+  m.style.display = 'none';
+  document.body.style.overflow = '';
 }
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     document.querySelectorAll('.modal-overlay').forEach(function(m) {
-      if (m.style.display === 'flex') closeModal(m.id);
+      m.style.display = 'none';
     });
+    document.body.style.overflow = '';
   }
 });
-
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.classList && e.target.classList.contains('modal-overlay')) {
+    e.target.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+});
 </script>
+
+<!-- TERMS OF SERVICE MODAL -->
+<div id="terms-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('terms-modal')" aria-label="Close terms">&times;</button>
+    <h2 id="terms-title">Terms of Service</h2>
+    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Effective: January 1, 2026</p>
+    <span class="mlabel">Agreement</span>
+    <p>By subscribing to ACC services you agree to these terms. Services are provided on a month-to-month basis unless otherwise agreed in writing.</p>
+    <h3>1. Services</h3>
+    <p>ACC provides AODA accessibility compliance tools, training, auditing, and advisory services. Scope is defined by your selected tier.</p>
+    <h3>2. Payment</h3>
+    <p>Fees are billed monthly in advance. Overdue accounts are suspended after 14 days. No refunds for partial months.</p>
+    <h3>3. Your Responsibilities</h3>
+    <p>You are responsible for implementing recommendations and maintaining your website in compliance with AODA. ACC tools and reports support but do not guarantee compliance.</p>
+    <h3>4. Limitation of Liability</h3>
+    <p>ACC's liability is limited to fees paid in the prior 30 days. We are not liable for regulatory penalties arising from your non-compliance.</p>
+    <h3>5. Termination</h3>
+    <p>Either party may terminate with 30 days written notice. ACC may terminate immediately for non-payment or misuse.</p>
+    <h3>6. Governing Law</h3>
+    <p>These terms are governed by the laws of Ontario, Canada.</p>
+    <h3>7. Contact</h3>
+    <p>2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON L6H 5V1<br>
+    <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
+  </div>
+</div>
 </body>
 </html>
