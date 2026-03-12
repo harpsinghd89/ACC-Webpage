@@ -1886,7 +1886,12 @@ function copyCode(id) {
 }
 
 function downloadReport(id) {
-  alert('Downloading audit report: ' + id + '.pdf');
+  var a = document.createElement('a');
+  a.href = 'ACC_Audit_Report_SAMPLE.pdf';
+  a.download = 'ACC_Audit_Report_SAMPLE.pdf';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 function sendInstallEmail(client) {
@@ -2076,45 +2081,41 @@ function openTemplate(filename) {
 }
 
 function downloadTemplate(id) {
-  // When hosted: these will be real file URLs on your server
-  // For now show a helpful message
-  var names = {
-    'template-accessibility-policy': 'Accessibility Policy + Statement of Commitment',
-    'template-myap': 'Multi-Year Accessibility Plan',
-    'template-training-registry': 'Staff Training Registry',
-    'template-feedback-process': 'Accessible Feedback Process',
-    'template-accessible-formats': 'Accessible Formats Request Procedure',
-    'template-a11y-statement': 'Accessibility Statement (Web)',
-    'template-accommodation-job': 'Accommodation Clause — Job Postings',
-    'template-accommodation-offer': 'Accessibility Clause — Offer Letters',
-    'template-aoda-checklist': 'AODA Filing Checklist'
+  var fileMap = {
+    'template-disruption':            'ACC_Template_Disruption_Notice_SAMPLE.pdf',
+    'template-service-animal':        'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
+    'template-emergency-response':    'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
+    'template-myap':                  'ACC_Template_Disruption_Notice_SAMPLE.pdf',
+    'template-training-registry':     'ACC_Training_Certificate_SAMPLE.pdf',
+    'template-accessible-formats':    'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
+    'template-feedback-process':      'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
+    'template-accessibility-policy':  'ACC_Template_Disruption_Notice_SAMPLE.pdf',
+    'template-myap-full':             'ACC_Template_Disruption_Notice_SAMPLE.pdf',
+    'template-employment':            'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
+    'template-ict':                   'ACC_Template_Service_Animal_Policy_SAMPLE.pdf'
   };
-  var name = names[id] || id;
-  // Open the relevant hosted template or trigger download
-  if (id === 'template-emergency-response') { window.open('template-emergency-response.html', '_blank'); return; }
-  if (id === 'template-service-animal') { window.open('template-service-animal.html', '_blank'); return; }
-  if (id === 'template-disruption') { window.open('template-disruption.html', '_blank'); return; }
-  alert('Opening: ' + name + '\n\nThis template will be available for download once deployed to accessibilitycompliance.ca/templates/');
+  var file = fileMap[id] || 'ACC_Audit_Report_SAMPLE.pdf';
+  var a = document.createElement('a');
+  a.href = file;
+  a.download = file;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 function downloadAllTemplates() {
-  var msg = 'All 14 AODA Templates\n\nThe following templates are available:\n\n';
-  msg += '1. Accessibility Policy + Statement of Commitment\n';
-  msg += '2. Multi-Year Accessibility Plan\n';
-  msg += '3. Staff Training Registry\n';
-  msg += '4. Accessible Feedback Process\n';
-  msg += '5. Accessible Formats Request Procedure\n';
-  msg += '6. Accessibility Statement (Web)\n';
-  msg += '7. Accommodation Clause - Job Postings\n';
-  msg += '8. Accessibility Clause - Offer Letters\n';
-  msg += '9. Employee Emergency Response Plan\n';
-  msg += '10. Service Animal & Support Person Policy\n';
-  msg += '11. Notice of Temporary Disruption\n';
-  msg += '12. AODA Filing Checklist\n';
-  msg += '13. Compliance Readiness Letter\n';
-  msg += '14. Scope of Responsibility Acknowledgment\n\n';
-  msg += 'Templates 9, 10, and 11 open directly in your browser.\nFull ZIP download available once deployed to your server.';
-  alert(msg);
+  var files = [
+    'ACC_Template_Disruption_Notice_SAMPLE.pdf',
+    'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
+    'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf'
+  ];
+  files.forEach(function(f, i) {
+    setTimeout(function() {
+      var a = document.createElement('a');
+      a.href = f; a.download = f;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }, i * 400);
+  });
 }
 
 // -- Payment Method --
@@ -2158,16 +2159,14 @@ function saveBillingAddress() {
 // ── Scope acknowledgement ──
 function signScopeAck() {
   var btn = document.getElementById('scope-ack-btn');
-  if (btn) { btn.textContent = '✓ Signed'; btn.disabled = true; btn.style.background = 'rgba(56,217,169,.15)'; btn.style.color = '#38d9a9'; btn.style.borderColor = 'rgba(56,217,169,.3)'; }
+  if (btn) {
+    btn.textContent = '✓ Signed';
+    btn.disabled = true;
+    btn.style.background = 'rgba(56,217,169,.15)';
+    btn.style.color = '#38d9a9';
+    btn.style.borderColor = 'rgba(56,217,169,.3)';
+  }
   showToast('Scope acknowledgement signed and saved to your binder.');
-}
-
-// ── Readiness letter ──
-function generateReadinessLetter() {
-  var today = new Date();
-  var month = today.toLocaleDateString('en-CA', {month:'long'});
-  var year = today.getFullYear();
-  showToast('Generating Compliance Readiness Letter… downloading shortly.');
 }
 </script>
 </body>
