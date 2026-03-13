@@ -616,17 +616,23 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('add-client-modal')" aria-label="Close">&#10005;</button>
     <h2>&#128101; Add New Client</h2>
-    <div class="fgroup"><label for="nc-name">Business Name</label><input class="finput" id="nc-name" placeholder="e.g. Acme Corp Inc."></div>
-    <div class="fgroup"><label for="nc-domain">Domain</label><input class="finput" id="nc-domain" placeholder="e.g. acmecorp.ca"></div>
-    <div class="fgroup"><label for="nc-email">Contact Email</label><input class="finput" id="nc-email" type="email" placeholder="contact@company.ca"></div>
-    <div class="fgroup"><label for="nc-tier">Tier</label>
-      <select class="finput" id="nc-tier">
-        <option value="1">Tier 1 — Essential ($69/mo)</option>
-        <option value="2">Tier 2 — Managed ($199/mo)</option>
-        <option value="3">Tier 3 — Enterprise (Custom)</option>
-      </select>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fgroup"><label>Business Name *</label><input class="finput" id="nc-name" placeholder="e.g. Acme Corp Inc."></div>
+      <div class="fgroup"><label>Domain</label><input class="finput" id="nc-domain" placeholder="e.g. acmecorp.ca"></div>
+      <div class="fgroup"><label>Contact Email *</label><input class="finput" id="nc-email" type="email" placeholder="contact@company.ca"></div>
+      <div class="fgroup"><label>Phone</label><input class="finput" id="nc-phone" type="tel" placeholder="(416) 555-0100"></div>
+      <div class="fgroup"><label>Contact Name</label><input class="finput" id="nc-contact" placeholder="Jane Smith"></div>
+      <div class="fgroup"><label>Tier</label>
+        <select class="finput" id="nc-tier">
+          <option value="1">Tier 1 — Essential ($69/mo)</option>
+          <option value="2">Tier 2 — Managed ($199/mo)</option>
+          <option value="3">Tier 3 — Enterprise (Custom)</option>
+        </select>
+      </div>
+      <div class="fgroup"><label>Start Date</label><input class="finput" id="nc-start" type="date"></div>
+      <div class="fgroup"><label>Renewal Date</label><input class="finput" id="nc-renewal" type="date"></div>
     </div>
-    <div class="btn-row" style="margin-top:8px">
+    <div class="btn-row" style="margin-top:16px">
       <button class="btn-sm btn-primary" onclick="addClient()">&#10003; Create Client</button>
       <button class="btn-sm btn-ghost" onclick="closeModal('add-client-modal')">Cancel</button>
     </div>
