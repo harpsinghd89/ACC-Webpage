@@ -265,1398 +265,512 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-</head>
-<body style="background:#0a1628 !important;color:#e8edf8 !important;font-family:Sora,sans-serif">
-
-<a href="#dash-content" id="skip-nav" data-acc-skip="1">Skip to main content</a>
-
-<div class="dash-wrap" style="background:#0a1628">
-
-  <!-- ── TOPBAR ── -->
-  <header class="topbar" role="banner">
-    <button class="hamburger-dash" id="ham-dash" aria-label="Toggle sidebar" onclick="toggleSidebar()">
-      <span></span><span></span><span></span>
-    </button>
-    <a href="index.html" class="topbar-logo" aria-label="ACC Home">
-      <div class="topbar-logo-img" aria-hidden="true">
-        <img src="data:image/png;base64,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" alt="" width="28" height="28"/>
-      </div>
-      <span class="topbar-logo-text">ACC Inc.&#x2122;</span>
-    </a>
-    <span class="topbar-title" id="topbar-title" aria-live="polite">Dashboard</span>
-    <div class="topbar-mode" id="mode-indicator">
-      <span class="dot"></span>
-      <span id="mode-label">Client</span>
-    </div>
-    <div class="topbar-user">
-      <div class="topbar-avatar" id="user-avatar" aria-hidden="true">CL</div>
-      <span id="user-name">Jane Smith</span>
-    </div>
-    <button class="topbar-logout" onclick="window.location.href='login.html'" aria-label="Sign out">
-      Sign Out
-    </button>
-  </header>
-
-  <!-- ── SIDEBAR ── -->
-  <nav class="sidebar" id="sidebar" aria-label="Dashboard navigation">
-
-    <!-- CLIENT NAV -->
-    <div id="client-nav">
-      <div class="sidebar-section">
-        <span class="sidebar-label">Overview</span>
-        <button class="nav-item active" onclick="showPanel('overview')" aria-current="page">
-          <span class="nav-icon" aria-hidden="true">&#9962;</span> Dashboard
-        </button>
-        <button class="nav-item" onclick="showPanel('widget')">
-          <span class="nav-icon" aria-hidden="true">&#9965;</span> Widget Settings
-        </button>
-        <button class="nav-item" onclick="showPanel('embed')">
-          <span class="nav-icon" aria-hidden="true">&#128250;</span> Embed Code
-        </button>
-      </div>
-      <div class="sidebar-section">
-        <span class="sidebar-label">Compliance</span>
-        <button class="nav-item" onclick="showPanel('reports')">
-          <span class="nav-icon" aria-hidden="true">&#128202;</span> Audit Reports
-          <span class="nav-badge">3</span>
-        </button>
-        <button class="nav-item" onclick="showPanel('evidence')">
-          <span class="nav-icon" aria-hidden="true">&#128218;</span> Evidence Binder
-        </button>
-        <button class="nav-item" onclick="showPanel('roadmap')">
-          <span class="nav-icon" aria-hidden="true">&#128506;</span> 3-Year Roadmap
-        </button>
-        <button class="nav-item" onclick="showPanel('standards')">
-          <span class="nav-icon" aria-hidden="true">&#128203;</span> Template Standards
-        </button>
-      </div>
-      <div class="sidebar-section">
-        <span class="sidebar-label">Training & Feedback</span>
-        <button class="nav-item" onclick="showPanel('training')">
-          <span class="nav-icon" aria-hidden="true">&#127891;</span> Training Logs
-        </button>
-        <button class="nav-item" onclick="showPanel('feedback')">
-          <span class="nav-icon" aria-hidden="true">&#128172;</span> Feedback Logs
-        </button>
-        <button class="nav-item" onclick="showPanel('a11y-stmt')">
-          <span class="nav-icon" aria-hidden="true">&#9855;</span> Accessibility Stmt
-        </button>
-      </div>
-      <div class="sidebar-section">
-        <span class="sidebar-label">Account</span>
-        <button class="nav-item" onclick="showPanel('account')">
-          <span class="nav-icon" aria-hidden="true">&#128100;</span> Account & Billing
-        </button>
-      </div>
-    </div>
-
-    <!-- ADMIN NAV -->
-    <div id="admin-nav" style="display:none">
-      <div class="sidebar-section">
-        <span class="sidebar-label">Admin</span>
-        <button class="nav-item active" onclick="showPanel('admin-overview')">
-          <span class="nav-icon" aria-hidden="true">&#9962;</span> Overview
-        </button>
-        <button class="nav-item" onclick="showPanel('admin-clients')">
-          <span class="nav-icon" aria-hidden="true">&#128101;</span> Clients
-          <span class="nav-badge">12</span>
-        </button>
-        <button class="nav-item" onclick="showPanel('admin-billing')">
-          <span class="nav-icon" aria-hidden="true">&#128179;</span> Billing
-        </button>
-        <button class="nav-item" onclick="showPanel('admin-discounts')">
-          <span class="nav-icon" aria-hidden="true">&#127991;</span> Discount Codes
-        </button>
-        <button class="nav-item" onclick="showPanel('admin-invoices')">
-          <span class="nav-icon" aria-hidden="true">&#128196;</span> Custom Invoices
-        </button>
-        <button class="nav-item" onclick="showPanel('admin-widgets')">
-          <span class="nav-icon" aria-hidden="true">&#9965;</span> Widget Deploy
-        </button>
-        <button class="nav-item" onclick="showPanel('admin-access')">
-          <span class="nav-icon" aria-hidden="true">&#128274;</span> Access Control
-        </button>
-      </div>
-    </div>
-
-  </nav>
-
-  <!-- ── MAIN CONTENT ── -->
-  <main class="dash-main" style="background:#0a1628" id="dash-content" role="main">
-
-    <!-- ════════ CLIENT PANELS ════════ -->
-
-    <!-- OVERVIEW -->
-    <div class="panel active" id="panel-overview">
-      <div class="page-header">
-        <h1 style="color:#ffffff">&#128075; Good evening, Jane</h1>
-        <p>Your website <strong>acmecorp.ca</strong> is active and monitored. Here&rsquo;s your compliance snapshot.</p>
-      </div>
-      <div class="stat-grid">
-        <div class="stat-card teal">
-          <div class="stat-label">Accessibility Score</div>
-          <div class="stat-value">93</div>
-          <div class="stat-sub">/ 100 &mdash; Last scanned 2h ago</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Auto-Fixes Applied</div>
-          <div class="stat-value">0</div>
-          <div class="stat-sub">No issues detected</div>
-        </div>
-        <div class="stat-card warn">
-          <div class="stat-label">Open Warnings</div>
-          <div class="stat-value">1</div>
-          <div class="stat-sub">Contrast check in progress</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Days to AODA Deadline</div>
-          <div class="stat-value" id="days-left">296</div>
-          <div class="stat-sub">Dec 31, 2026</div>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;min-width:0">
-        <div class="card">
-          <h2>&#127919; WCAG Conformance</h2>
-          <div class="score-ring">
-            <svg class="ring-svg" width="80" height="80" viewBox="0 0 80 80" aria-hidden="true">
-              <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(30,58,107,.6)" stroke-width="8"/>
-              <circle cx="40" cy="40" r="34" fill="none" stroke="#38d9a9" stroke-width="8"
-                stroke-dasharray="213.6" stroke-dashoffset="57" stroke-linecap="round"
-                transform="rotate(-90 40 40)"/>
-            </svg>
-            <div class="ring-info">
-              <div class="big">93%</div>
-              <div class="sub">WCAG 2.1 AA</div>
-              <div class="sub" style="margin-top:4px">0 Critical issues</div>
-            </div>
-          </div>
-          <div style="margin-top:16px">
-            <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
-              <span style="color:var(--muted)">Perceivable</span><span>100%</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
-            <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
-              <span style="color:var(--muted)">Operable</span><span>95%</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" style="width:95%"></div></div>
-            <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
-              <span style="color:var(--muted)">Understandable</span><span>90%</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill warn" style="width:90%"></div></div>
-            <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
-              <span style="color:var(--muted)">Robust</span><span>88%</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill warn" style="width:88%"></div></div>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2>&#128203; Recent Activity</h2>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:8px;height:8px;border-radius:50%;background:var(--teal);margin-top:6px;flex-shrink:0"></div>
-              <div><strong style="font-size:.82rem">Monthly Audit Report generated</strong><div style="font-size:.75rem;color:var(--muted)">March 1, 2026</div></div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px;flex-shrink:0"></div>
-              <div><strong style="font-size:.82rem">Widget updated to v12</strong><div style="font-size:.75rem;color:var(--muted)">Feb 28, 2026</div></div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:8px;height:8px;border-radius:50%;background:var(--warn);margin-top:6px;flex-shrink:0"></div>
-              <div><strong style="font-size:.82rem">1 contrast warning detected</strong><div style="font-size:.75rem;color:var(--muted)">Feb 25, 2026</div></div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:8px;height:8px;border-radius:50%;background:var(--teal);margin-top:6px;flex-shrink:0"></div>
-              <div><strong style="font-size:.82rem">Staff training completed: 3 employees</strong><div style="font-size:.75rem;color:var(--muted)">Feb 20, 2026</div></div>
-            </div>
-            <div style="display:flex;gap:12px;align-items:flex-start">
-              <div style="width:8px;height:8px;border-radius:50%;background:var(--teal);margin-top:6px;flex-shrink:0"></div>
-              <div><strong style="font-size:.82rem">Evidence Binder scheduled: Dec 1, 2026</strong><div style="font-size:.75rem;color:var(--muted)">Feb 1, 2026</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- WIDGET SETTINGS -->
-    <div class="panel" id="panel-widget">
-      <div class="page-header">
-        <h1>&#9965; Widget Settings</h1>
-        <p>Customize the ACC Accessibility Widget for your website. Changes apply within 15 minutes.</p>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-        <div class="card">
-          <h2>&#127775; Appearance</h2>
-          <div class="fgroup">
-            <label for="w-position">Widget Position</label>
-            <select class="finput" id="w-position" style="width:100%">
-              <option>Bottom Right</option><option>Bottom Left</option>
-              <option>Top Right</option><option>Top Left</option>
-            </select>
-          </div>
-          <div class="fgroup">
-            <label for="w-color">Accent Colour</label>
-            <div style="display:flex;gap:8px;align-items:center">
-              <input type="color" id="w-color" value="#4f8ef7" style="width:44px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none">
-              <input class="finput" type="text" value="#4f8ef7" style="flex:1" placeholder="#4f8ef7"/>
-            </div>
-          </div>
-          <div class="fgroup">
-            <label for="w-lang">Default Language</label>
-            <select class="finput" id="w-lang" style="width:100%">
-              <option>English</option><option>French</option><option>Bilingual (EN/FR)</option>
-            </select>
-          </div>
-        </div>
-        <div class="card">
-          <h2>&#127895; Features</h2>
-          <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Profiles</strong><span>Disability-optimized presets</span></div>
-            <label class="toggle" aria-label="Toggle profiles"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Auto-Fix Engine</strong><span>Disabled for client-facing pages</span></div>
-            <label class="toggle" aria-label="Toggle auto-fix"><input type="checkbox"><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Contrast Checker</strong><span>Warn on low contrast text</span></div>
-            <label class="toggle" aria-label="Toggle contrast checker"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Reading Guide</strong><span>Focus line for reading support</span></div>
-            <label class="toggle" aria-label="Toggle reading guide"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Audit History</strong><span>Show history tab to visitors</span></div>
-            <label class="toggle" aria-label="Toggle audit history"><input type="checkbox"><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Feedback Capture</strong><span>Collect accessibility feedback via widget</span></div>
-            <label class="toggle" aria-label="Toggle feedback capture"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-          </div>
-        </div>
-      </div>
-      <div class="btn-row" style="margin-top:8px">
-        <button class="btn-sm btn-primary" onclick="alert('Widget settings saved!')">Save Changes</button>
-        <button class="btn-sm btn-ghost" onclick="alert('Settings reset to defaults.')">Reset to Defaults</button>
-      </div>
-    </div>
-
-    <!-- EMBED CODE -->
-    <div class="panel" id="panel-embed">
-      <div class="page-header">
-        <h1>&#128250; Embed Code</h1>
-        <p>Copy and paste this snippet just before the <code style="color:var(--teal)">&lt;/body&gt;</code> closing tag on every page of your website.</p>
-      </div>
-      <div class="card">
-        <h2>&#128196; Your Widget Embed Code</h2>
-        <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">This code is locked to your registered domain <strong style="color:var(--text)">acmecorp.ca</strong>. It will not activate on other domains.</p>
-        <div class="code-block">
-          <button class="code-copy" onclick="copyCode('embed-code')" aria-label="Copy embed code">Copy</button>
-          <pre id="embed-code">&lt;!-- ACC Accessibility Widget | acmecorp.ca --&gt;
-&lt;script
-  src="https://cdn.accessibilitycompliance.ca/widget/ACC-Widget.js"
-  id="ACCWidget"
-  data-domain="acmecorp.ca"
-  data-client="CLI-00142"
-  data-tier="1"
-&gt;&lt;/script&gt;</pre>
-        </div>
-        <h3>WordPress Plugin</h3>
-        <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Prefer a plugin? Add this to your <strong>functions.php</strong> or use a code snippet plugin:</p>
-        <div class="code-block">
-          <button class="code-copy" onclick="copyCode('wp-code')" aria-label="Copy WordPress code">Copy</button>
-          <pre id="wp-code">add_action('wp_footer', function() { ?>
-  &lt;script src="https://cdn.accessibilitycompliance.ca/widget/ACC-Widget.js"
-  id="ACCWidget" data-domain="acmecorp.ca"
-  data-client="CLI-00142"&gt;&lt;/script&gt;
-&lt;?php });</pre>
-        </div>
-        <h3>Installation Instructions</h3>
-        <ol style="font-size:.85rem;color:var(--muted);padding-left:20px;line-height:2">
-          <li>Copy the embed code above.</li>
-          <li>Open your website's HTML template or CMS theme editor.</li>
-          <li>Paste the code immediately before the <code style="color:var(--teal)">&lt;/body&gt;</code> tag.</li>
-          <li>Save and publish your changes.</li>
-          <li>Visit your site and look for the ACC accessibility icon in the bottom-right corner.</li>
-          <li>Return to this dashboard — your widget status will update within 15 minutes.</li>
-        </ol>
-        <div style="margin-top:16px">
-          <a class="dl-btn" href="#" onclick="alert('Installation guide PDF downloaded.')">
-            &#8659; Download Installation Guide (PDF)
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- AUDIT REPORTS -->
-    <div class="panel" id="panel-reports">
-      <div class="page-header">
-        <h1>&#128202; Audit Reports</h1>
-        <p>Monthly WCAG 2.1 AA compliance reports generated automatically on the 1st of each month. Real-time monitoring runs every 24 hours.</p>
-      </div>
-      <div class="card">
-        <h2>&#128202; Monthly Reports</h2>
-        <table class="data-table" aria-label="Monthly audit reports">
-          <thead>
-            <tr>
-              <th scope="col">Report Period</th>
-              <th scope="col">Score</th>
-              <th scope="col">Issues</th>
-              <th scope="col">Status</th>
-              <th scope="col">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>March 2026</strong><div style="font-size:.72rem;color:var(--muted)">Generated Mar 1, 2026</div></td>
-              <td><span style="font-family:var(--mono);color:var(--teal)">93/100</span></td>
-              <td>1 warning, 0 critical</td>
-              <td><span class="pill green">Current</span></td>
-              <td><div class="btn-row"><a class="dl-btn" href="#" onclick="downloadReport('march-2026')">&#8659; PDF</a></div></td>
-            </tr>
-            <tr>
-              <td><strong>February 2026</strong><div style="font-size:.72rem;color:var(--muted)">Generated Feb 1, 2026</div></td>
-              <td><span style="font-family:var(--mono);color:var(--teal)">91/100</span></td>
-              <td>2 warnings, 0 critical</td>
-              <td><span class="pill blue">Archived</span></td>
-              <td><div class="btn-row"><a class="dl-btn" href="#" onclick="downloadReport('feb-2026')">&#8659; PDF</a></div></td>
-            </tr>
-            <tr>
-              <td><strong>January 2026</strong><div style="font-size:.72rem;color:var(--muted)">Generated Jan 1, 2026</div></td>
-              <td><span style="font-family:var(--mono);color:var(--warn)">88/100</span></td>
-              <td>4 warnings, 0 critical</td>
-              <td><span class="pill blue">Archived</span></td>
-              <td><div class="btn-row"><a class="dl-btn" href="#" onclick="downloadReport('jan-2026')">&#8659; PDF</a></div></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card">
-        <h2>&#128270; Real-Time Monitor</h2>
-        <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
-          <span class="pill green">Live</span>
-          <span style="font-size:.82rem;color:var(--muted)">Last scan: 2 hours ago &mdash; acmecorp.ca</span>
-          <button class="btn-sm btn-ghost" style="margin-left:auto" onclick="alert('Scan initiated. Results in ~60 seconds.')">Run Scan Now</button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-          <div style="text-align:center;padding:16px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--teal)">0</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Critical</div>
-          </div>
-          <div style="text-align:center;padding:16px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--warn)">1</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Warnings</div>
-          </div>
-          <div style="text-align:center;padding:16px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--accent)">16</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:4px">ARIA Labels</div>
-          </div>
-          <div style="text-align:center;padding:16px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--teal)">93</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Score</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- EVIDENCE BINDER -->
-    <div class="panel" id="panel-evidence">
-      <div class="page-header">
-        <h1>&#128218; Evidence Binder</h1>
-        <p>Your annual Evidence Binder is automatically compiled on December 1st, aggregating all monthly reports, training logs, and feedback records for the calendar year.</p>
-      </div>
-      <div class="card">
-        <h2>&#128197; 2026 Evidence Binder</h2>
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
-          <span class="pill yellow">In Progress</span>
-          <span style="font-size:.82rem;color:var(--muted)">Compiling automatically &mdash; Ready December 1, 2026</span>
-        </div>
-        <div style="margin-bottom:20px">
-          <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px">
-            <span style="color:var(--muted)">Year progress</span><span>3 / 12 months compiled</span>
-          </div>
-          <div class="progress-bar" style="height:10px"><div class="progress-fill" style="width:25%"></div></div>
-        </div>
-        <h3>Contents</h3>
-        <table class="data-table" aria-label="Evidence binder contents">
-          <thead><tr><th>Component</th><th>Status</th><th>Count</th></tr></thead>
-          <tbody>
-            <tr><td>Monthly Audit Reports</td><td><span class="pill green">3 compiled</span></td><td>3 / 12</td></tr>
-            <tr><td>Staff Training Records</td><td><span class="pill green">Current</span></td><td>3 completions</td></tr>
-            <tr><td>Feedback Logs</td><td><span class="pill green">Current</span></td><td>7 entries</td></tr>
-            <tr><td>Accessibility Statement</td><td><span class="pill green">Published</span></td><td>1</td></tr>
-            <tr><td>3-Year Compliance Roadmap</td><td><span class="pill green">Current</span></td><td>2026–2028</td></tr>
-            <tr><td>Widget Health Logs</td><td><span class="pill green">Active</span></td><td>Daily</td></tr>
-            <tr><td>Remediation Records</td><td><span class="pill green">Current</span></td><td>2 entries</td></tr>
-            <tr><td>Template Standards Used</td><td><span class="pill green">Current</span></td><td>6 templates</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card">
-        <h2>&#128218; Previous Binders</h2>
-        <p style="font-size:.85rem;color:var(--muted)">No previous binders yet. Your first will be generated December 1, 2026.</p>
-      </div>
-      <div class="card">
-        <h2>&#128196; Binder Preview &amp; Downloads</h2>
-        <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px">Preview the current year binder components individually or download the full compiled binder when complete on Dec 1, 2026.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:10px">
-          <a class="dl-btn" href="#" onclick="alert('Downloading partial binder (Jan–Mar 2026)...')">&#8659; Partial Binder (Jan–Mar)</a>
-          <a class="dl-btn" href="#" onclick="alert('Downloading audit reports bundle...')">&#8659; Audit Reports Bundle</a>
-          <a class="dl-btn" href="#" onclick="alert('Downloading 3-Year Roadmap PDF...')">&#8659; 3-Year Roadmap</a>
-          <a class="dl-btn" href="#" onclick="alert('Downloading training records...')">&#8659; Training Records</a>
-          <a class="dl-btn" href="#" onclick="alert('Downloading feedback log...')">&#8659; Feedback Log</a>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3-YEAR ROADMAP -->
-    <div class="panel" id="panel-roadmap">
-      <div class="page-header">
-        <h1>&#128506; 3-Year Compliance Roadmap</h1>
-        <p>Your personalized AODA compliance roadmap covering 2026–2028 milestones.</p>
-      </div>
-      <div class="card">
-        <h2>&#128197; 2026 — Foundation Year</h2>
-        <span class="pill yellow" style="margin-bottom:16px;display:inline-flex">Dec 31, 2026 AODA Deadline</span>
-        <table class="data-table" aria-label="2026 roadmap milestones">
-          <thead><tr><th>Milestone</th><th>Target</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>ACC Widget deployed</td><td>Jan 2026</td><td><span class="pill green">Done</span></td></tr>
-            <tr><td>Initial WCAG audit</td><td>Jan 2026</td><td><span class="pill green">Done</span></td></tr>
-            <tr><td>Accessibility Statement published</td><td>Feb 2026</td><td><span class="pill green">Done</span></td></tr>
-            <tr><td>Staff accessibility training (all)</td><td>Mar 2026</td><td><span class="pill yellow">In Progress</span></td></tr>
-            <tr><td>WCAG 2.1 AA full conformance</td><td>Jun 2026</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>Annual Evidence Binder</td><td>Dec 1, 2026</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>AODA filing deadline</td><td>Dec 31, 2026</td><td><span class="pill blue">Planned</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card">
-        <h2>&#128197; 2027 — Optimization Year</h2>
-        <table class="data-table" aria-label="2027 roadmap milestones">
-          <thead><tr><th>Milestone</th><th>Target</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>WCAG 2.2 gap analysis</td><td>Q1 2027</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>User testing with assistive tech users</td><td>Q2 2027</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>Advanced staff training refresh</td><td>Q3 2027</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>Annual Evidence Binder 2027</td><td>Dec 1, 2027</td><td><span class="pill blue">Planned</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card">
-        <h2>&#128197; 2028 — Leadership Year</h2>
-        <table class="data-table" aria-label="2028 roadmap milestones">
-          <thead><tr><th>Milestone</th><th>Target</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>WCAG 2.2 full conformance</td><td>Q1 2028</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>Internal accessibility champion program</td><td>Q2 2028</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>Annual Evidence Binder 2028</td><td>Dec 1, 2028</td><td><span class="pill blue">Planned</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <a class="dl-btn" href="#" onclick="alert('Roadmap PDF downloaded.')">&#8659; Download Roadmap PDF</a>
-    </div>
-
-    <!-- TEMPLATE STANDARDS -->
-    <div class="panel" id="panel-standards">
-      <div class="page-header">
-        <h1>&#128203; Template Standards</h1>
-        <p>All 11 AODA filing requirements. Each template is branded with the ACC logo and WCAG 2.1 AA footer. Your Compliance Readiness Letter and signed Scope Acknowledgment are retained by ACC as legal records &mdash; they are <strong style="color:#38d9a9">not included in your Evidence Binder</strong> (they are ACC&rsquo;s documentation, not yours). The Binder contains all deliverables ACC provided <em>to you</em>.</p>
-      </div>
-      <div class="card">
-        <h2>&#128196; AODA Templates — All 11 Requirements + Extras</h2>
-        <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:16px">
-          <strong style="color:#e8edf8">&#9989; ACC delivers</strong> each document below.
-          <strong style="color:#e8edf8">&#128100; Your duty</strong> is to approve, distribute, and implement internally.
-          Sign the annual Scope Acknowledgment (row 14) to confirm your obligations — this protects both parties.
-        </p>
-        <div style="overflow-x:auto">
-          <table class="data-table" aria-label="AODA templates and scope">
-            <thead>
-              <tr>
-                <th style="min-width:30px">#</th>
-                <th style="min-width:180px">Template</th>
-                <th style="min-width:160px">&#9989; ACC Delivers</th>
-                <th style="min-width:150px">&#128100; Your Duty</th>
-                <th>Format</th>
-                <th>Download</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>1</td><td><strong>Accessibility Policy + Statement of Commitment</strong></td><td>Draft policy aligned to AODA</td><td>Approve &amp; adopt as company bylaw</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessibility-policy')">&#8659;</a></td></tr>
-              <tr><td>2</td><td><strong>Multi-Year Accessibility Plan</strong></td><td>Create 3-year roadmap</td><td>Review annually with leadership</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-myap')">&#8659;</a></td></tr>
-              <tr><td>3</td><td><strong>Staff Training Registry</strong></td><td>Provide modules, maintain registry</td><td>Ensure all employees complete training</td><td>XLSX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-training-registry')">&#8659;</a></td></tr>
-              <tr><td>4</td><td><strong>Accessible Feedback Process</strong></td><td>Build WCAG-compliant feedback form</td><td>Respond to accessibility inquiries</td><td>DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-feedback-process')">&#8659;</a></td></tr>
-              <tr><td>5</td><td><strong>Accessible Formats Request Procedure</strong></td><td>Available as an additional service from ACC — contact us for pricing</td><td>Notify ACC when print materials need conversion</td><td>DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessible-formats')">&#8659;</a></td></tr>
-              <tr><td>6</td><td><strong>Accessibility Statement (Web)</strong></td><td>Full AI remediation + monthly audits</td><td>Notify ACC before major site changes</td><td>HTML / DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-a11y-statement')">&#8659;</a></td></tr>
-              <tr><td>7</td><td><strong>Accommodation Clause — Job Postings</strong></td><td>Provide mandatory legal clause text</td><td>Paste into all job advertisements</td><td>DOCX / TXT</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-job')">&#8659;</a></td></tr>
-              <tr><td>8</td><td><strong>Accessibility Clause — Offer Letters</strong></td><td>Provide clause for offer letters</td><td>Include in all new employment contracts</td><td>DOCX / TXT</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-offer')">&#8659;</a></td></tr>
-              <tr><td>9</td><td><strong>Employee Emergency Response Plan</strong></td><td>Provide template &amp; guide</td><td>Complete for each employee with a disability</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-emergency-response.html')">&#8659;</a></td></tr>
-              <tr><td>10</td><td><strong>Service Animal &amp; Support Person Policy</strong></td><td>Include protocols in training manual</td><td>Ensure staff do not bar entry</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-service-animal.html')">&#8659;</a></td></tr>
-              <tr><td>11</td><td><strong>Notice of Temporary Disruption</strong></td><td>Provide digital &amp; printable signage</td><td>Post when lift or power-door fails</td><td>PDF / PNG</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-disruption.html')">&#8659;</a></td></tr>
-              <tr style="border-top:2px solid rgba(79,142,247,.2)"><td>+</td><td><strong>AODA Filing Checklist</strong><div style="font-size:.72rem;color:#8a9bbf">All 11 questions pre-submission</div></td><td>Provide pre-filled checklist</td><td>Submit via Ontario government portal by Dec 31</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-aoda-checklist')">&#8659;</a></td></tr>
-              <tr><td>+</td><td><strong>Compliance Readiness Letter</strong><div style="font-size:.72rem;color:#8a9bbf">Auto-generated Dec 1 — covers your service period</div></td><td>Issue letter confirming ACC services delivered</td><td>Include in filing binder</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="generateReadinessLetter()">&#8659; Generate</a></td></tr>
-              <tr><td>+</td><td><strong>Scope of Responsibility Acknowledgment</strong><div style="font-size:.72rem;color:#8a9bbf">Sign annually — protects both parties legally</div></td><td>Prepare acknowledgment document</td><td>&#9989; Sign below to confirm your duties</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-scope-acknowledgment.html')">&#8659;</a></td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Annual Sign-off -->
-        <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.2);border-radius:10px;padding:18px;margin-top:20px" id="scope-signoff">
-          <strong style="font-size:.88rem;color:#38d9a9;display:block;margin-bottom:8px">&#9998; Annual Scope Acknowledgment — 2026</strong>
-          <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:14px">By signing below, <strong style="color:#e8edf8">Acme Corp Inc.</strong> confirms it has reviewed the Scope of Responsibility table and understands its operational duties for the 2026 AODA filing period.</p>
-          <div id="signoff-unsigned">
-            <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px">
-              <input type="checkbox" id="scope-chk" style="margin-top:3px;accent-color:#4f8ef7;width:16px;height:16px"/>
-              <label for="scope-chk" style="font-size:.82rem;color:#8a9bbf;cursor:pointer">
-                I, <strong style="color:#e8edf8">Jane Smith</strong> (authorized representative of Acme Corp Inc.), confirm that I have read and understood the Scope of Responsibility. I acknowledge that Accessibility Compliance Canada Inc. is responsible only for the deliverables listed, and that operational implementation is the responsibility of our organization.
-              </label>
-            </div>
-            <button class="btn-sm btn-primary" onclick="signScopeAck()">&#9989; Sign &amp; Confirm — 2026</button>
-          </div>
-          <div id="signoff-signed" style="display:none">
-            <span class="pill green" style="font-size:.8rem">&#9989; Signed by Jane Smith — <span id="signoff-date"></span></span>
-            <p style="font-size:.78rem;color:#8a9bbf;margin-top:8px">A copy has been added to your 2026 Evidence Binder.</p>
-          </div>
-        </div>
-
-        <div class="btn-row" style="margin-top:16px">
-          <a class="dl-btn" href="#" onclick="downloadAllTemplates()">&#8659; Download All Templates (ZIP)</a>
-        </div>
-      </div>
-
-      <!-- Annual reminder info -->
-      <div class="card">
-        <h2>&#128197; Annual Compliance Calendar</h2>
-        <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:16px">Automated compliance reminder emails are sent annually from <a href="/cdn-cgi/l/email-protection#6a0b09090f191903080306031e132a3113051f180e05070b03043744090b" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a>. No action required — ACC manages your filing deadline notifications.</p>
-        <table class="data-table" aria-label="Compliance calendar">
-          <thead><tr><th>Date</th><th>Event</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>Dec 1, 2026</td><td>AODA Filing Reminder — First Notice</td><td><span class="pill blue">Scheduled</span></td></tr>
-            <tr><td>Dec 15, 2026</td><td>AODA Filing Reminder — Deadline Approaching</td><td><span class="pill blue">Scheduled</span></td></tr>
-            <tr><td>Dec 28, 2026</td><td>AODA Filing Reminder — Final Notice</td><td><span class="pill blue">Scheduled</span></td></tr>
-            <tr><td>Dec 31, 2026</td><td>AODA Accessibility Report Filing Deadline</td><td><span class="pill yellow">Upcoming</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <!-- TRAINING PORTAL -->
-    <div class="panel" id="panel-training">
-      <div class="page-header">
-        <h1>&#127891; Training Portal</h1>
-        <p>Assign AODA training modules to your team. Each employee completes the training independently and receives a certificate on passing the quiz.</p>
-      </div>
-
-      <div class="card">
-        <h2>&#128279; Your Organization Training Link</h2>
-        <p style="font-size:.83rem;color:var(--muted);margin-bottom:12px">Share this unique link with your employees. They can complete training on any device.</p>
-        <div class="code-block">
-          <button class="code-copy" onclick="copyCode('training-link')" aria-label="Copy training link">Copy</button>
-          <pre id="training-link">https://accessibilitycompliance.ca/training.html?org=CLI-00142&token=acme2026</pre>
-        </div>
-        <div class="btn-row" style="margin-top:12px">
-          <a class="dl-btn" href="training.html?org=CLI-00142&module=1&token=acme2026" target="_blank">&#9654; Preview Module 1</a>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px">
-        <div class="card" style="text-align:center">
-          <div style="font-size:2rem;margin-bottom:8px">&#127891;</div>
-          <h3 style="font-size:.95rem;margin-bottom:6px">Module 1</h3>
-          <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">AODA Overview &amp; Legal Requirements</p>
-          <span class="pill green" style="font-size:.72rem;display:block;margin-bottom:10px">3 employees completed</span>
-          <a href="training.html?module=1" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
-          <button class="btn-sm btn-ghost" onclick="shareModule(1,'AODA Overview')" style="margin-left:4px">&#128101; Assign</button>
-        </div>
-        <div class="card" style="text-align:center">
-          <div style="font-size:2rem;margin-bottom:8px">&#127891;</div>
-          <h3 style="font-size:.95rem;margin-bottom:6px">Module 2</h3>
-          <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">WCAG 2.1 AA — Digital Accessibility</p>
-          <span class="pill yellow" style="font-size:.72rem;display:block;margin-bottom:10px">1 in progress</span>
-          <a href="training.html?module=2" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
-          <button class="btn-sm btn-ghost" onclick="shareModule(2,'WCAG 2.1 AA')" style="margin-left:4px">&#128101; Assign</button>
-        </div>
-        <div class="card" style="text-align:center">
-          <div style="font-size:2rem;margin-bottom:8px">&#127891;</div>
-          <h3 style="font-size:.95rem;margin-bottom:6px">Module 3</h3>
-          <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Customer Service &amp; Inclusion</p>
-          <span class="pill blue" style="font-size:.72rem;display:block;margin-bottom:10px">Not started</span>
-          <a href="training.html?module=3" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
-          <button class="btn-sm btn-ghost" onclick="shareModule(3,'Customer Service')" style="margin-left:4px">&#128101; Assign</button>
-        </div>
-      </div>
-
-      <!-- Staff Training Registry -->
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-          <h2 style="margin:0">&#128203; Staff Training Registry</h2>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <input class="finput" type="search" id="training-search" placeholder="Search employee…"
-              oninput="filterTraining()" style="height:34px;min-width:160px"/>
-            <a class="dl-btn" href="#" onclick="alert('Training registry exported as CSV.')">&#8659; Export CSV</a>
-          </div>
-        </div>
-        <div style="overflow-x:auto">
-          <table class="data-table" id="training-table" aria-label="Staff training registry" style="min-width:560px">
-            <thead>
-              <tr><th>Employee</th><th>Module</th><th>Score</th><th>Status</th><th>Date</th><th>Cert</th></tr>
-            </thead>
-            <tbody id="training-tbody">
-              <tr data-name="sarah chen">
-                <td><strong>Sarah Chen</strong><div style="font-size:.72rem;color:#8a9bbf">Manager</div></td>
-                <td>Module 1 — AODA Overview</td>
-                <td><span style="font-family:'JetBrains Mono',monospace;color:#38d9a9">92%</span></td>
-                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
-                <td style="font-size:.78rem;color:#8a9bbf">Feb 14, 2026</td>
-                <td><button class="btn-sm btn-ghost" onclick="alert('Certificate downloading…')">&#8659; PDF</button></td>
-              </tr>
-              <tr data-name="james kowalski">
-                <td><strong>James Kowalski</strong><div style="font-size:.72rem;color:#8a9bbf">HR Director</div></td>
-                <td>Module 1 — AODA Overview</td>
-                <td><span style="font-family:'JetBrains Mono',monospace;color:#38d9a9">88%</span></td>
-                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
-                <td style="font-size:.78rem;color:#8a9bbf">Feb 18, 2026</td>
-                <td><button class="btn-sm btn-ghost" onclick="alert('Certificate downloading…')">&#8659; PDF</button></td>
-              </tr>
-              <tr data-name="priya nair">
-                <td><strong>Priya Nair</strong><div style="font-size:.72rem;color:#8a9bbf">Customer Service</div></td>
-                <td>Module 1 — AODA Overview</td>
-                <td><span style="font-family:'JetBrains Mono',monospace;color:#38d9a9">95%</span></td>
-                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
-                <td style="font-size:.78rem;color:#8a9bbf">Mar 2, 2026</td>
-                <td><button class="btn-sm btn-ghost" onclick="alert('Certificate downloading…')">&#8659; PDF</button></td>
-              </tr>
-              <tr data-name="derek osei">
-                <td><strong>Derek Osei</strong><div style="font-size:.72rem;color:#8a9bbf">IT Lead</div></td>
-                <td>Module 2 — WCAG 2.1 AA</td>
-                <td><span style="font-family:'JetBrains Mono',monospace;color:#f5a623">In Progress</span></td>
-                <td><span class="pill yellow" style="font-size:.72rem">&#9654; In Progress</span></td>
-                <td style="font-size:.78rem;color:#8a9bbf">Started Mar 5, 2026</td>
-                <td style="color:#8a9bbf;font-size:.75rem">—</td>
-              </tr>
-              <tr id="training-no-results" style="display:none">
-                <td colspan="6" style="text-align:center;padding:24px;color:#8a9bbf">No matching employees.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="btn-row" style="margin-top:14px">
-          <button class="btn-sm btn-primary" onclick="openModal('add-employee-modal')">+ Add Employee</button>
-          <a class="dl-btn" href="#" onclick="alert('Full training log exported as PDF.')">&#8659; Export PDF Report</a>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- FEEDBACK LOGS -->
-    <div class="panel" id="panel-feedback">
-      <div class="page-header">
-        <h1>&#128172; Feedback Logs</h1>
-        <p>Accessibility feedback submitted via your widget and feedback page. All entries are logged in your Evidence Binder.</p>
-      </div>
-      <div class="card" style="border-color:rgba(56,217,169,.2);background:rgba(56,217,169,.04)">
-        <h2>&#128172; Feedback Collection</h2>
-        <p style="font-size:.85rem;color:var(--muted);margin-bottom:0">Feedback is automatically captured via your ACC widget, which is permanently embedded on your site. You can toggle feedback collection on or off anytime under <strong style="color:var(--text)">Widget Settings → Feedback</strong>.</p>
-      </div>
-      <div class="card">
-        <h2>&#128172; Feedback Entries</h2>
-        <div class="btn-row" style="margin-bottom:16px">
-          <a class="dl-btn" href="#" onclick="alert('Feedback log exported.')">&#8659; Export CSV</a>
-        </div>
-        <table class="data-table" aria-label="Accessibility feedback entries">
-          <thead><tr><th>Date</th><th>Type</th><th>Summary</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>Mar 3, 2026</td><td>Widget</td><td>Font size too small on mobile menu</td><td><select class="finput" onchange="updateFeedbackStatus(this)" style="padding:4px 8px;font-size:.75rem;width:120px"><option selected>Resolved</option><option>In Review</option><option>New</option><option>Closed</option></select></td></tr>
-            <tr><td>Feb 28, 2026</td><td>Email</td><td>Contact form not accessible with screen reader</td><td><select class="finput" onchange="updateFeedbackStatus(this)" style="padding:4px 8px;font-size:.75rem;width:120px"><option selected>Resolved</option><option>In Review</option><option>New</option><option>Closed</option></select></td></tr>
-            <tr><td>Feb 22, 2026</td><td>Widget</td><td>Low contrast on footer text</td><td><select class="finput" onchange="updateFeedbackStatus(this)" style="padding:4px 8px;font-size:.75rem;width:120px"><option>Resolved</option><option selected>In Review</option><option>New</option><option>Closed</option></select></td></tr>
-            <tr><td>Feb 15, 2026</td><td>Widget</td><td>Images missing alt text on blog page</td><td><span class="pill green">Resolved</span></td></tr>
-            <tr><td>Feb 10, 2026</td><td>Phone</td><td>PDF documents not accessible</td><td><span class="pill green">Resolved</span></td></tr>
-            <tr><td>Jan 30, 2026</td><td>Email</td><td>Video captions missing</td><td><span class="pill green">Resolved</span></td></tr>
-            <tr><td>Jan 20, 2026</td><td>Widget</td><td>Skip navigation not working in Firefox</td><td><span class="pill green">Resolved</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ACCESSIBILITY STATEMENT -->
-    <div class="panel" id="panel-a11y-stmt">
-      <div class="page-header">
-        <h1>&#9855; Accessibility Statement</h1>
-        <p>Publish an AODA-compliant accessibility statement for your website. Copy the HTML or download the document.</p>
-      </div>
-      <div class="card">
-        <h2>&#128196; Your Accessibility Statement</h2>
-        <div style="background:rgba(10,22,40,.6);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:24px;margin-bottom:16px">
-          <h3 style="color:#fff;font-size:1.1rem;margin-bottom:12px">Accessibility Statement</h3>
-          <p style="font-size:.88rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Acme Corp Inc.</strong> &mdash; Last reviewed: March 2026</p>
-          <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px">Acme Corp Inc. is committed to ensuring digital accessibility for people with disabilities. We continually improve the user experience for everyone and apply relevant accessibility standards.</p>
-          <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Conformance status:</strong> This website conforms to WCAG 2.1 Level AA.</p>
-          <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Feedback:</strong> We welcome feedback on the accessibility of this website. Please email <a href="/cdn-cgi/l/email-protection#f59496969086869c979c999c818cb5ae8c9a8087919a98949c9ba8db9694" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a>
-          <a class="dl-btn" href="#" onclick="alert('PDF downloaded.')">&#8659; Download PDF</a>
-          <button class="btn-sm btn-ghost" onclick="openModal('edit-stmt-modal')">&#9998; Customize</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ACCOUNT & BILLING -->
-    <div class="panel" id="panel-account">
-      <div class="page-header">
-        <h1>&#128100; Account &amp; Billing</h1>
-        <p>Manage your subscription, billing details, and account settings.</p>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-        <div class="card">
-          <h2>&#128203; Subscription</h2>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div>
-              <strong style="font-size:1rem;color:var(--white)">Tier 1 — Essential</strong>
-              <div style="font-size:.8rem;color:var(--muted)">1–19 Employees</div>
-            </div>
-            <span class="pill green">Active</span>
-          </div>
-          <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px">$69 <span style="font-size:.85rem;font-weight:400;color:var(--muted)">CAD / month</span></div>
-          <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Next billing: April 10, 2026</div>
-          <div class="btn-row">
-            <button class="btn-sm btn-ghost" onclick="alert('Upgrade options coming soon.')">Upgrade to Tier 2</button>
-            <button class="btn-sm btn-danger" onclick="confirmCancel()">Cancel Subscription</button>
-          </div>
-        </div>
-        <div class="card">
-          <h2>&#128179; Billing History</h2>
-          <table class="data-table" aria-label="Billing history">
-            <thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>Receipt</th></tr></thead>
-            <tbody>
-              <tr><td>Mar 10, 2026</td><td style="font-family:var(--mono)">$77.97</td><td><span class="pill green">Paid</span></td><td><a class="dl-btn" href="#" onclick="alert('Receipt downloaded.')">&#8659; PDF</a></td></tr>
-              <tr><td>Feb 10, 2026</td><td style="font-family:var(--mono)">$77.97</td><td><span class="pill green">Paid</span></td><td><a class="dl-btn" href="#" onclick="alert('Receipt downloaded.')">&#8659; PDF</a></td></tr>
-              <tr><td>Jan 10, 2026</td><td style="font-family:var(--mono)">$77.97</td><td><span class="pill green">Paid</span></td><td><a class="dl-btn" href="#" onclick="alert('Receipt downloaded.')">&#8659; PDF</a></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card">
-        <h2>&#128100; Account Details</h2>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div class="fgroup">
-            <label for="acc-name">Full Name</label>
-            <input class="finput" type="text" id="acc-name" value="Jane Smith" style="width:100%"/>
-          </div>
-          <div class="fgroup">
-            <label for="acc-email">Email</label>
-            <input class="finput" type="email" id="acc-email" value="jane@acmecorp.ca" style="width:100%"/>
-          </div>
-          <div class="fgroup">
-            <label for="acc-company">Company</label>
-            <input class="finput" type="text" id="acc-company" value="Acme Corp Inc." style="width:100%"/>
-          </div>
-          <div class="fgroup">
-            <label for="acc-url">Website</label>
-            <input class="finput" type="url" id="acc-url" value="https://acmecorp.ca" style="width:100%"/>
-          </div>
-        </div>
-        <button class="btn-sm btn-primary" style="margin-top:8px" onclick="alert('Account details saved successfully.')">Save Changes</button>
-      </div>
-
-      <!-- Payment Method -->
-      <div class="card">
-        <h2>&#128179; Payment Method</h2>
-        <div id="card-display" style="background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);border-radius:10px;padding:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-          <div style="display:flex;align-items:center;gap:14px">
-            <div style="background:#1a3060;border-radius:6px;padding:6px 10px;font-size:.75rem;font-weight:700;color:#4f8ef7;letter-spacing:.04em">VISA</div>
-            <div>
-              <div style="font-size:.88rem;font-weight:600">•••• •••• •••• 4242</div>
-              <div style="font-size:.75rem;color:#8a9bbf">Expires 08 / 2028 &nbsp;&bull;&nbsp; Jane Smith</div>
-            </div>
-          </div>
-          <span class="pill green" style="font-size:.72rem">Default</span>
-        </div>
-        <div class="btn-row">
-          <button class="btn-sm btn-ghost" onclick="openModal('update-card-modal')">&#9998; Update Card</button>
-          <button class="btn-sm btn-ghost" onclick="openModal('billing-address-modal')">&#127968; Billing Address</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Update Card Modal -->
-    <div class="modal-overlay" id="update-card-modal" role="dialog" aria-modal="true" aria-label="Update payment card">
-      <div class="modal-box">
-        <button class="modal-close" onclick="closeModal('update-card-modal')" aria-label="Close">&times;</button>
-        <h2 style="margin-bottom:20px">&#128179; Update Payment Method</h2>
-        <div class="fgroup"><label>Cardholder Name</label><input class="finput" type="text" id="new-card-name" placeholder="Jane Smith" style="width:100%"/></div>
-        <div class="fgroup"><label>Card Number</label><input class="finput" type="text" id="new-card-num" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)" style="width:100%;font-family:'JetBrains Mono',monospace"/></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="fgroup"><label>Expiry</label><input class="finput" type="text" id="new-card-exp" placeholder="MM / YY" maxlength="7" oninput="fmtExpiry(this)" style="width:100%"/></div>
-          <div class="fgroup"><label>CVV</label><input class="finput" type="password" id="new-card-cvv" placeholder="•••" maxlength="4" style="width:100%"/></div>
-        </div>
-        <div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:.75rem;color:#8a9bbf">
-          &#128274; Your card details are encrypted and processed securely via Stripe. ACC does not store raw card data.
-        </div>
-        <div class="btn-row" style="margin-top:16px">
-          <button class="btn-sm btn-primary" onclick="saveCard()">Save New Card</button>
-          <button class="btn-sm btn-ghost" onclick="closeModal('update-card-modal')">Cancel</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Billing Address Modal -->
-    <div class="modal-overlay" id="billing-address-modal" role="dialog" aria-modal="true" aria-label="Update billing address">
-      <div class="modal-box">
-        <button class="modal-close" onclick="closeModal('billing-address-modal')" aria-label="Close">&times;</button>
-        <h2 style="margin-bottom:20px">&#127968; Billing Address</h2>
-        <div class="fgroup"><label>Street Address</label><input class="finput" type="text" id="bill-addr" placeholder="123 Main St" style="width:100%"/></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="fgroup"><label>City</label><input class="finput" type="text" id="bill-city" placeholder="Toronto" style="width:100%"/></div>
-          <div class="fgroup"><label>Province</label>
-            <select class="finput" id="bill-prov" style="width:100%">
-              <option>ON</option><option>BC</option><option>AB</option><option>QC</option>
-              <option>MB</option><option>SK</option><option>NS</option><option>NB</option>
-              <option>NL</option><option>PE</option><option>YT</option><option>NT</option><option>NU</option>
-            </select>
-          </div>
-        </div>
-        <div class="fgroup"><label>Postal Code</label><input class="finput" type="text" id="bill-postal" placeholder="A1B 2C3" maxlength="7" style="width:200px"/></div>
-        <div class="btn-row" style="margin-top:16px">
-          <button class="btn-sm btn-primary" onclick="saveBillingAddress()">Save Address</button>
-          <button class="btn-sm btn-ghost" onclick="closeModal('billing-address-modal')">Cancel</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════ ADMIN PANELS ════════ -->
-
-    <!-- ADMIN OVERVIEW -->
-    <div class="panel" id="panel-admin-overview">
-      <div class="page-header">
-        <h1>&#9881; Admin Overview</h1>
-        <p>Platform-wide status across all clients and subscriptions.</p>
-      </div>
-      <div class="stat-grid">
-        <div class="stat-card teal"><div class="stat-label">Active Clients</div><div class="stat-value">12</div><div class="stat-sub">2 pending activation</div></div>
-        <div class="stat-card"><div class="stat-label">MRR</div><div class="stat-value" style="font-size:1.4rem">$1,834</div><div class="stat-sub">CAD / month</div></div>
-        <div class="stat-card warn"><div class="stat-label">Overdue Payments</div><div class="stat-value">1</div><div class="stat-sub">Action required</div></div>
-        <div class="stat-card"><div class="stat-label">Widget Deploys</div><div class="stat-value">11</div><div class="stat-sub">1 pending install</div></div>
-      </div>
-      <div class="card">
-        <h2>&#128202; Platform Health</h2>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
-          <div style="padding:16px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px;text-align:center">
-            <div style="font-size:1.6rem;margin-bottom:6px">&#9989;</div>
-            <strong style="font-size:.85rem">CDN</strong>
-            <div style="font-size:.75rem;color:var(--muted)">Operational</div>
-          </div>
-          <div style="padding:16px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px;text-align:center">
-            <div style="font-size:1.6rem;margin-bottom:6px">&#9989;</div>
-            <strong style="font-size:.85rem">Widget v12</strong>
-            <div style="font-size:.75rem;color:var(--muted)">Live on all clients</div>
-          </div>
-          <div style="padding:16px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px;text-align:center">
-            <div style="font-size:1.6rem;margin-bottom:6px">&#9989;</div>
-            <strong style="font-size:.85rem">Formspree</strong>
-            <div style="font-size:.75rem;color:var(--muted)">Operational</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ADMIN CLIENTS -->
-    <div class="panel" id="panel-admin-clients">
-      <div class="page-header">
-        <h1>&#128101; Client Management</h1>
-        <p>View and manage all registered clients, their websites, and compliance status.</p>
-      </div>
-      <div class="card">
-        <h2>&#128101; All Clients</h2>
-        <div class="btn-row" style="margin-bottom:16px">
-          <button class="btn-sm btn-primary" onclick="openModal('add-client-modal')">+ Add Client</button>
-          <a class="dl-btn" href="#" onclick="alert('Client list exported.')">&#8659; Export CSV</a>
-        </div>
-        <table class="data-table" aria-label="Client list">
-          <thead><tr><th>Client</th><th>Domain</th><th>Tier</th><th>Score</th><th>Billing</th><th>Actions</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>Acme Corp Inc.</strong><div style="font-size:.72rem;color:var(--muted)">CLI-00142 &bull; Since Jan 2026</div></td>
-              <td><a href="https://acmecorp.ca" target="_blank" style="color:var(--accent);font-size:.82rem">acmecorp.ca &#8599;</a></td>
-              <td><span class="pill blue">Tier 1</span></td>
-              <td><span style="font-family:var(--mono);color:var(--teal)">93</span></td>
-              <td><span class="pill green">Current</span></td>
-              <td><div class="btn-row"><button class="btn-sm btn-ghost" onclick="alert('Viewing Acme Corp client details')">View</button></div></td>
-            </tr>
-            <tr>
-              <td><strong>Maple Health Services</strong><div style="font-size:.72rem;color:var(--muted)">CLI-00143 &bull; Since Jan 2026</div></td>
-              <td><a href="#" style="color:var(--accent);font-size:.82rem">maplehealthca.com &#8599;</a></td>
-              <td><span class="pill yellow">Tier 2</span></td>
-              <td><span style="font-family:var(--mono);color:var(--teal)">89</span></td>
-              <td><span class="pill green">Current</span></td>
-              <td><div class="btn-row"><button class="btn-sm btn-ghost" onclick="alert('Viewing Maple Health details')">View</button></div></td>
-            </tr>
-            <tr>
-              <td><strong>Northern Plumbing Ltd.</strong><div style="font-size:.72rem;color:var(--muted)">CLI-00144 &bull; Since Feb 2026</div></td>
-              <td><a href="#" style="color:var(--accent);font-size:.82rem">northernplumbing.ca &#8599;</a></td>
-              <td><span class="pill blue">Tier 1</span></td>
-              <td><span style="font-family:var(--mono);color:var(--warn)">74</span></td>
-              <td><span class="pill red">Overdue</span></td>
-              <td><div class="btn-row"><button class="btn-sm btn-ghost" onclick="alert('Viewing Northern Plumbing details')">View</button><button class="btn-sm btn-danger" onclick="alert('Payment reminder sent.')">Remind</button></div></td>
-            </tr>
-            <tr>
-              <td><strong>Sunrise Legal Group</strong><div style="font-size:.72rem;color:var(--muted)">CLI-00145 &bull; Since Feb 2026</div></td>
-              <td><a href="#" style="color:var(--accent);font-size:.82rem">sunriselegal.ca &#8599;</a></td>
-              <td><span class="pill blue">Tier 1</span></td>
-              <td><span style="font-family:var(--mono);color:var(--teal)">96</span></td>
-              <td><span class="pill green">Current</span></td>
-              <td><div class="btn-row"><button class="btn-sm btn-ghost" onclick="alert('Viewing Sunrise Legal details')">View</button></div></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ADMIN BILLING -->
-    <div class="panel" id="panel-admin-billing">
-      <div class="page-header">
-        <h1>&#128179; Billing Management</h1>
-        <p>Track all subscriptions, payments, and revenue across the platform.</p>
-      </div>
-      <div class="stat-grid">
-        <div class="stat-card teal"><div class="stat-label">MRR</div><div class="stat-value" style="font-size:1.4rem">$1,834</div><div class="stat-sub">+$269 from last month</div></div>
-        <div class="stat-card"><div class="stat-label">Tier 1 Clients</div><div class="stat-value">9</div><div class="stat-sub">$621 / month</div></div>
-        <div class="stat-card"><div class="stat-label">Tier 2 Clients</div><div class="stat-value">3</div><div class="stat-sub">$597 / month</div></div>
-        <div class="stat-card warn"><div class="stat-label">Overdue</div><div class="stat-value">1</div><div class="stat-sub">$77.97 outstanding</div></div>
-      </div>
-      <div class="card">
-        <h2>&#128203; Recent Transactions</h2>
-        <table class="data-table" aria-label="Recent billing transactions">
-          <thead><tr><th>Client</th><th>Date</th><th>Amount</th><th>Tier</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>Acme Corp Inc.</td><td>Mar 10, 2026</td><td style="font-family:var(--mono)">$77.97</td><td>Tier 1</td><td><span class="pill green">Paid</span></td></tr>
-            <tr><td>Maple Health Services</td><td>Mar 10, 2026</td><td style="font-family:var(--mono)">$224.87</td><td>Tier 2</td><td><span class="pill green">Paid</span></td></tr>
-            <tr><td>Sunrise Legal Group</td><td>Mar 10, 2026</td><td style="font-family:var(--mono)">$77.97</td><td>Tier 1</td><td><span class="pill green">Paid</span></td></tr>
-            <tr><td>Northern Plumbing Ltd.</td><td>Mar 10, 2026</td><td style="font-family:var(--mono)">$77.97</td><td>Tier 1</td><td><span class="pill red">Overdue</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card" style="margin-top:20px">
-        <h2>&#9993; Zoho Email Automation</h2>
-        <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">3 steps to activate automated compliance reminders from <strong style="color:#e8edf8"><a href="/cdn-cgi/l/email-protection#1f7e7c7c7a6c6c767d7673766b665f4466706a6d7b70727e767142317c7e" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a></strong>.</p>
-        <div style="display:grid;gap:14px">
-          <div style="background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);border-radius:10px;padding:16px">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-              <div style="min-width:28px;height:28px;border-radius:50%;background:#4f8ef7;color:#0a1628;font-weight:800;font-size:.82rem;display:flex;align-items:center;justify-content:center">1</div>
-              <strong>Verify Sending Domain in Zoho Mail</strong>
-            </div>
-            <ol style="font-size:.78rem;color:#8a9bbf;padding-left:18px;line-height:2.1">
-              <li>Go to <strong style="color:#e8edf8">mail.zoho.com</strong> &rarr; Settings &rarr; Mail Accounts</li>
-              <li>Add <strong style="color:#e8edf8"><a href="/cdn-cgi/l/email-protection#38595b5b5d4b4b515a5154514c41786341574d4a5c575559515665165b59" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a></strong> as sending alias</li>
-              <li>Add SPF record in Canspace DNS: <code style="background:rgba(79,142,247,.1);padding:2px 8px;border-radius:4px;color:#4f8ef7;font-size:.72rem">v=spf1 include:zoho.com ~all</code></li>
-              <li>Add the DKIM record Zoho provides to Canspace DNS</li>
-            </ol>
-          </div>
-          <div style="background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);border-radius:10px;padding:16px">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-              <div style="min-width:28px;height:28px;border-radius:50%;background:#4f8ef7;color:#0a1628;font-weight:800;font-size:.82rem;display:flex;align-items:center;justify-content:center">2</div>
-              <strong>Set Up Zoho Flow Scheduled Triggers</strong>
-            </div>
-            <ol style="font-size:.78rem;color:#8a9bbf;padding-left:18px;line-height:2.1">
-              <li>Go to <strong style="color:#e8edf8">flow.zoho.com</strong> &rarr; Create New Flow</li>
-              <li>Trigger: Schedule &rarr; <strong style="color:#e8edf8">December 1 annually at 9:00 AM EST</strong></li>
-              <li>Action: Zoho Mail &rarr; Send Email from <strong style="color:#e8edf8"><a href="/cdn-cgi/l/email-protection#ceafadadabbdbda7aca7a2a7bab78e95b7a1bbbcaaa1a3afa7a093e0adaf" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a></strong></li>
-              <li>Duplicate flow for <strong style="color:#e8edf8">Dec 15</strong> (2nd reminder) and <strong style="color:#e8edf8">Dec 28</strong> (final)</li>
-            </ol>
-          </div>
-          <div style="background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);border-radius:10px;padding:16px">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-              <div style="min-width:28px;height:28px;border-radius:50%;background:#38d9a9;color:#0a1628;font-weight:800;font-size:.82rem;display:flex;align-items:center;justify-content:center">3</div>
-              <strong>Paste This Template into Zoho Flow</strong>
-            </div>
-            <div id="zoho-email-tpl" style="background:#060d1a;border-radius:8px;padding:14px;font-size:.72rem;color:#8a9bbf;line-height:1.9;font-family:monospace;white-space:pre-wrap">Subject: Your 2026 AODA Evidence Binder is Ready
-
-Dear [Client Name],
-
-Your 2026 Compliance Evidence Binder from Accessibility Compliance
-Canada Inc. is ready. Please log in to review and sign.
-
-ACTION: Sign your Scope Acknowledgment by December 15:
-https://accessibilitycompliance.ca/dashboard.html
-
-Your binder includes all 11 AODA deliverables, WCAG audit reports,
-your Staff Training Registry, and your Compliance Readiness Letter.
-
-AODA Filing Deadline: December 31, 2026
-File at: ontario.ca/page/completing-your-accessibility-report
-
-DISCLAIMER: This binder covers ACC-delivered digital and administrative
-services only. Physical modifications (ramps, lifts, etc.) remain your
-organization's responsibility. This is not legal advice.
-
-Questions? (416) 526-9645 or <a href="/cdn-cgi/l/email-protection#1c7d7f7f796f6f757e75707568655c476573696e7873717d757241327f7d" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a>
-
-Accessibility Compliance Canada Inc. | accessibilitycompliance.ca
-Unsubscribe: accessibilitycompliance.ca/unsubscribe.html</div>
-            <button class="btn-sm btn-ghost" style="margin-top:10px" onclick="copyZohoTpl()">&#128203; Copy Template</button>
-          </div>
-        </div>
-        <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:8px;padding:12px 14px;margin-top:16px;font-size:.78rem;color:#8a9bbf">
-          <strong style="color:#38d9a9">&#10003; CASL:</strong> Only sent to clients who consented at signup. Unsubscribe link included. Zoho logs all sends with timestamps for your audit trail.
-        </div>
-      </div>
-    </div>
-
-    <!-- ADMIN DISCOUNT CODES -->
-    <div class="panel" id="panel-admin-discounts">
-      <div class="page-header">
-        <h1>&#127991; Discount Codes</h1>
-        <p>Generate and manage promo codes for new signups. All codes are tracked and can be deactivated at any time.</p>
-      </div>
-      <div class="card">
-        <h2>&#10133; Generate New Code</h2>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
-          <div class="fgroup">
-            <label for="dc-code">Code</label>
-            <div style="display:flex;gap:8px">
-              <input class="finput" type="text" id="dc-code" placeholder="e.g. SPRING20" style="width:100%;text-transform:uppercase"/>
-              <button class="btn-sm btn-ghost" onclick="genRandomCode()" style="white-space:nowrap" aria-label="Generate random code">&#9685; Random</button>
-            </div>
-          </div>
-          <div class="fgroup">
-            <label for="dc-pct">Discount %</label>
-            <select class="finput" id="dc-pct" style="width:100%">
-              <option value="10">10%</option>
-              <option value="15">15%</option>
-              <option value="20">20%</option>
-              <option value="25">25%</option>
-              <option value="50">50%</option>
-              <option value="100">100% (Free month)</option>
-            </select>
-          </div>
-          <div class="fgroup">
-            <label for="dc-type">Applies To</label>
-            <select class="finput" id="dc-type" style="width:100%">
-              <option>All tiers</option>
-              <option>Tier 1 only</option>
-              <option>Tier 2 only</option>
-            </select>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
-          <div class="fgroup">
-            <label for="dc-uses">Max Uses</label>
-            <input class="finput" type="number" id="dc-uses" placeholder="Unlimited" min="1" style="width:100%"/>
-          </div>
-          <div class="fgroup">
-            <label for="dc-expiry">Expiry Date</label>
-            <input class="finput" type="date" id="dc-expiry" style="width:100%"/>
-          </div>
-          <div class="fgroup">
-            <label for="dc-note">Internal Note</label>
-            <input class="finput" type="text" id="dc-note" placeholder="e.g. Spring campaign" style="width:100%"/>
-          </div>
-        </div>
-        <button class="btn-sm btn-primary" onclick="createDiscountCode()">Create Code</button>
-      </div>
-      <div class="card">
-        <h2>&#127991; Active Codes</h2>
-        <div class="btn-row" style="margin-bottom:16px">
-          <a class="dl-btn" href="#" onclick="alert('Discount codes exported.')">&#8659; Export CSV</a>
-        </div>
-        <table class="data-table" id="discount-table" aria-label="Active discount codes">
-          <thead><tr><th>Code</th><th>Discount</th><th>Applies To</th><th>Uses</th><th>Expiry</th><th>Note</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody id="discount-tbody">
-            <tr>
-              <td><code style="color:var(--teal);font-family:var(--mono)">AODA2026</code></td>
-              <td>10%</td><td>All tiers</td><td>4 / ∞</td><td>Dec 31, 2026</td>
-              <td style="color:var(--muted);font-size:.78rem">Launch promo</td>
-              <td><span class="pill green">Active</span></td>
-              <td><button class="btn-sm btn-danger" onclick="deactivateCode(this,'AODA2026')">Deactivate</button></td>
-            </tr>
-            <tr>
-              <td><code style="color:var(--teal);font-family:var(--mono)">ACC20</code></td>
-              <td>20%</td><td>All tiers</td><td>1 / ∞</td><td>Jun 30, 2026</td>
-              <td style="color:var(--muted);font-size:.78rem">Partner referral</td>
-              <td><span class="pill green">Active</span></td>
-              <td><button class="btn-sm btn-danger" onclick="deactivateCode(this,'ACC20')">Deactivate</button></td>
-            </tr>
-            <tr>
-              <td><code style="color:var(--teal);font-family:var(--mono)">LAUNCH15</code></td>
-              <td>15%</td><td>All tiers</td><td>7 / 50</td><td>Mar 31, 2026</td>
-              <td style="color:var(--muted);font-size:.78rem">Launch event</td>
-              <td><span class="pill yellow">Expiring Soon</span></td>
-              <td><button class="btn-sm btn-danger" onclick="deactivateCode(this,'LAUNCH15')">Deactivate</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ADMIN WIDGET DEPLOY -->
-    <div class="panel" id="panel-admin-widgets">
-      <div class="page-header">
-        <h1>&#9965; Widget Deployment</h1>
-        <p>Manage widget installations across all client domains. Send installation instructions and track deployment status.</p>
-      </div>
-      <div class="card">
-        <h2>&#9965; Deployment Status</h2>
-        <table class="data-table" aria-label="Widget deployment status by client">
-          <thead><tr><th>Client</th><th>Domain</th><th>Status</th><th>Version</th><th>Auto-Fix</th><th>Actions</th></tr></thead>
-          <tbody>
-            <tr>
-              <td>Acme Corp Inc.</td>
-              <td style="font-family:var(--mono);font-size:.78rem">acmecorp.ca</td>
-              <td><span class="pill green">Installed</span></td>
-              <td><span style="font-family:var(--mono)">v12</span></td>
-              <td><span class="pill red">Off</span></td>
-              <td><button class="btn-sm btn-ghost" onclick="alert('Sending widget update instructions to client...')">Send Instructions</button></td>
-            </tr>
-            <tr>
-              <td>Maple Health Services</td>
-              <td style="font-family:var(--mono);font-size:.78rem">maplehealthca.com</td>
-              <td><span class="pill green">Installed</span></td>
-              <td><span style="font-family:var(--mono)">v12</span></td>
-              <td><span class="pill red">Off</span></td>
-              <td><button class="btn-sm btn-ghost" onclick="alert('Sending widget update instructions...')">Send Instructions</button></td>
-            </tr>
-            <tr>
-              <td>Northern Plumbing Ltd.</td>
-              <td style="font-family:var(--mono);font-size:.78rem">northernplumbing.ca</td>
-              <td><span class="pill yellow">Pending</span></td>
-              <td><span style="font-family:var(--mono);color:var(--muted)">—</span></td>
-              <td><span style="color:var(--muted);font-size:.78rem">N/A</span></td>
-              <td><button class="btn-sm btn-primary" onclick="sendInstallEmail('Northern Plumbing')">Send Install Email</button></td>
-            </tr>
-            <tr>
-              <td>Sunrise Legal Group</td>
-              <td style="font-family:var(--mono);font-size:.78rem">sunriselegal.ca</td>
-              <td><span class="pill green">Installed</span></td>
-              <td><span style="font-family:var(--mono)">v12</span></td>
-              <td><span class="pill red">Off</span></td>
-              <td><button class="btn-sm btn-ghost" onclick="alert('Instructions sent.')">Send Instructions</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card">
-        <h2>&#128231; Widget Install Email Template</h2>
-        <p style="font-size:.83rem;color:var(--muted);margin-bottom:12px">This email is sent to clients with pending widget installation.</p>
-        <div class="code-block" style="color:var(--text)">
-<pre>Subject: Your ACC Accessibility Widget — Installation Instructions
-
-Hi [Client Name],
-
-Your ACC accessibility widget is ready to install on [domain].
-
-STEP 1: Copy the following embed code:
-
-&lt;script
-  src="https://cdn.accessibilitycompliance.ca/widget/ACC-Widget.js"
-  id="ACCWidget"
-  data-domain="[domain]"
-  data-client="[client-id]"
-&gt;&lt;/script&gt;
-
-STEP 2: Paste it just before the &lt;/body&gt; tag on every page.
-
-STEP 3: Publish your changes and return to your dashboard to confirm.
-
-Questions? Reply to this email.
-
-— Accessibility Compliance Canada Inc.
-<a href="/cdn-cgi/l/email-protection#6e0f0d0d0b1d1d070c0702071a172e3517011b1c0a01030f070033400d0f" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a></pre>
-        </div>
-      </div>
-    </div>
-
-    <!-- ADMIN ACCESS CONTROL -->
-    <div class="panel" id="panel-admin-access">
-      <div class="page-header">
-        <h1>&#128274; Access Control</h1>
-        <p>Control which dashboard tabs are visible to each client tier. Changes apply immediately to all clients of that tier.</p>
-      </div>
-      <div class="card">
-        <h2>&#128101; Tier 1 Client — Tab Access</h2>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Dashboard Overview</strong><span>Main compliance snapshot</span></div><label class="toggle" aria-label="Toggle dashboard for Tier 1"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Widget Settings</strong><span>Customize widget appearance and features</span></div><label class="toggle" aria-label="Toggle widget settings for Tier 1"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Embed Code</strong><span>Widget installation instructions</span></div><label class="toggle" aria-label="Toggle embed code for Tier 1"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Audit Reports</strong><span>Monthly WCAG compliance reports</span></div><label class="toggle" aria-label="Toggle audit reports for Tier 1"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Evidence Binder</strong><span>Annual compliance binder</span></div><label class="toggle" aria-label="Toggle evidence binder for Tier 1"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>3-Year Roadmap</strong><span>Compliance planning roadmap</span></div><label class="toggle" aria-label="Toggle roadmap for Tier 1"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Template Standards</strong><span>Policy and procedure templates</span></div><label class="toggle" aria-label="Toggle templates for Tier 1"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Training Logs</strong><span>Staff training records and videos</span></div><label class="toggle" aria-label="Toggle training for Tier 1"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Feedback Logs</strong><span>Accessibility feedback management</span></div><label class="toggle" aria-label="Toggle feedback for Tier 1"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Accessibility Statement</strong><span>Statement builder and export</span></div><label class="toggle" aria-label="Toggle a11y statement for Tier 1"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <button class="btn-sm btn-primary" style="margin-top:16px" onclick="alert('Access settings saved for Tier 1.')">Save Tier 1 Settings</button>
-      </div>
-      <div class="card">
-        <h2>&#128101; Tier 2 Client — Tab Access</h2>
-        <p style="font-size:.83rem;color:var(--muted);margin-bottom:16px">Tier 2 clients have all tabs enabled by default plus priority support access.</p>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>All Tier 1 features</strong><span>Everything above, all enabled</span></div><label class="toggle" aria-label="All tier 1 features for Tier 2"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Priority Support Chat</strong><span>Direct support channel</span></div><label class="toggle" aria-label="Toggle priority support for Tier 2"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Daily Health Scan Logs</strong><span>Full scan history (Tier 2 only)</span></div><label class="toggle" aria-label="Toggle daily scans for Tier 2"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <button class="btn-sm btn-primary" style="margin-top:16px" onclick="alert('Access settings saved for Tier 2.')">Save Tier 2 Settings</button>
-      </div>
-    </div>
-
-    <!-- ADMIN CUSTOM INVOICES -->
-    <div class="panel" id="panel-admin-invoices">
-      <div class="page-header">
-        <h1>&#128196; Custom Invoice Generator</h1>
-        <p>Generate a custom payment link for Tier 3, one-time services, or special pricing. Share directly with the client — they pay via a pre-filled secure payment page.</p>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-
-        <div class="card">
-          <h2>&#9998; Build Invoice</h2>
-          <div class="fgroup">
-            <label for="inv-client">Client Name / Company</label>
-            <input class="finput" type="text" id="inv-client" placeholder="e.g. Northern Plumbing Ltd." style="width:100%"/>
-          </div>
-          <div class="fgroup">
-            <label for="inv-email">Client Email</label>
-            <input class="finput" type="email" id="inv-email" placeholder="contact@company.ca" style="width:100%"/>
-          </div>
-          <div class="fgroup">
-            <label for="inv-tier">Service / Tier</label>
-            <select class="finput" id="inv-tier" style="width:100%" onchange="updateInvPreset()">
-              <option value="">— Select —</option>
-              <option value="499">Tier 3 Enterprise — $499/mo</option>
-              <option value="799">Tier 3 Enterprise — $799/mo</option>
-              <option value="999">Tier 3 Enterprise — $999/mo</option>
-              <option value="1500">Tier 3 Enterprise — $1,500/mo</option>
-              <option value="250">One-Time Audit — $250</option>
-              <option value="500">Setup &amp; Onboarding — $500</option>
-              <option value="0">Custom Amount</option>
-            </select>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-            <div class="fgroup">
-              <label for="inv-amount">Amount (CAD, before HST)</label>
-              <div style="position:relative">
-                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#8a9bbf;font-weight:700">$</span>
-                <input class="finput" type="number" id="inv-amount" placeholder="0.00" min="0" step="0.01" style="width:100%;padding-left:28px" oninput="calcInvTotal()"/>
-              </div>
-            </div>
-            <div class="fgroup">
-              <label for="inv-billing">Billing Cycle</label>
-              <select class="finput" id="inv-billing" style="width:100%">
-                <option>Monthly recurring</option>
-                <option>Annual (upfront)</option>
-                <option>One-time payment</option>
-                <option>Custom schedule</option>
-              </select>
-            </div>
-          </div>
-          <div class="fgroup">
-            <label for="inv-desc">Description (shown on payment page)</label>
-            <textarea class="finput" id="inv-desc" rows="3" aria-label="Invoice description" placeholder="e.g. Tier 3 Enterprise — 50+ employees, dedicated account manager, custom widget branding" style="width:100%;resize:vertical"></textarea>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-            <div class="fgroup">
-              <label for="inv-expiry">Link Expires</label>
-              <input class="finput" type="date" id="inv-expiry" style="width:100%"/>
-            </div>
-            <div class="fgroup">
-              <label for="inv-discount">Discount Code (optional)</label>
-              <input class="finput" type="text" id="inv-discount" placeholder="e.g. AODA2026" style="width:100%;text-transform:uppercase"/>
-            </div>
-          </div>
-
-          <div style="background:rgba(10,22,40,.7);border:1px solid rgba(30,58,107,.6);border-radius:10px;padding:16px;margin:16px 0" aria-live="polite" aria-label="Invoice total preview">
-            <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:6px 0;border-bottom:1px solid rgba(30,58,107,.4)">
-              <span style="color:#8a9bbf">Subtotal</span>
-              <span id="inv-sub" style="font-family:'JetBrains Mono',monospace">$0.00 CAD</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:6px 0;border-bottom:1px solid rgba(30,58,107,.4)">
-              <span style="color:#8a9bbf">HST (13%)</span>
-              <span id="inv-tax" style="font-family:'JetBrains Mono',monospace">$0.00 CAD</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:.95rem;padding:10px 0 4px;font-weight:800">
-              <span style="color:#fff">Total Due</span>
-              <span id="inv-total" style="font-family:'JetBrains Mono',monospace;color:#38d9a9">$0.00 CAD</span>
-            </div>
-          </div>
-
-          <div class="btn-row">
-            <button class="btn-sm btn-primary" onclick="generateInvoiceLink()">&#128279; Generate Payment Link</button>
-            <button class="btn-sm btn-ghost" onclick="previewInvoice()">&#128065; Preview</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2>&#128279; Active Payment Links</h2>
-          <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Share these links with clients. Each opens a pre-filled secure checkout page.</p>
-
-          <div id="inv-link-box" style="display:none;margin-bottom:20px">
-            <div style="background:rgba(56,217,169,.08);border:1px solid rgba(56,217,169,.25);border-radius:10px;padding:16px">
-              <div style="font-size:.72rem;font-weight:700;color:#38d9a9;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">&#10003; Link Ready</div>
-              <div id="inv-link-display" style="font-family:'JetBrains Mono',monospace;font-size:.75rem;color:#e8edf8;word-break:break-all;margin-bottom:12px;background:rgba(10,22,40,.5);padding:10px;border-radius:6px"></div>
-              <div class="btn-row">
-                <button class="btn-sm btn-ghost" onclick="copyInvLink()">&#128203; Copy Link</button>
-                <button class="btn-sm btn-ghost" onclick="sendInvEmail()">&#128231; Email Client</button>
-              </div>
-            </div>
-          </div>
-
-          <div id="inv-empty" style="text-align:center;padding:40px 20px;color:#8a9bbf;font-size:.85rem">
-            <div style="font-size:2rem;margin-bottom:10px">&#128196;</div>
-            No payment links yet. Generate one to get started.
-          </div>
-
-          <table class="data-table" id="inv-history-table" style="display:none" aria-label="Generated invoice links">
-            <thead><tr><th>Client</th><th>Amount</th><th>Cycle</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="inv-history-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-  </main>
-</div>
-
-<!-- ── MODALS ── -->
-<div id="add-client-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="add-client-title">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('add-client-modal')" aria-label="Close">&#x2715;</button>
-    <h2 id="add-client-title">Add New Client</h2>
-    <div class="fgroup"><label for="nc-name">Company Name</label><input class="finput" type="text" id="nc-name" placeholder="Acme Corp Inc." style="width:100%"/></div>
-    <div class="fgroup"><label for="nc-email">Contact Email</label><input class="finput" type="email" id="nc-email" placeholder="contact@company.ca" style="width:100%"/></div>
-    <div class="fgroup"><label for="nc-domain">Website Domain</label><input class="finput" type="url" id="nc-domain" placeholder="https://company.ca" style="width:100%"/></div>
-    <div class="fgroup"><label for="nc-tier">Tier</label><select class="finput" id="nc-tier" style="width:100%"><option>Tier 1 — Essential ($69/mo)</option><option>Tier 2 — Managed ($199/mo)</option></select></div>
-    <div class="btn-row" style="margin-top:8px">
-      <button class="btn-sm btn-primary" onclick="alert('Client added! Welcome email and widget instructions sent.');closeModal('add-client-modal')">Create Client &amp; Send Welcome</button>
-      <button class="btn-sm btn-ghost" onclick="closeModal('add-client-modal')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<div id="add-training-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="add-training-title">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('add-training-modal')" aria-label="Close">&#x2715;</button>
-    <h2 id="add-training-title">Log Training Completion</h2>
-    <div class="fgroup"><label for="tr-emp">Employee Name</label><input class="finput" type="text" id="tr-emp" placeholder="Jane Smith" style="width:100%"/></div>
-    <div class="fgroup"><label for="tr-module">Module</label><select class="finput" id="tr-module" style="width:100%"><option>Module 1 — AODA Overview</option><option>Module 2 — WCAG 2.1 AA</option><option>Module 3 — Accessible Content</option></select></div>
-    <div class="fgroup"><label for="tr-date">Completion Date</label><input class="finput" type="date" id="tr-date" style="width:100%"/></div>
-    <div class="fgroup"><label for="tr-method">Method</label><select class="finput" id="tr-method" style="width:100%"><option>Online Video</option><option>In-Person</option><option>Webinar</option><option>Self-Study</option></select></div>
-    <div class="btn-row" style="margin-top:8px">
-      <button class="btn-sm btn-primary" onclick="alert('Training record logged.');closeModal('add-training-modal')">Save Record</button>
-      <button class="btn-sm btn-ghost" onclick="closeModal('add-training-modal')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<div id="edit-stmt-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="edit-stmt-title">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('edit-stmt-modal')" aria-label="Close">&#x2715;</button>
-    <h2 id="edit-stmt-title">Customize Accessibility Statement</h2>
-    <div class="fgroup"><label for="stmt-co">Company Name</label><input class="finput" type="text" id="stmt-co" value="Acme Corp Inc." style="width:100%"/></div>
-    <div class="fgroup"><label for="stmt-email">Feedback Email</label><input class="finput" type="email" id="stmt-email" value="accessibility@acmecorp.ca" style="width:100%"/></div>
-    <div class="fgroup"><label for="stmt-level">Conformance Level</label><select class="finput" id="stmt-level" style="width:100%"><option>WCAG 2.1 Level AA (recommended)</option><option>WCAG 2.0 Level AA</option><option>Partial conformance</option></select></div>
-    <div class="btn-row" style="margin-top:8px">
-      <button class="btn-sm btn-primary" onclick="applyStmtChanges()">Save &amp; Regenerate</button>
-      <button class="btn-sm btn-ghost" onclick="closeModal('edit-stmt-modal')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- ACC Widget not loaded on dashboard - client-facing only -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ── Training Search ──
+function filterTraining() {
+  var q = (document.getElementById('training-search').value || '').toLowerCase();
+  var rows = document.querySelectorAll('#training-tbody tr[data-name]');
+  var shown = 0;
+  rows.forEach(function(r) {
+    var name = (r.dataset.name || '');
+    var match = !q || name.includes(q);
+    r.style.display = match ? '' : 'none';
+    if (match) shown++;
+  });
+  var noResults = document.getElementById('training-no-results');
+  if (noResults) noResults.style.display = shown === 0 ? '' : 'none';
+}
+
+// ── Accessibility Statement live update ──
+function applyStmtChanges() {
+  var co    = document.getElementById('stmt-co').value.trim() || 'Your Organization';
+  var email = document.getElementById('stmt-email').value.trim() || 'accessibility@yourdomain.ca';
+  var level = document.getElementById('stmt-level').value;
+
+  // Update email display in statement preview
+  var emailDisplay = document.getElementById('stmt-email-display');
+  if (emailDisplay) {
+    emailDisplay.href = 'mailto:' + email;
+    emailDisplay.textContent = email;
+  }
+
+  // Update company name in statement
+  var stmtBox = document.querySelector('#panel-a11y-stmt .card');
+  if (!stmtBox) { closeModal('edit-stmt-modal'); return; }
+
+  // Update all company name references
+  stmtBox.querySelectorAll('strong').forEach(function(el){
+    if (el.textContent.includes('Corp') || el.textContent.includes('Inc') || el.textContent.trim().length > 2) {
+      if (el.closest('p') && !el.textContent.includes('Conformance') && !el.textContent.includes('Feedback')) {
+        el.textContent = co;
+      }
+    }
+  });
+
+  // Update email link
+  stmtBox.querySelectorAll('a[href^="mailto"]').forEach(function(a){
+    a.href = 'mailto:' + email;
+    a.textContent = email;
+  });
+
+  // Update conformance level
+  stmtBox.querySelectorAll('p').forEach(function(p){
+    if (p.textContent.includes('conforms to WCAG')) {
+      var bold = p.querySelector('strong');
+      if (bold && bold.textContent.includes('Conformance')) {
+        p.innerHTML = p.innerHTML.replace(/conforms to [\w\s.]+\./,
+          'conforms to ' + level.replace(' (recommended)','') + '.');
+      }
+    }
+  });
+
+  closeModal('edit-stmt-modal');
+}
+
+// ── Feedback status update ──
+function updateFeedbackStatus(sel) {
+  var val = sel.value;
+  var cls = val === 'Resolved' ? 'green' : val === 'In Review' ? 'yellow' : val === 'New' ? 'blue' : 'red';
+  // Visual confirmation only — replace dropdown with pill temporarily then restore
+  var row = sel.closest('tr');
+  if (row) {
+    var orig = sel.outerHTML;
+    var pill = '<span class="pill ' + cls + '" style="cursor:pointer" onclick="this.outerHTML=\'' + orig.replace(/'/g,"\\'") + '\'">' + val + '</span>';
+    // Just show toast
+    var toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0d1f3c;border:1px solid #1e3a6b;border-radius:10px;padding:12px 20px;color:#38d9a9;font-size:.82rem;font-weight:700;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4)';
+    toast.textContent = 'Status updated: ' + val;
+    document.body.appendChild(toast);
+    setTimeout(function(){ toast.remove(); }, 2500);
+  }
+}
+
+// ── Modal helpers (openModal / closeModal) ──
+function openModal(id) {
+  var m = document.getElementById(id);
+  if (!m) return;
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ var c = m.querySelector('.modal-close, .btn-sm'); if(c) c.focus(); }, 50);
+}
+function closeModal(id) {
+  var m = document.getElementById(id);
+  if (m) m.style.display = 'none';
+  document.body.style.overflow = '';
+}
+// Close modals on overlay click or Escape
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.modal-overlay').forEach(function(m){
+    m.addEventListener('click', function(e){ if(e.target === m) closeModal(m.id); });
+  });
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay').forEach(function(m){
+      if (m.style.display === 'flex') closeModal(m.id);
+    });
+  }
+});
+
+// ── shareModule — assign training module ──
+function shareModule(moduleNum, title) {
+  var emp = prompt('Enter employee name or email to assign "' + title + '":');
+  if (emp && emp.trim()) {
+    showToast('Module "' + title + '" assigned to ' + emp.trim() + '.');
+  }
+}
+
+// ── genRandomCode — generate promo code ──
+function genRandomCode() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code = '';
+  for (var i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  var inp = document.getElementById('promo-code-input') || document.querySelector('input[placeholder*="code"]');
+  if (inp) inp.value = code;
+}
+
+// ── Discount code helpers (client dashboard) ──
+function createDiscountCode() {
+  var code = (document.getElementById('promo-code-input') || {value:''}).value.trim().toUpperCase();
+  if (!code) { showToast('Please enter a code first.'); return; }
+  showToast('Code ' + code + ' saved to your account.');
+}
+function deactivateCode(btn, code) {
+  if (confirm('Deactivate code ' + code + '?')) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Deactivated'; }
+    showToast('Code ' + code + ' deactivated.');
+  }
+}
+
+// ── Generic toast helper ──
+function showToast(msg) {
+  var toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0d1f3c;border:1px solid #1e3a6b;border-radius:10px;padding:12px 20px;color:#38d9a9;font-size:.82rem;font-weight:700;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4)';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(function(){ toast.remove(); }, 2500);
+}
+
+</script>
+<script>
+// Global error handler
+window.onerror = function(msg, src, line, col, err) {
+  console.warn('Dashboard error:', msg, 'at', src, line);
+  return true; // prevent default error display
+};
+
+// ── Mode from URL ──
+var mode = 'client';
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  mode = p.get('mode') === 'admin' ? 'admin' : 'client';
+  initDashboard();
+})();
+
+function initDashboard() {
+  var isAdmin = mode === 'admin';
+  document.getElementById('client-nav').style.display = isAdmin ? 'none' : 'block';
+  document.getElementById('admin-nav').style.display  = isAdmin ? 'block' : 'none';
+  var ind = document.getElementById('mode-indicator');
+  ind.classList.toggle('admin', isAdmin);
+  document.getElementById('mode-label').textContent = isAdmin ? 'Admin' : 'Client';
+  if (isAdmin) {
+    document.getElementById('user-name').textContent = 'Admin';
+    document.getElementById('user-avatar').textContent = 'AD';
+    showPanel('admin-overview');
+  } else {
+    showPanel('overview');
+  }
+  // Countdown to Dec 31 2026
+  var deadline = new Date('2026-12-31');
+  var today = new Date();
+  var days = Math.ceil((deadline - today) / 86400000);
+  var el = document.getElementById('days-left');
+  if (el) el.textContent = days;
+}
+
+// ── Navigation ──
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  var panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.remove('active');
+    b.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('.nav-item').forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + id + "'")) {
+      b.classList.add('active');
+      b.setAttribute('aria-current', 'page');
+    }
+  });
+  var titles = {
+    'overview':'Dashboard','widget':'Widget Settings','embed':'Embed Code',
+    'reports':'Audit Reports','evidence':'Evidence Binder','roadmap':'3-Year Roadmap',
+    'standards':'Template Standards','training':'Training Logs','feedback':'Feedback Logs',
+    'a11y-stmt':'Accessibility Statement','account':'Account & Billing',
+    'admin-overview':'Admin Overview','admin-clients':'Client Management',
+    'admin-billing':'Billing','admin-discounts':'Discount Codes','admin-invoices':'Custom Invoices','admin-widgets':'Widget Deployment','admin-access':'Access Control'
+  };
+  document.getElementById('topbar-title').textContent = titles[id] || 'Dashboard';
+  document.getElementById('dash-content').scrollTop = 0;
+  if (window.innerWidth < 769) closeSidebar();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// ── Utilities ──
+function copyCode(id) {
+  var text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(function(){
+    alert('Code copied to clipboard!');
+  }).catch(function(){
+    var ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    alert('Code copied!');
+  });
+}
+
+function downloadReport(id) {
+  var a = document.createElement('a');
+  a.href = 'ACC_Audit_Report_SAMPLE.pdf';
+  a.download = 'ACC_Audit_Report_SAMPLE.pdf';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function sendInstallEmail(client) {
+  alert('Installation email sent to ' + client + ' with their embed code and instructions.');
+}
+
+function confirmCancel() {
+  if (confirm('Are you sure you want to cancel your subscription? Your access will continue until the end of your current billing period.')) {
+    alert('Cancellation request submitted. You will receive a confirmation email. Access continues until April 10, 2026.');
+  }
+}
+
+
+
+// ── Invoice Generator ──
+var generatedInvLink = '';
+
+function updateInvPreset() {
+  var val = document.getElementById('inv-tier').value;
+  if (val && val !== '0') {
+    document.getElementById('inv-amount').value = val;
+    calcInvTotal();
+  } else {
+    document.getElementById('inv-amount').value = '';
+    calcInvTotal();
+  }
+}
+
+function calcInvTotal() {
+  var amt = parseFloat(document.getElementById('inv-amount').value) || 0;
+  var tax = Math.round(amt * 0.13 * 100) / 100;
+  var total = Math.round((amt + tax) * 100) / 100;
+  document.getElementById('inv-sub').textContent   = '$' + amt.toFixed(2) + ' CAD';
+  document.getElementById('inv-tax').textContent   = '$' + tax.toFixed(2) + ' CAD';
+  document.getElementById('inv-total').textContent = '$' + total.toFixed(2) + ' CAD';
+}
+
+function generateInvoiceLink() {
+  var client  = document.getElementById('inv-client').value.trim();
+  var email   = document.getElementById('inv-email').value.trim();
+  var amount  = document.getElementById('inv-amount').value.trim();
+  var billing = document.getElementById('inv-billing').value;
+  var desc    = document.getElementById('inv-desc').value.trim();
+  var disc    = document.getElementById('inv-discount').value.trim().toUpperCase();
+  var expiry  = document.getElementById('inv-expiry').value;
+
+  if (!client || !email || !amount) {
+    alert('Please fill in Client Name, Email, and Amount.');
+    return;
+  }
+
+  var amt   = parseFloat(amount);
+  var tax   = Math.round(amt * 0.13 * 100) / 100;
+  var total = (amt + tax).toFixed(2);
+  var ref   = 'INV-' + Date.now().toString(36).toUpperCase();
+
+  var params = new URLSearchParams({
+    client: client, email: email, amount: amt.toFixed(2),
+    total: total, billing: billing,
+    desc: desc || 'Custom ACC Compliance Service',
+    tier: 'custom', ref: ref
+  });
+  if (disc)   params.set('discount', disc);
+  if (expiry) params.set('expires', expiry);
+
+  generatedInvLink = 'https://accessibilitycompliance.ca/payment.html?' + params.toString();
+
+  document.getElementById('inv-link-box').style.display = 'block';
+  document.getElementById('inv-link-display').textContent = generatedInvLink;
+
+  document.getElementById('inv-empty').style.display = 'none';
+  var table = document.getElementById('inv-history-table');
+  table.style.display = 'table';
+  var tbody = document.getElementById('inv-history-body');
+  var tr = document.createElement('tr');
+
+  var td1 = document.createElement('td');
+  td1.innerHTML = '<strong>' + client + '</strong><div style="font-size:.72rem;color:#8a9bbf">' + email + '</div>';
+
+  var td2 = document.createElement('td');
+  td2.style.fontFamily = 'JetBrains Mono, monospace';
+  td2.textContent = '$' + total;
+
+  var td3 = document.createElement('td');
+  td3.style.fontSize = '.78rem';
+  td3.textContent = billing;
+
+  var td4 = document.createElement('td');
+  td4.innerHTML = '<span class="pill yellow">Pending</span>';
+
+  var copyBtn = document.createElement('button');
+  copyBtn.className = 'btn-sm btn-ghost';
+  copyBtn.textContent = 'Copy';
+  copyBtn.onclick = function() {
+    navigator.clipboard.writeText(generatedInvLink)
+      .then(function(){ alert('Copied!'); })
+      .catch(function(){ alert('Link: ' + generatedInvLink); });
+  };
+
+  var revokeBtn = document.createElement('button');
+  revokeBtn.className = 'btn-sm btn-danger';
+  revokeBtn.textContent = 'Revoke';
+  revokeBtn.onclick = function() {
+    td4.querySelector('.pill').textContent = 'Revoked';
+    td4.querySelector('.pill').className = 'pill red';
+    copyBtn.disabled = true;
+    revokeBtn.disabled = true;
+  };
+
+  var td5 = document.createElement('td');
+  var btnRow = document.createElement('div');
+  btnRow.className = 'btn-row';
+  btnRow.appendChild(copyBtn);
+  btnRow.appendChild(revokeBtn);
+  td5.appendChild(btnRow);
+
+  tr.appendChild(td1);
+  tr.appendChild(td2);
+  tr.appendChild(td3);
+  tr.appendChild(td4);
+  tr.appendChild(td5);
+  tbody.insertBefore(tr, tbody.firstChild);
+
+  document.getElementById('inv-link-box').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+
+function copyInvLink() {
+  if (!generatedInvLink) return;
+  navigator.clipboard.writeText(generatedInvLink)
+    .then(function() { alert('Payment link copied to clipboard!'); })
+    .catch(function() {
+      var ta = document.createElement('textarea');
+      ta.value = generatedInvLink;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      alert('Payment link copied!');
+    });
+}
+
+function sendInvEmail() {
+  var client = document.getElementById('inv-client').value || 'Client';
+  var email  = document.getElementById('inv-email').value;
+  if (!email) { alert('Please enter client email first.'); return; }
+  alert('Invoice email sent to ' + email + '\n\nSubject: Your ACC Payment Link\n\nIncludes: payment link, service description, amount breakdown, and expiry date.');
+}
+
+function previewInvoice() {
+  var amount = document.getElementById('inv-amount').value;
+  var client = document.getElementById('inv-client').value;
+  if (!amount) { alert('Enter an amount first.'); return; }
+  var url = 'payment.html?tier=custom&amount=' + amount + '&client=' + encodeURIComponent(client) + '&preview=1';
+  window.open(url, '_blank');
+}
+
+
+
+
+
+
+function copyEmailTemplate() {
+  var text = document.querySelector('.sim-time') ? '' : '';
+  // Get the preformatted email template text
+  var pre = document.querySelector('#panel-admin-billing pre');
+  if (pre) {
+    navigator.clipboard.writeText(pre.textContent)
+      .then(function(){ alert('Email template copied to clipboard!'); })
+      .catch(function(){ alert('Select and copy the template text manually.'); });
+  } else {
+    alert('Email template copied! Paste into Zoho Flow email body.');
+  }
+}
+
+
+function copyZohoTpl(){var el=document.getElementById('zoho-email-tpl');if(el){navigator.clipboard.writeText(el.textContent).then(function(){alert('Copied! Paste into Zoho Flow email body.');}).catch(function(){alert('Select and copy the template text manually.');});}}
+// ── Template Downloads ──
+var TEMPLATE_URLS = {
+  'template-emergency-response': 'template-emergency-response.html',
+  'template-service-animal': 'template-service-animal.html',
+  'template-disruption': 'template-disruption.html'
+};
+
+function openTemplate(filename) {
+  window.open(filename, '_blank');
+}
+
+function downloadTemplate(id) {
+  var fileMap = {
+    'template-disruption':            'ACC_Template_Disruption_Notice_SAMPLE.pdf',
+    'template-service-animal':        'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
+    'template-emergency-response':    'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
+    'template-myap':                  'ACC_Template_Disruption_Notice_SAMPLE.pdf',
+    'template-training-registry':     'ACC_Training_Certificate_SAMPLE.pdf',
+    'template-accessible-formats':    'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
+    'template-feedback-process':      'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
+    'template-accessibility-policy':  'ACC_Template_Disruption_Notice_SAMPLE.pdf',
+    'template-myap-full':             'ACC_Template_Disruption_Notice_SAMPLE.pdf',
+    'template-employment':            'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
+    'template-ict':                   'ACC_Template_Service_Animal_Policy_SAMPLE.pdf'
+  };
+  var file = fileMap[id] || 'ACC_Audit_Report_SAMPLE.pdf';
+  var a = document.createElement('a');
+  a.href = file;
+  a.download = file;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function downloadAllTemplates() {
+  var files = [
+    'ACC_Template_Disruption_Notice_SAMPLE.pdf',
+    'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
+    'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf'
+  ];
+  files.forEach(function(f, i) {
+    setTimeout(function() {
+      var a = document.createElement('a');
+      a.href = f; a.download = f;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }, i * 400);
+  });
+}
+
+// -- Payment Method --
+function fmtCard(el) {
+  var v = el.value.replace(/\D/g,'').substring(0,16);
+  el.value = v.replace(/(\d{4})/g,'$1 ').trim();
+}
+function fmtExpiry(el) {
+  var v = el.value.replace(/\D/g,'').substring(0,4);
+  if (v.length >= 3) v = v.substring(0,2) + ' / ' + v.substring(2);
+  el.value = v;
+}
+
+
+function saveCard() {
+  var num  = (document.getElementById('new-card-num')  || {}).value.trim();
+  var name = (document.getElementById('new-card-name') || {}).value.trim();
+  var exp  = (document.getElementById('new-card-exp')  || {}).value.trim();
+  if (!num || !name || !exp) { alert('Please fill in all card fields.'); return; }
+  var last4 = num.replace(/\s/g,'').slice(-4);
+  var display = document.getElementById('card-display');
+  if (display) display.innerHTML = 'VISA &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; ' + last4 + ' &nbsp;&bull;&nbsp; ' + name;
+  closeModal('update-card-modal');
+}
+
+function saveBillingAddress() {
+  var addr   = (document.getElementById('bill-addr')   || {}).value.trim();
+  var city   = (document.getElementById('bill-city')   || {}).value.trim();
+  var postal = (document.getElementById('bill-postal') || {}).value.trim();
+  if (!addr || !city || !postal) { alert('Please fill in all address fields.'); return; }
+  closeModal('billing-address-modal');
+}
+
+// ── Date pickers ──────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof flatpickr !== 'undefined') {
+    document.querySelectorAll('input[type="date"]').forEach(function(el) {
+      if (!el._flatpickr) flatpickr(el, { dateFormat: 'Y-m-d', allowInput: true });
+    });
+  }
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ══════════════════════════════════════════════════════════
 // ACC Client Dashboard — Supabase Data Layer (Phase 2)
@@ -2066,501 +1180,6 @@ function clientSignOut() {
 
 </script>
 <script>
-// ── Training Search ──
-function filterTraining() {
-  var q = (document.getElementById('training-search').value || '').toLowerCase();
-  var rows = document.querySelectorAll('#training-tbody tr[data-name]');
-  var shown = 0;
-  rows.forEach(function(r) {
-    var name = (r.dataset.name || '');
-    var match = !q || name.includes(q);
-    r.style.display = match ? '' : 'none';
-    if (match) shown++;
-  });
-  var noResults = document.getElementById('training-no-results');
-  if (noResults) noResults.style.display = shown === 0 ? '' : 'none';
-}
-
-// ── Accessibility Statement live update ──
-function applyStmtChanges() {
-  var co    = document.getElementById('stmt-co').value.trim() || 'Your Organization';
-  var email = document.getElementById('stmt-email').value.trim() || 'accessibility@yourdomain.ca';
-  var level = document.getElementById('stmt-level').value;
-
-  // Update email display in statement preview
-  var emailDisplay = document.getElementById('stmt-email-display');
-  if (emailDisplay) {
-    emailDisplay.href = 'mailto:' + email;
-    emailDisplay.textContent = email;
-  }
-
-  // Update company name in statement
-  var stmtBox = document.querySelector('#panel-a11y-stmt .card');
-  if (!stmtBox) { closeModal('edit-stmt-modal'); return; }
-
-  // Update all company name references
-  stmtBox.querySelectorAll('strong').forEach(function(el){
-    if (el.textContent.includes('Corp') || el.textContent.includes('Inc') || el.textContent.trim().length > 2) {
-      if (el.closest('p') && !el.textContent.includes('Conformance') && !el.textContent.includes('Feedback')) {
-        el.textContent = co;
-      }
-    }
-  });
-
-  // Update email link
-  stmtBox.querySelectorAll('a[href^="mailto"]').forEach(function(a){
-    a.href = 'mailto:' + email;
-    a.textContent = email;
-  });
-
-  // Update conformance level
-  stmtBox.querySelectorAll('p').forEach(function(p){
-    if (p.textContent.includes('conforms to WCAG')) {
-      var bold = p.querySelector('strong');
-      if (bold && bold.textContent.includes('Conformance')) {
-        p.innerHTML = p.innerHTML.replace(/conforms to [\w\s.]+\./,
-          'conforms to ' + level.replace(' (recommended)','') + '.');
-      }
-    }
-  });
-
-  closeModal('edit-stmt-modal');
-}
-
-// ── Feedback status update ──
-function updateFeedbackStatus(sel) {
-  var val = sel.value;
-  var cls = val === 'Resolved' ? 'green' : val === 'In Review' ? 'yellow' : val === 'New' ? 'blue' : 'red';
-  // Visual confirmation only — replace dropdown with pill temporarily then restore
-  var row = sel.closest('tr');
-  if (row) {
-    var orig = sel.outerHTML;
-    var pill = '<span class="pill ' + cls + '" style="cursor:pointer" onclick="this.outerHTML=\'' + orig.replace(/'/g,"\\'") + '\'">' + val + '</span>';
-    // Just show toast
-    var toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0d1f3c;border:1px solid #1e3a6b;border-radius:10px;padding:12px 20px;color:#38d9a9;font-size:.82rem;font-weight:700;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4)';
-    toast.textContent = 'Status updated: ' + val;
-    document.body.appendChild(toast);
-    setTimeout(function(){ toast.remove(); }, 2500);
-  }
-}
-
-// ── Modal helpers (openModal / closeModal) ──
-function openModal(id) {
-  var m = document.getElementById(id);
-  if (!m) return;
-  m.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  setTimeout(function(){ var c = m.querySelector('.modal-close, .btn-sm'); if(c) c.focus(); }, 50);
-}
-function closeModal(id) {
-  var m = document.getElementById(id);
-  if (m) m.style.display = 'none';
-  document.body.style.overflow = '';
-}
-// Close modals on overlay click or Escape
-document.addEventListener('DOMContentLoaded', function(){
-  document.querySelectorAll('.modal-overlay').forEach(function(m){
-    m.addEventListener('click', function(e){ if(e.target === m) closeModal(m.id); });
-  });
-});
-document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal-overlay').forEach(function(m){
-      if (m.style.display === 'flex') closeModal(m.id);
-    });
-  }
-});
-
-// ── shareModule — assign training module ──
-function shareModule(moduleNum, title) {
-  var emp = prompt('Enter employee name or email to assign "' + title + '":');
-  if (emp && emp.trim()) {
-    showToast('Module "' + title + '" assigned to ' + emp.trim() + '.');
-  }
-}
-
-// ── genRandomCode — generate promo code ──
-function genRandomCode() {
-  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  var code = '';
-  for (var i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  var inp = document.getElementById('promo-code-input') || document.querySelector('input[placeholder*="code"]');
-  if (inp) inp.value = code;
-}
-
-// ── Discount code helpers (client dashboard) ──
-function createDiscountCode() {
-  var code = (document.getElementById('promo-code-input') || {value:''}).value.trim().toUpperCase();
-  if (!code) { showToast('Please enter a code first.'); return; }
-  showToast('Code ' + code + ' saved to your account.');
-}
-function deactivateCode(btn, code) {
-  if (confirm('Deactivate code ' + code + '?')) {
-    if (btn) { btn.disabled = true; btn.textContent = 'Deactivated'; }
-    showToast('Code ' + code + ' deactivated.');
-  }
-}
-
-// ── Generic toast helper ──
-function showToast(msg) {
-  var toast = document.createElement('div');
-  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0d1f3c;border:1px solid #1e3a6b;border-radius:10px;padding:12px 20px;color:#38d9a9;font-size:.82rem;font-weight:700;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4)';
-  toast.textContent = msg;
-  document.body.appendChild(toast);
-  setTimeout(function(){ toast.remove(); }, 2500);
-}
-
-</script><script>
-// Global error handler
-window.onerror = function(msg, src, line, col, err) {
-  console.warn('Dashboard error:', msg, 'at', src, line);
-  return true; // prevent default error display
-};
-
-// ── Mode from URL ──
-var mode = 'client';
-(function(){
-  var p = new URLSearchParams(window.location.search);
-  mode = p.get('mode') === 'admin' ? 'admin' : 'client';
-  initDashboard();
-})();
-
-function initDashboard() {
-  var isAdmin = mode === 'admin';
-  document.getElementById('client-nav').style.display = isAdmin ? 'none' : 'block';
-  document.getElementById('admin-nav').style.display  = isAdmin ? 'block' : 'none';
-  var ind = document.getElementById('mode-indicator');
-  ind.classList.toggle('admin', isAdmin);
-  document.getElementById('mode-label').textContent = isAdmin ? 'Admin' : 'Client';
-  if (isAdmin) {
-    document.getElementById('user-name').textContent = 'Admin';
-    document.getElementById('user-avatar').textContent = 'AD';
-    showPanel('admin-overview');
-  } else {
-    showPanel('overview');
-  }
-  // Countdown to Dec 31 2026
-  var deadline = new Date('2026-12-31');
-  var today = new Date();
-  var days = Math.ceil((deadline - today) / 86400000);
-  var el = document.getElementById('days-left');
-  if (el) el.textContent = days;
-}
-
-// ── Navigation ──
-function showPanel(id) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  var panel = document.getElementById('panel-' + id);
-  if (panel) panel.classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(b => {
-    b.classList.remove('active');
-    b.removeAttribute('aria-current');
-  });
-  document.querySelectorAll('.nav-item').forEach(b => {
-    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + id + "'")) {
-      b.classList.add('active');
-      b.setAttribute('aria-current', 'page');
-    }
-  });
-  var titles = {
-    'overview':'Dashboard','widget':'Widget Settings','embed':'Embed Code',
-    'reports':'Audit Reports','evidence':'Evidence Binder','roadmap':'3-Year Roadmap',
-    'standards':'Template Standards','training':'Training Logs','feedback':'Feedback Logs',
-    'a11y-stmt':'Accessibility Statement','account':'Account & Billing',
-    'admin-overview':'Admin Overview','admin-clients':'Client Management',
-    'admin-billing':'Billing','admin-discounts':'Discount Codes','admin-invoices':'Custom Invoices','admin-widgets':'Widget Deployment','admin-access':'Access Control'
-  };
-  document.getElementById('topbar-title').textContent = titles[id] || 'Dashboard';
-  document.getElementById('dash-content').scrollTop = 0;
-  if (window.innerWidth < 769) closeSidebar();
-}
-
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-}
-
-// ── Utilities ──
-function copyCode(id) {
-  var text = document.getElementById(id).textContent;
-  navigator.clipboard.writeText(text).then(function(){
-    alert('Code copied to clipboard!');
-  }).catch(function(){
-    var ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    alert('Code copied!');
-  });
-}
-
-function downloadReport(id) {
-  var a = document.createElement('a');
-  a.href = 'ACC_Audit_Report_SAMPLE.pdf';
-  a.download = 'ACC_Audit_Report_SAMPLE.pdf';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-function sendInstallEmail(client) {
-  alert('Installation email sent to ' + client + ' with their embed code and instructions.');
-}
-
-function confirmCancel() {
-  if (confirm('Are you sure you want to cancel your subscription? Your access will continue until the end of your current billing period.')) {
-    alert('Cancellation request submitted. You will receive a confirmation email. Access continues until April 10, 2026.');
-  }
-}
-
-
-
-// ── Invoice Generator ──
-var generatedInvLink = '';
-
-function updateInvPreset() {
-  var val = document.getElementById('inv-tier').value;
-  if (val && val !== '0') {
-    document.getElementById('inv-amount').value = val;
-    calcInvTotal();
-  } else {
-    document.getElementById('inv-amount').value = '';
-    calcInvTotal();
-  }
-}
-
-function calcInvTotal() {
-  var amt = parseFloat(document.getElementById('inv-amount').value) || 0;
-  var tax = Math.round(amt * 0.13 * 100) / 100;
-  var total = Math.round((amt + tax) * 100) / 100;
-  document.getElementById('inv-sub').textContent   = '$' + amt.toFixed(2) + ' CAD';
-  document.getElementById('inv-tax').textContent   = '$' + tax.toFixed(2) + ' CAD';
-  document.getElementById('inv-total').textContent = '$' + total.toFixed(2) + ' CAD';
-}
-
-function generateInvoiceLink() {
-  var client  = document.getElementById('inv-client').value.trim();
-  var email   = document.getElementById('inv-email').value.trim();
-  var amount  = document.getElementById('inv-amount').value.trim();
-  var billing = document.getElementById('inv-billing').value;
-  var desc    = document.getElementById('inv-desc').value.trim();
-  var disc    = document.getElementById('inv-discount').value.trim().toUpperCase();
-  var expiry  = document.getElementById('inv-expiry').value;
-
-  if (!client || !email || !amount) {
-    alert('Please fill in Client Name, Email, and Amount.');
-    return;
-  }
-
-  var amt   = parseFloat(amount);
-  var tax   = Math.round(amt * 0.13 * 100) / 100;
-  var total = (amt + tax).toFixed(2);
-  var ref   = 'INV-' + Date.now().toString(36).toUpperCase();
-
-  var params = new URLSearchParams({
-    client: client, email: email, amount: amt.toFixed(2),
-    total: total, billing: billing,
-    desc: desc || 'Custom ACC Compliance Service',
-    tier: 'custom', ref: ref
-  });
-  if (disc)   params.set('discount', disc);
-  if (expiry) params.set('expires', expiry);
-
-  generatedInvLink = 'https://accessibilitycompliance.ca/payment.html?' + params.toString();
-
-  document.getElementById('inv-link-box').style.display = 'block';
-  document.getElementById('inv-link-display').textContent = generatedInvLink;
-
-  document.getElementById('inv-empty').style.display = 'none';
-  var table = document.getElementById('inv-history-table');
-  table.style.display = 'table';
-  var tbody = document.getElementById('inv-history-body');
-  var tr = document.createElement('tr');
-
-  var td1 = document.createElement('td');
-  td1.innerHTML = '<strong>' + client + '</strong><div style="font-size:.72rem;color:#8a9bbf">' + email + '</div>';
-
-  var td2 = document.createElement('td');
-  td2.style.fontFamily = 'JetBrains Mono, monospace';
-  td2.textContent = '$' + total;
-
-  var td3 = document.createElement('td');
-  td3.style.fontSize = '.78rem';
-  td3.textContent = billing;
-
-  var td4 = document.createElement('td');
-  td4.innerHTML = '<span class="pill yellow">Pending</span>';
-
-  var copyBtn = document.createElement('button');
-  copyBtn.className = 'btn-sm btn-ghost';
-  copyBtn.textContent = 'Copy';
-  copyBtn.onclick = function() {
-    navigator.clipboard.writeText(generatedInvLink)
-      .then(function(){ alert('Copied!'); })
-      .catch(function(){ alert('Link: ' + generatedInvLink); });
-  };
-
-  var revokeBtn = document.createElement('button');
-  revokeBtn.className = 'btn-sm btn-danger';
-  revokeBtn.textContent = 'Revoke';
-  revokeBtn.onclick = function() {
-    td4.querySelector('.pill').textContent = 'Revoked';
-    td4.querySelector('.pill').className = 'pill red';
-    copyBtn.disabled = true;
-    revokeBtn.disabled = true;
-  };
-
-  var td5 = document.createElement('td');
-  var btnRow = document.createElement('div');
-  btnRow.className = 'btn-row';
-  btnRow.appendChild(copyBtn);
-  btnRow.appendChild(revokeBtn);
-  td5.appendChild(btnRow);
-
-  tr.appendChild(td1);
-  tr.appendChild(td2);
-  tr.appendChild(td3);
-  tr.appendChild(td4);
-  tr.appendChild(td5);
-  tbody.insertBefore(tr, tbody.firstChild);
-
-  document.getElementById('inv-link-box').scrollIntoView({behavior:'smooth', block:'nearest'});
-}
-
-
-function copyInvLink() {
-  if (!generatedInvLink) return;
-  navigator.clipboard.writeText(generatedInvLink)
-    .then(function() { alert('Payment link copied to clipboard!'); })
-    .catch(function() {
-      var ta = document.createElement('textarea');
-      ta.value = generatedInvLink;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      alert('Payment link copied!');
-    });
-}
-
-function sendInvEmail() {
-  var client = document.getElementById('inv-client').value || 'Client';
-  var email  = document.getElementById('inv-email').value;
-  if (!email) { alert('Please enter client email first.'); return; }
-  alert('Invoice email sent to ' + email + '\n\nSubject: Your ACC Payment Link\n\nIncludes: payment link, service description, amount breakdown, and expiry date.');
-}
-
-function previewInvoice() {
-  var amount = document.getElementById('inv-amount').value;
-  var client = document.getElementById('inv-client').value;
-  if (!amount) { alert('Enter an amount first.'); return; }
-  var url = 'payment.html?tier=custom&amount=' + amount + '&client=' + encodeURIComponent(client) + '&preview=1';
-  window.open(url, '_blank');
-}
-
-
-
-
-
-
-function copyEmailTemplate() {
-  var text = document.querySelector('.sim-time') ? '' : '';
-  // Get the preformatted email template text
-  var pre = document.querySelector('#panel-admin-billing pre');
-  if (pre) {
-    navigator.clipboard.writeText(pre.textContent)
-      .then(function(){ alert('Email template copied to clipboard!'); })
-      .catch(function(){ alert('Select and copy the template text manually.'); });
-  } else {
-    alert('Email template copied! Paste into Zoho Flow email body.');
-  }
-}
-
-
-function copyZohoTpl(){var el=document.getElementById('zoho-email-tpl');if(el){navigator.clipboard.writeText(el.textContent).then(function(){alert('Copied! Paste into Zoho Flow email body.');}).catch(function(){alert('Select and copy the template text manually.');});}}
-// ── Template Downloads ──
-var TEMPLATE_URLS = {
-  'template-emergency-response': 'template-emergency-response.html',
-  'template-service-animal': 'template-service-animal.html',
-  'template-disruption': 'template-disruption.html'
-};
-
-function openTemplate(filename) {
-  window.open(filename, '_blank');
-}
-
-function downloadTemplate(id) {
-  var fileMap = {
-    'template-disruption':            'ACC_Template_Disruption_Notice_SAMPLE.pdf',
-    'template-service-animal':        'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
-    'template-emergency-response':    'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
-    'template-myap':                  'ACC_Template_Disruption_Notice_SAMPLE.pdf',
-    'template-training-registry':     'ACC_Training_Certificate_SAMPLE.pdf',
-    'template-accessible-formats':    'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
-    'template-feedback-process':      'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
-    'template-accessibility-policy':  'ACC_Template_Disruption_Notice_SAMPLE.pdf',
-    'template-myap-full':             'ACC_Template_Disruption_Notice_SAMPLE.pdf',
-    'template-employment':            'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
-    'template-ict':                   'ACC_Template_Service_Animal_Policy_SAMPLE.pdf'
-  };
-  var file = fileMap[id] || 'ACC_Audit_Report_SAMPLE.pdf';
-  var a = document.createElement('a');
-  a.href = file;
-  a.download = file;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-function downloadAllTemplates() {
-  var files = [
-    'ACC_Template_Disruption_Notice_SAMPLE.pdf',
-    'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
-    'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf'
-  ];
-  files.forEach(function(f, i) {
-    setTimeout(function() {
-      var a = document.createElement('a');
-      a.href = f; a.download = f;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }, i * 400);
-  });
-}
-
-// -- Payment Method --
-function fmtCard(el) {
-  var v = el.value.replace(/\D/g,'').substring(0,16);
-  el.value = v.replace(/(\d{4})/g,'$1 ').trim();
-}
-function fmtExpiry(el) {
-  var v = el.value.replace(/\D/g,'').substring(0,4);
-  if (v.length >= 3) v = v.substring(0,2) + ' / ' + v.substring(2);
-  el.value = v;
-}
-
-
-function saveCard() {
-  var num  = (document.getElementById('new-card-num')  || {}).value.trim();
-  var name = (document.getElementById('new-card-name') || {}).value.trim();
-  var exp  = (document.getElementById('new-card-exp')  || {}).value.trim();
-  if (!num || !name || !exp) { alert('Please fill in all card fields.'); return; }
-  var last4 = num.replace(/\s/g,'').slice(-4);
-  var display = document.getElementById('card-display');
-  if (display) display.innerHTML = 'VISA &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; ' + last4 + ' &nbsp;&bull;&nbsp; ' + name;
-  closeModal('update-card-modal');
-}
-
-function saveBillingAddress() {
-  var addr   = (document.getElementById('bill-addr')   || {}).value.trim();
-  var city   = (document.getElementById('bill-city')   || {}).value.trim();
-  var postal = (document.getElementById('bill-postal') || {}).value.trim();
-  if (!addr || !city || !postal) { alert('Please fill in all address fields.'); return; }
-  closeModal('billing-address-modal');
-}
-
-// ── Date pickers ──────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
   if (typeof flatpickr !== 'undefined') {
     document.querySelectorAll('input[type="date"]').forEach(function(el) {
