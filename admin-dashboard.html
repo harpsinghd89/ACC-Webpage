@@ -1910,8 +1910,12 @@ async function sendLoginInvite(email, name, clientId) {
       body: JSON.stringify({ email: email, name: name, client_id: clientId })
     });
 
-    var res = await r.json();
-    if (!r.ok || res.error) throw new Error(res.error || 'Invite failed');
+    // Log raw response for debugging
+    var rawText = await r.text();
+    console.log('send-client-invite raw response:', r.status, rawText);
+    var res;
+    try { res = JSON.parse(rawText); } catch(pe) { throw new Error('HTTP ' + r.status + ': ' + rawText.substring(0,200)); }
+    if (!r.ok || res.error) throw new Error('HTTP ' + r.status + ' — ' + (res.error || res.message || rawText.substring(0,200)));
 
     showToastAdmin('✅ Invite sent to ' + email, 'success');
 
