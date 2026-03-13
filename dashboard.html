@@ -292,7 +292,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="topbar-avatar" id="user-avatar" aria-hidden="true">CL</div>
       <span id="user-name">Jane Smith</span>
     </div>
-    <button class="topbar-logout" onclick="window.location.href='login.html'" aria-label="Sign out">
+    <button class="topbar-logout" onclick="clientSignOut()" aria-label="Sign out">
       Sign Out
     </button>
   </header>
@@ -1656,6 +1656,7 @@ Questions? Reply to this email.
 </div>
 
 <!-- ACC Widget not loaded on dashboard - client-facing only -->
+<div id="auth-error-msg" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#f05f5f;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-size:.9rem"></div>
 <script>
 // ── Training Search ──
 function filterTraining() {
@@ -1804,7 +1805,6 @@ function showToast(msg) {
 
 </script>
 <script>
-
 // Global error handler
 window.onerror = function(msg, src, line, col, err) {
   console.warn('Dashboard error:', msg, 'at', src, line);
@@ -1889,14 +1889,7 @@ function copyCode(id) {
   });
 }
 
-function downloadReport(id) {
-  var a = document.createElement('a');
-  a.href = 'ACC_Audit_Report_SAMPLE.pdf';
-  a.download = 'ACC_Audit_Report_SAMPLE.pdf';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
+
 
 function sendInstallEmail(client) {
   alert('Installation email sent to ' + client + ' with their embed code and instructions.');
@@ -2080,47 +2073,11 @@ var TEMPLATE_URLS = {
   'template-disruption': 'template-disruption.html'
 };
 
-function openTemplate(filename) {
-  window.open(filename, '_blank');
-}
 
-function downloadTemplate(id) {
-  var fileMap = {
-    'template-disruption':            'ACC_Template_Disruption_Notice_SAMPLE.pdf',
-    'template-service-animal':        'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
-    'template-emergency-response':    'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
-    'template-myap':                  'ACC_Template_Disruption_Notice_SAMPLE.pdf',
-    'template-training-registry':     'ACC_Training_Certificate_SAMPLE.pdf',
-    'template-accessible-formats':    'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
-    'template-feedback-process':      'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
-    'template-accessibility-policy':  'ACC_Template_Disruption_Notice_SAMPLE.pdf',
-    'template-myap-full':             'ACC_Template_Disruption_Notice_SAMPLE.pdf',
-    'template-employment':            'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf',
-    'template-ict':                   'ACC_Template_Service_Animal_Policy_SAMPLE.pdf'
-  };
-  var file = fileMap[id] || 'ACC_Audit_Report_SAMPLE.pdf';
-  var a = document.createElement('a');
-  a.href = file;
-  a.download = file;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
 
-function downloadAllTemplates() {
-  var files = [
-    'ACC_Template_Disruption_Notice_SAMPLE.pdf',
-    'ACC_Template_Service_Animal_Policy_SAMPLE.pdf',
-    'ACC_Template_Emergency_Response_Plan_SAMPLE.pdf'
-  ];
-  files.forEach(function(f, i) {
-    setTimeout(function() {
-      var a = document.createElement('a');
-      a.href = f; a.download = f;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }, i * 400);
-  });
-}
+
+
+
 
 // -- Payment Method --
 function fmtCard(el) {
@@ -2132,56 +2089,306 @@ function fmtExpiry(el) {
   if (v.length >= 3) v = v.substring(0,2) + ' / ' + v.substring(2);
   el.value = v;
 }
+
 function saveCard() {
-  var num = document.getElementById('new-card-num').value.replace(/\s/g,'');
-  var exp = document.getElementById('new-card-exp').value;
-  var cvv = document.getElementById('new-card-cvv').value;
-  var name = document.getElementById('new-card-name').value.trim();
-  if (!name || num.length < 15 || !exp || cvv.length < 3) {
-    alert('Please fill in all card fields.'); return;
-  }
-  var last4 = num.slice(-4);
-  var masked = '\u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 ' + last4;
-  document.getElementById('card-display').innerHTML =
-    '<div style="display:flex;align-items:center;gap:14px">' +
-    '<div style="background:#1a3060;border-radius:6px;padding:6px 10px;font-size:.75rem;font-weight:700;color:#4f8ef7">VISA</div>' +
-    '<div><div style="font-size:.88rem;font-weight:600">' + masked + '</div>' +
-    '<div style="font-size:.75rem;color:#8a9bbf">Expires ' + exp + ' &nbsp;&bull;&nbsp; ' + name + '</div></div></div>' +
-    '<span class="pill green" style="font-size:.72rem">Default</span>';
+  var num  = (document.getElementById('new-card-num')  ||{}).value.trim();
+  var name = (document.getElementById('new-card-name') ||{}).value.trim();
+  var exp  = (document.getElementById('new-card-exp')  ||{}).value.trim();
+  if (!num || !name || !exp) { alert('Please fill in all card fields.'); return; }
+  var last4 = num.replace(/\s/g,'').slice(-4);
+  var d = document.getElementById('card-display');
+  if (d) d.innerHTML = 'VISA &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; ' + last4 + ' &nbsp;&bull;&nbsp; ' + name;
   closeModal('update-card-modal');
 }
-
 function saveBillingAddress() {
-  var addr   = (document.getElementById('bill-addr')   ||{}).value.trim();
-  var city   = (document.getElementById('bill-city')   ||{}).value.trim();
-  var postal = (document.getElementById('bill-postal') ||{}).value.trim();
-  if (!addr || !city || !postal) { alert('Please fill in all address fields.'); return; }
+  var addr   = (document.getElementById('bill-addr')  ||{}).value.trim();
+  var city   = (document.getElementById('bill-city')  ||{}).value.trim();
+  var postal = (document.getElementById('bill-postal')||{}).value.trim();
+  if (!addr||!city||!postal){ alert('Please fill in all address fields.'); return; }
   closeModal('billing-address-modal');
 }
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ══════════════════════════════════════════════════════════
-// ACC Client Dashboard — Supabase Data Layer (Phase 2)
-// Loads ALL client data from Supabase on login
+// ACC Platform — Client Dashboard Supabase Layer
+// Phase 2 (read) + Phase 3 (storage signed URLs)
 // ══════════════════════════════════════════════════════════
 
-var SUPABASE_URL  = 'https://wfyzvmfvlukawidowuym.supabase.co';
-var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
-var _sb_client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+var _sb_client = window.supabase.createClient(
+  'https://wfyzvmfvlukawidowuym.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M'
+);
+
 var _clientData = null;
 
-// ── Auth guard + full data load ───────────────────────────
+// ── Sign out ───────────────────────────────────────────────
+// Called by the sign-out button; clears Supabase session first
+// then redirects. Uses replace() so back button can't loop back.
+function clientSignOut() {
+  _sb_client.auth.signOut().then(function() {
+    window.location.replace('login.html');
+  }).catch(function() {
+    // Even if signOut fails, clear locally and redirect
+    window.location.replace('login.html');
+  });
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  var d = new Date(iso + (iso.length===10?'T00:00:00':''));
+  return d.toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function fmtDateLong(iso) {
+  if (!iso) return '—';
+  var d = new Date(iso + (iso.length===10?'T00:00:00':''));
+  return d.toLocaleDateString('en-CA',{month:'long',day:'numeric',year:'numeric'});
+}
+
+function daysUntil(iso) {
+  if (!iso) return null;
+  var now = new Date(); now.setHours(0,0,0,0);
+  var t   = new Date(iso + 'T00:00:00');
+  return Math.round((t - now) / 86400000);
+}
+
+function tierName(t) {
+  return t==='tier1'?'Tier 1 — Essentials':t==='tier2'?'Tier 2 — Professional':'Tier 3 — Enterprise';
+}
+
+function tierPrice(t) {
+  return t==='tier1'?'$69/mo':t==='tier2'?'$199/mo':'Custom';
+}
+
+function set(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = val || '—';
+}
+
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.value = val || '';
+}
+
+function setHtml(id, html) {
+  var el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
+// ── Populate functions ────────────────────────────────────
+function populateOverview(c) {
+  var hour = new Date().getHours();
+  var greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  set('client-greeting', greeting + ', ' + (c.name || 'there'));
+  set('overview-domain', c.domain || '—');
+  var days = daysUntil(c.renewal_date);
+  set('overview-days-left', days !== null ? days + ' days' : '—');
+  set('overview-tier', tierName(c.tier));
+}
+
+function populateEmbed(c) {
+  var embedCode = '<scr'+'ipt src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js?v=12" data-client="' + (c.client_code||'') + '" data-tier="' + (c.tier||'') + '" data-domain="' + (c.domain||'') + '" async><\/script>';
+  var wpCode = '[acc_widget client="' + (c.client_code||'') + '" tier="' + (c.tier||'') + '"]';
+  setHtml('embed-code', esc(embedCode));
+  setHtml('wp-code', esc(wpCode));
+}
+
+function populateRoadmap(milestones) {
+  var years = {};
+  (milestones||[]).forEach(function(m) {
+    var yr = m.year || new Date(m.target_date||'').getFullYear() || 2026;
+    if (!years[yr]) years[yr] = [];
+    years[yr].push(m);
+  });
+  Object.keys(years).sort().forEach(function(yr) {
+    var tbody = document.getElementById('roadmap-tbody-' + yr);
+    if (!tbody) return;
+    tbody.innerHTML = years[yr].map(function(m) {
+      var done = m.status === 'complete';
+      var color = done ? '#38d9a9' : m.status==='in-progress' ? '#f5a623' : '#8a9bbf';
+      return '<tr>' +
+        '<td>' + esc(m.title) + '</td>' +
+        '<td>' + fmtDate(m.target_date) + '</td>' +
+        '<td><span style="color:' + color + '">' + esc(m.status||'pending') + '</span></td>' +
+        '</tr>';
+    }).join('');
+  });
+}
+
+function populateTraining(c) {
+  var link = document.getElementById('training-link');
+  if (link) link.href = 'https://training.accessibilitycompliance.ca/?org=' + encodeURIComponent(c.client_code||'') + '&token=' + encodeURIComponent(c.client_code||'');
+}
+
+function populateAccount(c, billingRows) {
+  set('acc-name',  c.name);
+  set('acc-email', c.email);
+  set('acc-tier',  tierName(c.tier));
+  set('acc-price', tierPrice(c.tier));
+  set('acc-renewal', fmtDateLong(c.renewal_date));
+  populateBillingHistory(billingRows);
+}
+
+function populateBillingHistory(rows) {
+  var tbody = document.getElementById('billing-history-tbody');
+  if (!tbody) return;
+  if (!rows || !rows.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No billing history yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(function(b) {
+    var ym = (b.paid_at||b.created_at||'').substring(0,7);
+    return '<tr>' +
+      '<td>' + fmtDate(b.paid_at||b.created_at) + '</td>' +
+      '<td>$' + (b.amount_cents ? (b.amount_cents/100).toFixed(2) : '—') + '</td>' +
+      '<td><span class="pill ' + (b.status==='paid'?'green':'yellow') + '">' + esc(b.status) + '</span></td>' +
+      '<td><button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="downloadInvoice(\'' + ym + '\')">&#8659; PDF</button></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function populateFeedback(rows) {
+  var tbody = document.getElementById('feedback-tbody');
+  if (!tbody) return;
+  if (!rows || !rows.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No feedback submitted yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(function(f) {
+    return '<tr>' +
+      '<td>' + fmtDate(f.created_at) + '</td>' +
+      '<td>' + esc(f.type||'general') + '</td>' +
+      '<td>' + esc(f.message||'') + '</td>' +
+      '<td><span class="pill ' + (f.status==='resolved'?'green':f.status==='in-progress'?'yellow':'') + '">' + esc(f.status||'open') + '</span></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function populateA11yStatement(c) {
+  set('stmt-email-display', c.email);
+  var els = document.querySelectorAll('.stmt-org-name');
+  els.forEach(function(el){ el.textContent = c.name || ''; });
+  var domEls = document.querySelectorAll('.stmt-domain');
+  domEls.forEach(function(el){ el.textContent = c.domain || ''; });
+}
+
+function populateStandards(c) {
+  // Tier-gate template visibility
+  var tier2plus = c.tier === 'tier2' || c.tier === 'tier3';
+  var tier3only = c.tier === 'tier3';
+  document.querySelectorAll('.tier2-template').forEach(function(el){
+    el.style.display = tier2plus ? '' : 'none';
+  });
+  document.querySelectorAll('.tier3-template').forEach(function(el){
+    el.style.display = tier3only ? '' : 'none';
+  });
+}
+
+function populateEvidence(c, milestones) {
+  var done = (milestones||[]).filter(function(m){ return m.status==='complete'; }).length;
+  set('evidence-done-count', done + ' milestones complete');
+  var pct = milestones && milestones.length ? Math.round(done/milestones.length*100) : 0;
+  var bar = document.getElementById('evidence-progress-bar');
+  if (bar) bar.style.width = pct + '%';
+  set('evidence-pct', pct + '%');
+}
+
+function populateReports(c) {
+  var domEls = document.querySelectorAll('.report-domain');
+  domEls.forEach(function(el){ el.textContent = c.domain || ''; });
+}
+
+// ── Storage: signed URL helpers ───────────────────────────
+async function getSignedUrl(bucket, path) {
+  var r = await _sb_client.storage.from(bucket).createSignedUrl(path, 3600);
+  if (r.error) throw r.error;
+  return r.data.signedUrl;
+}
+
+async function downloadSigned(bucket, path, filename) {
+  try {
+    var url = await getSignedUrl(bucket, path);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename || path.split('/').pop();
+    a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } catch(e) {
+    console.error('downloadSigned error:', e);
+    alert('File not available yet. Please contact ACC to check your files.');
+  }
+}
+
+async function downloadReport(monthKey) {
+  if (!window._clientData) { alert('Please log in to download reports.'); return; }
+  var code = _clientData.client_code;
+  var monthMap = { 'january':'01','february':'02','march':'03','april':'04',
+    'may':'05','june':'06','july':'07','august':'08',
+    'september':'09','october':'10','november':'11','december':'12' };
+  var parts = monthKey.toLowerCase().split('-');
+  var month = monthMap[parts[0]] || parts[0];
+  var year  = parts[1] || new Date().getFullYear();
+  var path  = code + '/' + year + '-' + month + '.pdf';
+  await downloadSigned('reports', path, 'ACC_Report_' + year + '-' + month + '_' + code + '.pdf');
+}
+
+async function downloadTemplate(templateKey) {
+  var key = templateKey.replace(/\.html$/, '');
+  var path  = 'shared/' + key + '.pdf';
+  var label = key.replace('template-','').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
+  await downloadSigned('templates', path, 'ACC_Template_' + label.replace(/ /g,'_') + '.pdf');
+}
+
+async function openTemplate(templateKey) {
+  await downloadTemplate(templateKey);
+}
+
+async function downloadEvidenceBinder(year) {
+  if (!window._clientData) return;
+  var code = _clientData.client_code;
+  var yr   = year || new Date().getFullYear();
+  await downloadSigned('evidence', code + '/' + yr + '-binder.pdf', 'ACC_Evidence_Binder_' + yr + '_' + code + '.pdf');
+}
+
+async function downloadInvoice(yearMonth) {
+  if (!window._clientData) return;
+  var code = _clientData.client_code;
+  await downloadSigned('invoices', code + '/' + yearMonth + '-invoice.pdf', 'ACC_Invoice_' + yearMonth + '_' + code + '.pdf');
+}
+
+// ── Auth guard ────────────────────────────────────────────
+// Runs once on page load. Redirects to login if no valid session.
+// Uses replace() so back button cannot loop back to dashboard.
+// Errors show a visible message instead of silently looping.
 (async function() {
+  // Prevent redirect loop: if we arrived via a signOut redirect,
+  // don't redirect again on error — show an error card instead.
+  var redirected = sessionStorage.getItem('_acc_redirected');
+
   try {
     var s = await _sb_client.auth.getSession();
+
     if (!s.data || !s.data.session) {
+      if (redirected) {
+        // Already tried redirecting — stop looping, show error
+        sessionStorage.removeItem('_acc_redirected');
+        var errEl = document.getElementById('auth-error-msg');
+        if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Session expired. Please log in again.'; }
+        return;
+      }
+      sessionStorage.setItem('_acc_redirected', '1');
       window.location.replace('login.html');
       return;
     }
-    var uid = s.data.session.user.id;
 
-    // Load client profile
+    // Session exists — clear any redirect flag
+    sessionStorage.removeItem('_acc_redirected');
+
+    var uid = s.data.session.user.id;
     var cr = await _sb_client.from('clients')
       .select('*')
       .eq('auth_user_id', uid)
@@ -2189,34 +2396,22 @@ var _clientData = null;
       .single();
 
     if (cr.error || !cr.data) {
-      // No client record — signed in but not provisioned yet
+      // Authenticated but not provisioned — sign out cleanly, no loop
       await _sb_client.auth.signOut();
+      sessionStorage.setItem('_acc_redirected', '1');
       window.location.replace('login.html');
       return;
     }
 
     _clientData = cr.data;
+    window._clientData = cr.data;
 
-    // Load all supporting data in parallel
     var [rr, br, fr] = await Promise.all([
-      _sb_client.from('roadmap')
-        .select('*')
-        .eq('client_id', _clientData.id)
-        .is('deleted_at', null)
-        .order('year').order('target_date'),
-      _sb_client.from('billing')
-        .select('*')
-        .eq('client_id', _clientData.id)
-        .order('created_at', { ascending: false })
-        .limit(12),
-      _sb_client.from('feedback')
-        .select('*')
-        .eq('client_id', _clientData.id)
-        .order('created_at', { ascending: false })
-        .limit(50)
+      _sb_client.from('roadmap').select('*').eq('client_id', _clientData.id).is('deleted_at', null).order('year').order('target_date'),
+      _sb_client.from('billing').select('*').eq('client_id', _clientData.id).order('created_at', { ascending: false }).limit(12),
+      _sb_client.from('feedback').select('*').eq('client_id', _clientData.id).order('created_at', { ascending: false }).limit(50)
     ]);
 
-    // Populate everything
     populateOverview(_clientData);
     populateEmbed(_clientData);
     populateRoadmap(rr.data || []);
@@ -2230,349 +2425,21 @@ var _clientData = null;
 
   } catch(e) {
     console.error('Client auth/load error:', e);
-    window.location.replace('login.html');
+    // Show inline error rather than redirect loop
+    var errEl = document.getElementById('auth-error-msg');
+    if (errEl) {
+      errEl.style.display = 'block';
+      errEl.textContent = 'Failed to load your dashboard. Please refresh or contact support.';
+    }
   }
 })();
 
-// ── Helpers ───────────────────────────────────────────────
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function fmtDate(d) {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' });
-}
-function fmtDateLong(d) {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-CA', { year:'numeric', month:'long' });
-}
-function set(id, val) {
-  var el = document.getElementById(id);
-  if (el) el.textContent = String(val||'');
-}
-function setVal(id, val) {
-  var el = document.getElementById(id);
-  if (el) el.value = String(val||'');
-}
-function setHtml(id, html) {
-  var el = document.getElementById(id);
-  if (el) el.innerHTML = html;
-}
-function daysUntil(dateStr) {
-  var d = new Date(dateStr);
-  var today = new Date();
-  return Math.max(0, Math.ceil((d - today) / 86400000));
-}
-function tierName(n) {
-  return n == 1 ? 'Tier 1 — Essential' : n == 2 ? 'Tier 2 — Managed' : 'Tier 3 — Enterprise';
-}
-function tierPrice(n) {
-  return n == 1 ? '$69' : n == 2 ? '$199' : 'Custom';
-}
-
-// ── Overview panel ────────────────────────────────────────
-function populateOverview(c) {
-  // Greeting
-  var hour = new Date().getHours();
-  var greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  var firstName = (c.name || '').split(' ')[0];
-
-  // Greeting h1
-  var h1s = document.querySelectorAll('#panel-overview h1');
-  h1s.forEach(function(h){ h.innerHTML = '&#128075; ' + greeting + ', ' + esc(firstName); });
-
-  // Domain in subtitle
-  var domain = c.domain || 'your website';
-  var subs = document.querySelectorAll('#panel-overview p');
-  if (subs[0]) subs[0].innerHTML = 'Your website <strong>' + esc(domain) + '</strong> is active and monitored. Here&rsquo;s your compliance snapshot.';
-
-  // Days to AODA deadline
-  set('days-left', daysUntil('2026-12-31'));
-
-  // User name + avatar in topbar
-  var nameEl = document.getElementById('user-name');
-  if (nameEl) nameEl.textContent = c.name || '';
-  var avatarEl = document.getElementById('user-avatar');
-  if (avatarEl) avatarEl.textContent = (c.name||'CL').substring(0,2).toUpperCase();
-}
-
-// ── Embed code panel ──────────────────────────────────────
-function populateEmbed(c) {
-  var domain = c.domain || '';
-  var code   = c.client_code || '';
-  var tier   = c.tier || 1;
-
-  var snippet = '&lt;!-- ACC Accessibility Widget | ' + esc(domain) + ' --&gt;\n' +
-    '&lt;script\n' +
-    '  src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js"\n' +
-    '  id="ACCWidget"\n' +
-    '  data-domain="' + esc(domain) + '"\n' +
-    '  data-client="' + esc(code) + '"\n' +
-    '  data-tier="' + tier + '"\n' +
-    '&gt;&lt;/script&gt;';
-
-  var embedEl = document.getElementById('embed-code');
-  if (embedEl) embedEl.innerHTML = snippet;
-
-  var wpSnippet = "add_action('wp_footer', function() { ?>\n" +
-    '  &lt;script src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js"\n' +
-    '  id="ACCWidget" data-domain="' + esc(domain) + '"\n' +
-    '  data-client="' + esc(code) + '" data-tier="' + tier + '"&gt;&lt;/script&gt;\n' +
-    "&lt;?php }); ?>";
-
-  var wpEl = document.getElementById('wp-code');
-  if (wpEl) wpEl.innerHTML = wpSnippet;
-
-  // Update domain lock notice
-  var domainNotices = document.querySelectorAll('#panel-embed strong');
-  domainNotices.forEach(function(el){
-    if (el.textContent.includes('acmecorp') || el.textContent.includes('your domain')) {
-      el.textContent = domain || 'your domain';
-    }
-  });
-}
-
-// ── Roadmap panel ─────────────────────────────────────────
-function populateRoadmap(milestones) {
-  if (!milestones.length) return;
-
-  // Group by year
-  var groups = {};
-  milestones.forEach(function(m) {
-    if (!groups[m.year]) groups[m.year] = [];
-    groups[m.year].push(m);
-  });
-
-  var statusBadge = {
-    'done':        '<span class="pill green" style="font-size:.72rem">Done</span>',
-    'in-progress': '<span class="pill yellow" style="font-size:.72rem">In Progress</span>',
-    'planned':     '<span class="pill blue" style="font-size:.72rem">Planned</span>',
-    'deferred':    '<span class="pill" style="font-size:.72rem;background:rgba(138,155,191,.2);color:#8a9bbf">Deferred</span>'
-  };
-
-  // For each year group find the tbody (id="roadmap-tbody-YEAR") or build one
-  var rmPanel = document.getElementById('panel-roadmap');
-  if (!rmPanel) return;
-
-  // Replace all tbodies in the roadmap panel with live data
-  var tables = rmPanel.querySelectorAll('table');
-  var yearIdx = 0;
-  var sortedYears = Object.keys(groups).sort();
-
-  sortedYears.forEach(function(yr) {
-    var rows = groups[yr];
-    var tbody;
-    if (tables[yearIdx]) {
-      tbody = tables[yearIdx].querySelector('tbody');
-    }
-    if (!tbody) { yearIdx++; return; }
-
-    tbody.innerHTML = rows.map(function(m) {
-      var badge = statusBadge[m.status] || statusBadge['planned'];
-      var dateStr = m.target_date ? fmtDate(m.target_date) : '—';
-      return '<tr><td>' + esc(m.milestone) + '</td><td>' + esc(dateStr) + '</td><td>' + badge + '</td></tr>';
-    }).join('');
-
-    yearIdx++;
-  });
-}
-
-// ── Training panel ────────────────────────────────────────
-function populateTraining(c) {
-  var code  = c.client_code || 'CLI-00000';
-  var token = code.toLowerCase().replace('cli-','') + (c.name||'client').replace(/\s+/g,'').toLowerCase().substring(0,4);
-  var link  = 'https://accessibilitycompliance.ca/training.html?org=' + encodeURIComponent(code) + '&token=' + token;
-
-  var linkEl = document.getElementById('training-link');
-  if (linkEl) linkEl.textContent = link;
-
-  // Update any <a> elements wrapping the training link
-  var linkAnchors = document.querySelectorAll('#panel-training a[href*="training.html"]');
-  linkAnchors.forEach(function(a){ a.href = link; });
-}
-
-// ── Account panel ─────────────────────────────────────────
-function populateAccount(c, billingRows) {
-  // Account details inputs
-  setVal('acc-name',    c.name  || '');
-  setVal('acc-email',   c.email || '');
-  setVal('acc-company', c.name  || '');
-  setVal('acc-url',     c.domain ? 'https://' + c.domain : '');
-
-  // Subscription card — update tier name, price, status, renewal
-  var subCard = document.querySelector('#panel-account .subscription-card, #panel-account [class*="sub"]');
-  var tierNameEls = document.querySelectorAll('#panel-account strong');
-  tierNameEls.forEach(function(el){
-    if (el.textContent.includes('Tier')) el.textContent = tierName(c.tier);
-  });
-
-  // Price
-  var priceEls = document.querySelectorAll('#panel-account [style*="1.6rem"]');
-  priceEls.forEach(function(el){
-    if (el.textContent.match(/\$\d+/)) {
-      el.innerHTML = tierPrice(c.tier) + ' <span style="font-size:.85rem;font-weight:400;color:var(--muted)">CAD / month</span>';
-    }
-  });
-
-  // Status pill
-  var statusPills = document.querySelectorAll('#panel-account .pill');
-  statusPills.forEach(function(pill){
-    if (['Active','Inactive','Overdue','Pending','Cancelled'].includes(pill.textContent.trim())) {
-      var s = (c.status||'active');
-      pill.textContent = s.charAt(0).toUpperCase() + s.slice(1);
-      pill.className = 'pill ' + (s==='active'||s==='current' ? 'green' : s==='overdue' ? 'red' : 'yellow');
-    }
-  });
-
-  // Next billing
-  var renewalEls = document.querySelectorAll('#panel-account [style*=".78rem"]');
-  renewalEls.forEach(function(el){
-    if (el.textContent.includes('Next billing')) {
-      el.textContent = 'Next billing: ' + (c.renewal_date ? fmtDate(c.renewal_date) : '—');
-    }
-  });
-
-  // Billing history table
-  populateBillingHistory(billingRows, c);
-}
-
-function populateBillingHistory(rows, c) {
-  var tbody = document.querySelector('#panel-account table tbody');
-  if (!tbody) return;
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No billing records yet.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = rows.map(function(b) {
-    var amt = b.amount ? '$' + parseFloat(b.amount).toFixed(2) + ' ' + (b.currency||'CAD') : '—';
-    var paid = b.paid_at ? fmtDate(b.paid_at) : fmtDate(b.created_at);
-    var status = b.paid_at ? '<span class="pill green" style="font-size:.72rem">Paid</span>' : '<span class="pill yellow" style="font-size:.72rem">Pending</span>';
-    return '<tr><td style="font-size:.8rem">' + paid + '</td><td style="font-size:.8rem">' + amt + '</td><td>' + status + '</td><td><button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="downloadReport(\'invoice\')">&#8659; PDF</button></td></tr>';
-  }).join('');
-}
-
-// ── Feedback panel ────────────────────────────────────────
-function populateFeedback(rows) {
-  var tbody = document.querySelector('#panel-feedback table tbody');
-  if (!tbody) return;
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:20px">No feedback entries yet. Feedback submitted via your widget will appear here.</td></tr>';
-    return;
-  }
-  var statusBadge = {
-    'new':      '<span class="pill blue" style="font-size:.72rem">New</span>',
-    'reviewed': '<span class="pill green" style="font-size:.72rem">Reviewed</span>',
-    'resolved': '<span class="pill" style="font-size:.72rem;background:rgba(56,217,169,.15);color:#38d9a9">Resolved</span>'
-  };
-  tbody.innerHTML = rows.map(function(fb) {
-    var badge = statusBadge[fb.status] || statusBadge['new'];
-    var typeLabel = fb.submitted_by ? esc(fb.submitted_by) : 'Widget';
-    return '<tr>' +
-      '<td style="font-size:.8rem">' + fmtDate(fb.created_at) + '</td>' +
-      '<td style="font-size:.8rem">' + typeLabel + '</td>' +
-      '<td style="font-size:.8rem">' + esc((fb.message||'').substring(0,60)) + (fb.message && fb.message.length>60 ? '…' : '') + '</td>' +
-      '<td>' + badge + '</td>' +
-      '</tr>';
-  }).join('');
-}
-
-// ── Accessibility statement panel ─────────────────────────
-function populateA11yStatement(c) {
-  var domain  = c.domain || '[yourdomain].ca';
-  var company = c.name   || 'Your Organization';
-  var email   = 'accessibility@' + domain;
-
-  // Update stmt-email-display spans
-  document.querySelectorAll('#stmt-email-display, [id="stmt-email-display"]').forEach(function(el){
-    el.textContent = email;
-  });
-
-  // Update company name in statement preview
-  var stmtPanel = document.getElementById('panel-a11y-stmt');
-  if (!stmtPanel) return;
-  var strongs = stmtPanel.querySelectorAll('strong');
-  strongs.forEach(function(el){
-    if (el.textContent.includes('Acme Corp') || el.textContent.includes('Your Organization')) {
-      el.textContent = company;
-    }
-  });
-
-  // Update any domain references
-  var allText = stmtPanel.querySelectorAll('p, li, span');
-  allText.forEach(function(el){
-    if (el.children.length === 0) {
-      el.textContent = el.textContent.replace(/acmecorp\.ca/g, domain).replace(/\[yourdomain\]\.ca/g, domain);
-    }
-  });
-
-  // Pre-fill the statement editor inputs
-  var stmtCo = document.getElementById('stmt-co');
-  if (stmtCo) stmtCo.value = company;
-  var stmtEmail = document.getElementById('stmt-email');
-  if (stmtEmail) stmtEmail.value = email;
-}
-
-// ── Standards / Templates panel ───────────────────────────
-function populateStandards(c) {
-  // Tier-gate: Tier 1 gets 5 templates, Tier 2 gets 11, Tier 3 gets all 15
-  // Just update any "Tier X" references shown in the panel
-  var stdPanel = document.getElementById('panel-standards');
-  if (!stdPanel) return;
-  var tierRefs = stdPanel.querySelectorAll('[class*="tier-gate"], [data-tier-min]');
-  tierRefs.forEach(function(el){
-    var min = parseInt(el.getAttribute('data-tier-min') || '1');
-    el.style.display = c.tier >= min ? '' : 'none';
-  });
-}
-
-// ── Evidence binder panel ─────────────────────────────────
-function populateEvidence(c, milestones) {
-  var evPanel = document.getElementById('panel-evidence');
-  if (!evPanel) return;
-  var now = new Date();
-  var monthsCompiled = now.getMonth(); // 0-based = months completed so far
-  
-  // Update month progress
-  var progEls = evPanel.querySelectorAll('[style*="font-size:2"]');
-  progEls.forEach(function(el){
-    if (el.textContent.match(/^\d+\s*\/\s*12/)) {
-      el.textContent = monthsCompiled + ' / 12 months compiled';
-    }
-  });
-
-  // Training completions count (from milestones with status=done)
-  var doneCount = milestones.filter(function(m){ return m.status === 'done'; }).length;
-  var countEls = evPanel.querySelectorAll('td');
-  countEls.forEach(function(el){
-    if (el.textContent === '3 completions') el.textContent = doneCount + ' completions';
-  });
-}
-
-// ── Reports panel ─────────────────────────────────────────
-function populateReports(c) {
-  var repPanel = document.getElementById('panel-reports');
-  if (!repPanel) return;
-  var domainEls = repPanel.querySelectorAll('strong, span, td');
-  domainEls.forEach(function(el){
-    if (el.children.length === 0 && el.textContent.includes('acmecorp')) {
-      el.textContent = el.textContent.replace(/acmecorp\.ca/g, c.domain || '');
-    }
-  });
-}
-
-// ── Sign out ──────────────────────────────────────────────
-function clientSignOut() {
-  _sb_client.auth.signOut().then(function(){
-    window.location.replace('login.html');
-  });
-}
-
 </script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  if (typeof flatpickr !== 'undefined') {
-    document.querySelectorAll('input[type="date"]').forEach(function(el) {
-      if (!el._flatpickr) flatpickr(el, { dateFormat: 'Y-m-d', allowInput: true });
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof flatpickr!=='undefined'){
+    document.querySelectorAll('input[type="date"]').forEach(function(el){
+      if(!el._flatpickr) flatpickr(el,{dateFormat:'Y-m-d',allowInput:true});
     });
   }
 });

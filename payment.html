@@ -211,7 +211,7 @@ footer{background:#060d1a;border-top:1px solid rgba(30,58,107,.5);
 .footer-sep{color:rgba(138,155,191,.3)}
 
 /* MODALS */
-.modal-overlay{display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:9000;
+.modal-overlay{display:none;position:fixed;inset:0;z-index:9000;
   background:rgba(5,12,24,.85);backdrop-filter:blur(8px);
   align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
@@ -255,6 +255,19 @@ footer{background:#060d1a;border-top:1px solid rgba(30,58,107,.5);
 
 /* GLOBAL HEADINGS */
 h1,h2,h3,h4,h5,h6{color:#fff !important}
+
+.billing-toggle-wrap{display:flex;align-items:center;gap:12px;margin-bottom:20px;
+  padding:14px 18px;background:#0d1f3c;border:1px solid #1e3a6b;border-radius:12px}
+.btog-label{font-size:.9rem;color:#8a9bbf;font-weight:500}
+.btog-switch{position:relative;width:48px;height:26px;background:#1e3a6b;border:none;
+  border-radius:13px;cursor:pointer;transition:background .25s;padding:0;flex-shrink:0}
+.btog-switch[aria-checked="true"]{background:#4f8ef7}
+.btog-knob{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;
+  border-radius:50%;transition:transform .25s}
+.btog-switch[aria-checked="true"] .btog-knob{transform:translateX(22px)}
+.btog-save{display:inline-block;background:rgba(56,217,169,.15);color:#38d9a9;
+  font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:4px}
+
 </style>
 </head>
 <body style="background:#0a1628 !important;color:#e8edf8 !important;font-family:Sora,sans-serif">
@@ -284,6 +297,14 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <p class="plan-desc">Complete your registration below. Your account is activated instantly and your widget embed code will be emailed within minutes.</p>
 
     <!-- Tier card — populated by JS -->
+        <div class="billing-toggle-wrap" role="group" aria-label="Billing cycle">
+      <span class="btog-label">Monthly</span>
+      <button class="btog-switch" id="btog-switch" role="switch" aria-checked="false"
+        onclick="setBillingCycle(billingCycle==='monthly'?'annual':'monthly')">
+        <span class="btog-knob"></span>
+      </button>
+      <span class="btog-label">Annual <span class="btog-save">Save 2 months</span></span>
+    </div>
     <div class="tier-card" id="selected-tier-card">
       <div class="tier-label" id="tc-label">Tier 1 &mdash; Essential</div>
       <div class="tier-name" id="tc-name">Essential</div>
@@ -378,42 +399,12 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
     <div class="fgroup">
       <label for="f-card">Card Number <span class="req" aria-hidden="true">*</span></label>
-      <div class="card-field-wrap">
-        <input class="finput" type="text" id="f-card" name="card_number"
-          placeholder="1234 5678 9012 3456" maxlength="19"
-          inputmode="numeric" autocomplete="cc-number" required aria-required="true"/>
-        <div class="card-icons" aria-hidden="true">
-          <div class="card-icon visa">VISA</div>
-          <div class="card-icon mc">MC</div>
-          <div class="card-icon amex">AMEX</div>
+              <div id="helcim-pay-container" style="min-height:180px;border-radius:10px;overflow:hidden;margin-bottom:8px;">
+          <div id="helcim-loading" style="padding:24px;text-align:center;color:var(--muted);font-size:.85rem">
+            🔒 Secure card fields loading…
+          </div>
         </div>
-      </div>
-      <div class="ferr" id="err-card" role="alert">Please enter a valid card number.</div>
-    </div>
-
-    <div class="frow-3">
-      <div class="fgroup">
-        <label for="f-name-card">Name on Card <span class="req" aria-hidden="true">*</span></label>
-        <input class="finput" type="text" id="f-name-card" name="card_name"
-          placeholder="JANE SMITH" autocomplete="cc-name" required aria-required="true"/>
-        <div class="ferr" id="err-name-card" role="alert">Required.</div>
-      </div>
-      <div class="fgroup">
-        <label for="f-expiry">Expiry <span class="req" aria-hidden="true">*</span></label>
-        <input class="finput" type="text" id="f-expiry" name="card_expiry"
-          placeholder="MM / YY" maxlength="7" inputmode="numeric"
-          autocomplete="cc-exp" required aria-required="true"/>
-        <div class="ferr" id="err-expiry" role="alert">Required.</div>
-      </div>
-      <div class="fgroup">
-        <label for="f-cvv">CVV <span class="req" aria-hidden="true">*</span></label>
-        <input class="finput" type="text" id="f-cvv" name="card_cvv"
-          placeholder="123" maxlength="4" inputmode="numeric"
-          autocomplete="cc-csc" required aria-required="true"
-          aria-describedby="cvv-hint"/>
-        <div id="cvv-hint" style="font-size:.75rem;color:var(--muted);margin-top:5px">3-4 digits</div>
-        <div class="ferr" id="err-cvv" role="alert">Required.</div>
-      </div>
+        <div class="ferr" id="err-card" role="alert" style="display:none"></div>
     </div>
 
     <div class="fgroup">
@@ -450,6 +441,10 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <span class="label">Discount</span>
         <span class="value discount" id="os-discount-val">-$0.00</span>
       </div>
+      <div class="order-row hidden-row" id="os-annual-row">
+        <span class="label">Annual saving</span>
+        <span class="value discount" id="os-annual-val">-$138.00</span>
+      </div>
       <div class="order-row">
         <span class="label">HST (13%)</span>
         <span class="value" id="os-tax">$8.97 CAD</span>
@@ -473,7 +468,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     </div>
     <div class="legal-check">
       <input type="checkbox" id="chk-casl" name="casl_consent"/>
-      <label for="chk-casl">
+      <label for="chk-casl" id="casl-label">
         I consent to receive email updates about my compliance status, product changes, and AODA regulatory news from Accessibility Compliance Canada Inc. (CASL express consent — unsubscribe anytime).
       </label>
     </div>
@@ -484,7 +479,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <span id="submit-label">Complete Registration &amp; Pay</span>
     </button>
     <p class="submit-note">
-      Your card is charged <strong id="submit-note-amt">$77.97 CAD</strong> today. Cancel anytime from your dashboard. No setup fees.
+      Your card is charged <strong id="submit-note-amt">$77.97 CAD</strong> today. <span id="submit-note-cycle">Cancel anytime from your dashboard.</span> No setup fees.
     </p>
 
   </section>
@@ -544,7 +539,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 </footer>
 
 <!-- PRIVACY MODAL -->
-<div id="privacy-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="priv-title">
+<div id="privacy-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="priv-title">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('privacy-modal')" aria-label="Close privacy policy">&#x2715;</button>
     <h2 id="priv-title">Privacy Policy</h2>
@@ -564,19 +559,19 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <li>To send compliance status emails and AODA updates (with consent).</li>
     </ul>
     <h3>3. CASL &amp; Consent Records</h3>
-    <p>We only send commercial emails with express consent. Consent records include: email, date/time, method, and IP, stored with CASL compliance mode enabled. Withdraw consent anytime via unsubscribe link or by emailing <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a>.</p>
+    <p>We only send commercial emails with express consent. Consent records include: email, date/time, method, and IP, stored with CASL compliance mode enabled. Withdraw consent anytime via unsubscribe link or by emailing <a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a>.</p>
     <h3>4. Security</h3>
     <p>AES-256 encryption at rest, TLS 1.3 in transit. PCI-DSS Level 1 compliant payment processing. We do not sell personal data.</p>
     <h3>5. Your Rights (PIPEDA)</h3>
     <p>You may access, correct, or request deletion of your data at any time from your dashboard or by contacting us.</p>
     <h3>6. Contact</h3>
     <p>2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON L6H 5V1<br>
-    <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
+    <a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a></p>
   </div>
 </div>
 
 <!-- ACCESSIBILITY STATEMENT MODAL -->
-<div id="a11y-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="a11y-title">
+<div id="a11y-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="a11y-title">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('a11y-modal')" aria-label="Close accessibility statement">&#x2715;</button>
     <h2 id="a11y-title">Accessibility Statement</h2>
@@ -594,12 +589,12 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <h3>ACCWidget</h3>
     <p>This page includes the ACC Accessibility Widget for adjusting font size, contrast, spacing, dyslexia fonts, and reading guides.</p>
     <h3>Feedback</h3>
-    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a> &middot; (416) 526-9645</p>
+    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--teal)">partner@accessibilitycompliance.ca</a> &middot; (416) 526-9645</p>
   </div>
 </div>
 
 <!-- TERMS OF SERVICE MODAL -->
-<div id="terms-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+<div id="terms-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="terms-title">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('terms-modal')" aria-label="Close terms of service">&#x2715;</button>
     <h2 id="terms-title">Terms of Service</h2>
@@ -624,212 +619,231 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <h3>6. Governing Law</h3>
     <p>These terms are governed by the laws of Ontario, Canada. Disputes shall be resolved in Ontario courts.</p>
     <h3>7. Contact</h3>
-    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
+    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a></p>
   </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js?v=12" id="ACCWidget"></script>
+<script src="https://helcim.com/helcim-pay/services/start.js"></script>
 <script>
-function openModal(id) {
-  var m = document.getElementById(id);
-  if (!m) return;
-  m.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  setTimeout(function(){ var c = m.querySelector('.modal-close'); if(c) c.focus(); }, 50);
+// Modal helpers — defined first so footer buttons always work
+function openModal(id){
+  var m=document.getElementById(id);
+  if(!m) return;
+  m.classList.add('open');
+  document.body.style.overflow='hidden';
+  var btn=m.querySelector('.modal-close');
+  if(btn) setTimeout(function(){btn.focus();},50);
+  m.addEventListener('click',function handler(e){
+    if(e.target===m){closeModal(id);m.removeEventListener('click',handler);}
+  });
+  document.addEventListener('keydown',function esc(e){
+    if(e.key==='Escape'){closeModal(id);document.removeEventListener('keydown',esc);}
+  });
 }
-function closeModal(id) {
-  var m = document.getElementById(id);
-  if (!m) return;
-  m.style.display = 'none';
-  document.body.style.overflow = '';
+function closeModal(id){
+  var m=document.getElementById(id);
+  if(m){m.classList.remove('open');document.body.style.overflow='';}
 }
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal-overlay').forEach(function(m) {
-      m.style.display = 'none';
-    });
-    document.body.style.overflow = '';
-  }
-});
 </script>
 <script>
-// ── Tier Data ──
-var TIERS = {
-  t1: {
-    label:'Tier 1 — Essential', name:'Essential', emp:'1–19 Employees',
-    amount:'$69', annual:'or $690 / year (save 2 months)',
-    monthly:69, tax_rate:0.13,
-    features:['AI Accessibility Widget & Scans','Accessibility Policy Template','Monthly Health Reports']
-  },
-  t2: {
-    label:'Tier 2 — Managed', name:'Managed', emp:'20–50 Employees',
-    amount:'$199', annual:'or $1,990 / year (save 2 months)',
-    monthly:199, tax_rate:0.13,
+// Tier data
+var TIERS={
+  t1:{label:'Tier 1 — Essential',name:'Essential',emp:'1–19 Employees',
+    amount:'$69',annual:'or $690 / year (save 2 months)',
+    monthly:69,yearly:690,tax_rate:0.13,
+    features:['AI Accessibility Widget & Scans','Accessibility Policy Template','Monthly Health Reports']},
+  t2:{label:'Tier 2 — Managed',name:'Managed',emp:'20–50 Employees',
+    amount:'$199',annual:'or $1,990 / year (save 2 months)',
+    monthly:199,yearly:1990,tax_rate:0.13,
     features:['AI Widget + Daily Health Scans','Automated AODA Staff Training Portal',
       'Hosted Accessible Feedback Page','3-Year Compliance Roadmap',
-      'Filing Template Kit','Annual Evidence Binder']
-  },
-  t3: {
-    label:'Tier 3 — Enterprise', name:'Enterprise', emp:'50+ Employees',
-    amount:'Custom', annual:'Contact us for a tailored quote',
-    monthly:null, tax_rate:0.13,
+      'Filing Template Kit','Annual Evidence Binder']},
+  t3:{label:'Tier 3 — Enterprise',name:'Enterprise',emp:'50+ Employees',
+    amount:'Custom',annual:'Contact us for a tailored quote',
+    monthly:null,yearly:null,tax_rate:0.13,
     features:['AI + Human Remediation','Custom Staff Workshops',
       'Integrated Feedback Systems','Multi-Year Accessibility Plan',
-      'Bespoke Policy Drafting','VPAT & Full Audit Defense']
-  }
+      'Bespoke Policy Drafting','VPAT & Full Audit Defense']}
 };
-var currentTier = 't1';
-var discountPct = 0;
+var currentTier='t1',billingCycle='monthly',discountPct=0;
 
-// Read tier from URL param
 (function(){
-  var params = new URLSearchParams(window.location.search);
-  var t = params.get('tier');
-  if (t === '2' || t === 't2') currentTier = 't2';
+  var p=new URLSearchParams(window.location.search);
+  var t=p.get('tier'),c=p.get('cycle');
+  if(t==='2'||t==='t2') currentTier='t2';
+  if(t==='3'||t==='t3') currentTier='t3';
+  if(c==='annual'){billingCycle='annual';
+    var sw=document.getElementById('btog-switch');
+    if(sw) sw.setAttribute('aria-checked','true');}
   renderTier();
 })();
 
-function renderTier() {
-  var t = TIERS[currentTier];
-  document.getElementById('tc-label').textContent = t.label;
-  document.getElementById('tc-name').textContent = t.name;
-  document.getElementById('tc-emp').textContent = t.emp;
-  document.getElementById('tc-amount').textContent = t.amount;
-  var periodEl = document.getElementById('tc-period');
-  if (periodEl) periodEl.style.display = t.monthly ? '' : 'none';
-  document.getElementById('tc-annual').textContent = t.annual;
-  var ul = document.getElementById('tc-features');
-  ul.innerHTML = t.features.map(function(f){ return '<li>' + f + '</li>'; }).join('');
-  var payWrap = document.getElementById('payment-wrap');
-  var t3Cta = document.getElementById('t3-contact-cta');
-  if (currentTier === 't3') {
-    if (payWrap) payWrap.style.display = 'none';
-    if (t3Cta) t3Cta.style.display = 'block';
-  } else {
-    if (payWrap) payWrap.style.display = '';
-    if (t3Cta) t3Cta.style.display = 'none';
-  }
-  updateOrderSummary();
-}
-
-function toggleTier() {
-  if (currentTier === 't1') currentTier = 't2';
-  else if (currentTier === 't2') currentTier = 't3';
-  else currentTier = 't1';
+function setBillingCycle(cycle){
+  billingCycle=cycle;
+  var sw=document.getElementById('btog-switch');
+  if(sw) sw.setAttribute('aria-checked',cycle==='annual'?'true':'false');
   renderTier();
 }
 
-function updateOrderSummary() {
-  var t = TIERS[currentTier];
-  if (!t.monthly) {
-    document.getElementById('os-plan-label').textContent = t.name + ' Plan';
-    document.getElementById('os-plan-price').textContent = 'Custom';
-    document.getElementById('os-tax').textContent = '—';
-    document.getElementById('os-total').textContent = 'Custom';
-    var snEl = document.getElementById('submit-note-amt');
-    if (snEl) snEl.textContent = 'Custom';
-    var dr = document.getElementById('os-discount-row');
-    if (dr) dr.classList.add('hidden-row');
+function renderTier(){
+  var t=TIERS[currentTier];
+  document.getElementById('tc-label').textContent=t.label;
+  document.getElementById('tc-name').textContent=t.name;
+  document.getElementById('tc-emp').textContent=t.emp;
+  var pe=document.getElementById('tc-period');
+  if(billingCycle==='annual'&&t.yearly){
+    document.getElementById('tc-amount').textContent='$'+t.yearly;
+    if(pe) pe.textContent='/ year';
+    document.getElementById('tc-annual').textContent='Billed once annually. Switch anytime.';
+  }else{
+    document.getElementById('tc-amount').textContent=t.amount;
+    if(pe) pe.textContent='/ month';
+    document.getElementById('tc-annual').textContent=t.annual;
+  }
+  var ul=document.getElementById('tc-features');
+  if(ul) ul.innerHTML=t.features.map(function(f){return '<li>'+f+'</li>';}).join('');
+  var pw=document.getElementById('payment-wrap');
+  var t3=document.getElementById('t3-contact-cta');
+  if(currentTier==='t3'){if(pw)pw.style.display='none';if(t3)t3.style.display='block';}
+  else{if(pw)pw.style.display='';if(t3)t3.style.display='none';}
+  updateOrderSummary();
+}
+
+function toggleTier(){
+  currentTier=currentTier==='t1'?'t2':'t1';
+  renderTier();
+}
+
+function updateOrderSummary(){
+  var t=TIERS[currentTier];
+  if(!t.monthly){
+    document.getElementById('os-plan-label').textContent=t.name+' Plan';
+    document.getElementById('os-plan-price').textContent='Custom';
+    document.getElementById('os-tax').textContent='—';
+    document.getElementById('os-total').textContent='Custom';
+    var sn=document.getElementById('submit-note-amt');if(sn)sn.textContent='Custom';
+    var dr=document.getElementById('os-discount-row');if(dr)dr.classList.add('hidden-row');
+    var ar=document.getElementById('os-annual-row');if(ar)ar.classList.add('hidden-row');
     return;
   }
-  var base = t.monthly;
-  var disc = Math.round(base * discountPct * 100) / 100;
-  var discounted = base - disc;
-  var tax = Math.round(discounted * t.tax_rate * 100) / 100;
-  var total = discounted + tax;
-  document.getElementById('os-plan-label').textContent = t.name + ' Plan (monthly)';
-  document.getElementById('os-plan-price').textContent = '$' + base.toFixed(2) + ' CAD';
-  document.getElementById('os-tax').textContent = '$' + tax.toFixed(2) + ' CAD';
-  document.getElementById('os-total').textContent = '$' + total.toFixed(2) + ' CAD';
-  var snEl = document.getElementById('submit-note-amt');
-  if (snEl) snEl.textContent = '$' + total.toFixed(2) + ' CAD';
-  var dr = document.getElementById('os-discount-row');
-  if (disc > 0) {
-    dr.classList.remove('hidden-row');
-    document.getElementById('os-discount-val').textContent = '-$' + disc.toFixed(2);
-  } else { dr.classList.add('hidden-row'); }
+  var isA=(billingCycle==='annual');
+  var base=isA?t.yearly:t.monthly;
+  var disc=Math.round(base*discountPct*100)/100;
+  var net=base-disc,tax=Math.round(net*t.tax_rate*100)/100,total=net+tax;
+  document.getElementById('os-plan-label').textContent=t.name+' Plan'+(isA?' (annual)':' (monthly)');
+  document.getElementById('os-plan-price').textContent='$'+base.toFixed(2)+' CAD';
+  document.getElementById('os-tax').textContent='$'+tax.toFixed(2)+' CAD';
+  document.getElementById('os-total').textContent='$'+total.toFixed(2)+' CAD';
+  var sn=document.getElementById('submit-note-amt');if(sn)sn.textContent='$'+total.toFixed(2)+' CAD';
+  var sc=document.getElementById('submit-note-cycle');
+  if(sc)sc.textContent=isA?'Annual plan — billed once. Renews in 12 months.':'Cancel anytime from your dashboard.';
+  var dr=document.getElementById('os-discount-row');
+  if(disc>0){if(dr)dr.classList.remove('hidden-row');document.getElementById('os-discount-val').textContent='-$'+disc.toFixed(2);}
+  else{if(dr)dr.classList.add('hidden-row');}
+  var ar=document.getElementById('os-annual-row');
+  if(isA&&ar){ar.classList.remove('hidden-row');document.getElementById('os-annual-val').textContent='-$'+((t.monthly*12)-t.yearly).toFixed(2)+' vs monthly';}
+  else if(ar)ar.classList.add('hidden-row');
 }
 
-// ── Discount codes ──
-var DISCOUNT_CODES = { 'AODA2026':0.10, 'ACC20':0.20, 'LAUNCH15':0.15 };
-
-function applyDiscount() {
-  var code = document.getElementById('f-discount').value.trim().toUpperCase();
-  var msg = document.getElementById('discount-msg');
-  var txt = document.getElementById('discount-text');
-  if (DISCOUNT_CODES[code]) {
-    discountPct = DISCOUNT_CODES[code];
-    txt.textContent = (discountPct * 100) + '% discount applied!';
-    msg.classList.add('show');
-    updateOrderSummary();
-  } else {
-    discountPct = 0;
-    txt.textContent = 'Invalid code. Try AODA2026 for 10% off.';
-    msg.classList.add('show');
-    msg.style.color = 'var(--err)';
-    updateOrderSummary();
-  }
+var DISCOUNT_CODES={'AODA2026':0.10,'ACC20':0.20,'LAUNCH15':0.15};
+function applyDiscount(){
+  var code=document.getElementById('f-discount').value.trim().toUpperCase();
+  var msg=document.getElementById('discount-msg'),txt=document.getElementById('discount-text');
+  if(!msg||!txt)return;
+  if(DISCOUNT_CODES[code]){
+    discountPct=DISCOUNT_CODES[code];txt.textContent=(discountPct*100)+'% discount applied!';
+    msg.style.color='var(--teal)';msg.classList.add('show');
+  }else{discountPct=0;txt.textContent='Invalid code. Try AODA2026 for 10% off.';
+    msg.style.color='var(--err)';msg.classList.add('show');}
+  updateOrderSummary();
 }
 
-// ── Card formatting ──
-document.getElementById('f-card').addEventListener('input', function(e) {
-  var v = e.target.value.replace(/\D/g,'').substring(0,16);
-  e.target.value = v.replace(/(.{4})/g,'$1 ').trim();
-});
-document.getElementById('f-expiry').addEventListener('input', function(e) {
-  var v = e.target.value.replace(/\D/g,'').substring(0,4);
-  if (v.length >= 2) v = v.substring(0,2) + ' / ' + v.substring(2);
-  e.target.value = v;
-});
-
-// ── Validation ──
-function validateField(id, errId, test) {
-  var el = document.getElementById(id);
-  var err = document.getElementById(errId);
-  var ok = test(el.value.trim());
-  el.classList.toggle('error', !ok);
-  if (err) err.classList.toggle('show', !ok);
+function validateField(id,errId,test){
+  var el=document.getElementById(id),err=document.getElementById(errId);
+  if(!el)return true;
+  var ok=test(el.value.trim());
+  el.classList.toggle('error',!ok);if(err)err.classList.toggle('show',!ok);
   return ok;
 }
 
-function submitPayment() {
-  var ok = true;
-  ok = validateField('f-fname','err-fname', v => v.length > 0) && ok;
-  ok = validateField('f-lname','err-lname', v => v.length > 0) && ok;
-  ok = validateField('f-email','err-email', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) && ok;
-  ok = validateField('f-company','err-company', v => v.length > 0) && ok;
-  ok = validateField('f-website','err-website', v => v.length > 3) && ok;
-  ok = validateField('f-password','err-password', v => v.length >= 8 && /\d/.test(v)) && ok;
-  ok = validateField('f-card','err-card', v => v.replace(/\s/g,'').length >= 15) && ok;
-  ok = validateField('f-name-card','err-name-card', v => v.length > 0) && ok;
-  ok = validateField('f-expiry','err-expiry', v => v.length >= 4) && ok;
-  ok = validateField('f-cvv','err-cvv', v => v.length >= 3) && ok;
-  ok = validateField('f-billing','err-billing', v => v.length > 5) && ok;
+var _pendingPayload=null;
+window.addEventListener('message',function(e){
+  var d=e.data;if(!d||typeof d!=="object")return;
+  if(d.eventType==='helcimPayLoaded'){var ld=document.getElementById('helcim-loading');if(ld)ld.style.display='none';}
+  if(d.eventType==='transaction'&&d.eventStatus==='APPROVED')handleHelcimSuccess(d);
+  if(d.eventType==='transaction'&&d.eventStatus==='DECLINED'){
+    showCardError('Payment declined: '+(d.eventMessage||'Please try a different card.'));resetSubmitBtn();}
+});
 
-  var terms = document.getElementById('chk-terms');
-  if (!terms.checked) {
-    ok = false;
-    terms.focus();
-    alert('Please accept the Terms of Service and Privacy Policy to continue.');
-  }
+function showCardError(msg){
+  var err=document.getElementById('err-card');if(!err)return;
+  err.style.display='block';err.textContent=msg;
+  err.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function resetSubmitBtn(){
+  var btn=document.getElementById('submit-btn'),lbl=document.getElementById('submit-label');
+  if(btn)btn.disabled=false;if(lbl)lbl.textContent='Complete Subscription';
+}
 
-  if (!ok) return;
+function submitPayment(){
+  var ok=true;
+  ok=validateField('f-fname','err-fname',function(v){return v.length>0;})&&ok;
+  ok=validateField('f-lname','err-lname',function(v){return v.length>0;})&&ok;
+  ok=validateField('f-email','err-email',function(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);})&&ok;
+  ok=validateField('f-company','err-company',function(v){return v.length>0;})&&ok;
+  ok=validateField('f-website','err-website',function(v){return v.length>3;})&&ok;
+  ok=validateField('f-password','err-password',function(v){return v.length>=8&&/\d/.test(v);})&&ok;
+  ok=validateField('f-billing','err-billing',function(v){return v.length>5;})&&ok;
+  var terms=document.getElementById('chk-terms');
+  if(terms&&!terms.checked){ok=false;showCardError('Please accept the Terms of Service.');}
+  if(!ok)return;
+  if(currentTier==='t3'){window.location.href='mailto:partner@accessibilitycompliance.ca?subject=Tier%203%20Inquiry';return;}
+  var btn=document.getElementById('submit-btn'),lbl=document.getElementById('submit-label');
+  if(btn)btn.disabled=true;if(lbl)lbl.textContent='Processing…';
+  var t=TIERS[currentTier],isA=(billingCycle==="annual");
+  var base=isA?t.yearly:t.monthly;
+  var amount=Math.round((base-Math.round(base*discountPct*100)/100)*100)/100;
+  var payload={amount:amount,currency:"CAD",tier:currentTier==="t1"?1:2,billingCycle:billingCycle,
+    firstName:document.getElementById('f-fname').value.trim(),
+    lastName:document.getElementById('f-lname').value.trim(),
+    email:document.getElementById('f-email').value.trim(),
+    company:document.getElementById('f-company').value.trim(),
+    domain:document.getElementById('f-website').value.trim(),
+    phone:(document.getElementById('f-phone')||{value:''}).value.trim(),
+    billingAddr:document.getElementById('f-billing').value.trim(),
+    password:document.getElementById('f-password').value,
+    discountCode:document.getElementById('f-discount')?document.getElementById('f-discount').value.trim().toUpperCase():'',
+    discountPct:discountPct};
+  fetch('https://wfyzvmfvlukawidowuym.supabase.co/functions/v1/helcim-checkout',{
+    method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M"},
+    body:JSON.stringify(payload)
+  }).then(function(r){return r.json().then(function(res){
+    if(!r.ok||!res.checkoutToken)throw new Error(res.error||'Could not initialize payment.');
+    _pendingPayload=payload;var c=document.getElementById('helcim-pay-container');if(c)c.innerHTML='';
+    if(typeof appendHelcimIframe==='function')appendHelcimIframe(res.checkoutToken);
+    else throw new Error('Payment processor not loaded. Please refresh.');
+    resetSubmitBtn();
+  });}).catch(function(e){showCardError(e.message||"Something went wrong.");resetSubmitBtn();});
+}
 
-  // Simulate submission
-  var btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  document.getElementById('submit-label').textContent = 'Processing…';
-
-  setTimeout(function() {
-    // Show success
-    document.querySelector('.plan-summary').style.display = 'none';
-    document.querySelector('.payment-form-wrap').style.display = 'none';
-    var ss = document.getElementById('success-screen');
-    ss.style.display = 'block';
-    document.getElementById('success-email').textContent =
-      document.getElementById('p-email').value.trim();
-    document.getElementById('success-tier').textContent = TIERS[currentTier] ? TIERS[currentTier].label : '';
-  }, 1800);
+function handleHelcimSuccess(data){
+  var btn=document.getElementById('submit-btn'),lbl=document.getElementById('submit-label');
+  if(btn)btn.disabled=true;if(lbl)lbl.textContent='Creating your account…';
+  var p=_pendingPayload;if(!p){resetSubmitBtn();return;}
+  fetch('https://wfyzvmfvlukawidowuym.supabase.co/auth/v1/signup',{
+    method:"POST",
+    headers:{"Content-Type":"application/json","apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M"},
+    body:JSON.stringify({email:p.email,password:p.password})
+  }).then(function(r){return r.json();})
+  .then(function(sb){
+    var uid=(sb&&sb.user)?sb.user.id:null;
+    return fetch('https://wfyzvmfvlukawidowuym.supabase.co/functions/v1/helcim-checkout',{
+      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M"},
+      body:JSON.stringify({event:'payment.success',
+        transactionId:data.transactionId||(data.data&&data.data.transactionId),
+        authUserId:uid,payload:p})});
+  }).then(function(){var ss=document.getElementById('success-screen'),se=document.getElementById('success-email');
+    if(ss)ss.style.display='flex';if(se)se.textContent=p.email;window.scrollTo(0,0);
+  }).catch(function(){showCardError('Payment succeeded but account setup failed. Contact compliance@accessibilitycompliance.ca');resetSubmitBtn();});
 }
 </script>
 </body>

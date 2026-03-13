@@ -406,6 +406,13 @@ footer{background:#060d1a;border-top:1px solid rgba(30,58,107,.5)}
   }
 }
 .nav-login-btn{background:rgba(79,142,247,.12);border:1.5px solid rgba(79,142,247,.35);border-radius:8px;padding:7px 16px;color:#4f8ef7!important;font-weight:700;white-space:nowrap;text-decoration:none}
+
+/* Annual CTA buttons */
+.scta-wrap{display:flex;flex-direction:column;gap:8px;margin-top:20px}
+.scta{width:100%;padding:13px 16px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-weight:700;font-size:.9rem;cursor:pointer;transition:background .2s;font-family:var(--font)}
+.scta:hover{background:#3a7de8}
+.scta-annual{background:rgba(56,217,169,.12)!important;color:#38d9a9!important;border:1px solid rgba(56,217,169,.3)!important}
+.scta-annual:hover{background:rgba(56,217,169,.25)!important}
 </style>
 </head>
 <body>
@@ -516,14 +523,14 @@ footer{background:#060d1a;border-top:1px solid rgba(30,58,107,.5)}
         <div class="semp">1&ndash;19 Employees</div>
         <div class="price-block">
           <div><span class="price-main">$69</span><span class="price-period"> CAD / month</span></div>
-          <div class="price-alt">or <span>$690 / year</span> (save 2 months)</div>
+          <div class="price-alt">or <span>$690 / year</span> — save $138</div>
         </div>
         <ul>
           <li>AI Accessibility Widget &amp; Scans</li>
           <li>Accessibility Policy Template</li>
           <li>Monthly Health Reports</li>
         </ul>
-        <button class="scta" onclick="window.location.href='payment.html?tier=1'">Get Started &#8594;</button>
+        <div class="scta-wrap"><button class="scta" onclick="window.location.href='payment.html?tier=1'">Monthly &#8594;</button><button class="scta scta-annual" onclick="window.location.href='payment.html?tier=1&amp;cycle=annual'">Annual — Save $138 &#8594;</button></div>
       </div>
       <div class="scard reveal">
         <div class="snum">2</div>
@@ -532,7 +539,7 @@ footer{background:#060d1a;border-top:1px solid rgba(30,58,107,.5)}
         <div class="semp">20&ndash;50 Employees</div>
         <div class="price-block">
           <div><span class="price-main">$199</span><span class="price-period"> CAD / month</span></div>
-          <div class="price-alt">or <span>$1,990 / year</span> (save 2 months)</div>
+          <div class="price-alt">or <span>$1,990 / year</span> — save $398</div>
         </div>
         <ul>
           <li>AI Widget + Daily Health Scans</li>
@@ -542,7 +549,7 @@ footer{background:#060d1a;border-top:1px solid rgba(30,58,107,.5)}
           <li>Filing Template Kit</li>
           <li>Annual Evidence Binder</li>
         </ul>
-        <button class="scta" onclick="window.location.href='payment.html?tier=2'">Get Started &#8594;</button>
+        <div class="scta-wrap"><button class="scta" onclick="window.location.href='payment.html?tier=2'">Monthly &#8594;</button><button class="scta scta-annual" onclick="window.location.href='payment.html?tier=2&amp;cycle=annual'">Annual — Save $398 &#8594;</button></div>
       </div>
       <div class="scard reveal">
         <div class="snum">3</div>
@@ -736,123 +743,111 @@ footer{background:#060d1a;border-top:1px solid rgba(30,58,107,.5)}
     <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a> &middot; (416) 526-9645<br>We respond to accessibility feedback within 2 business days.</p>
   </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js?v=12" id="ACCWidget"></script>
+<script src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js?v=12"></script>
 <script>
 var CONTACT_FORM_ID = 'xzdjzdyr';
 
-var hamburger = document.getElementById('hamburger');
-var navDrawer = document.getElementById('nav-drawer');
-var drawerOpen = false;
+(function() {
+  var hamburger = document.getElementById('hamburger');
+  var navDrawer  = document.getElementById('nav-drawer');
+  var drawerOpen = false;
 
-function openDrawer() {
-  drawerOpen = true;
-  navDrawer.classList.add('open');
-  hamburger.setAttribute('aria-expanded','true');
-  hamburger.setAttribute('aria-label','Close navigation menu');
-  document.body.style.overflow = 'hidden';
-}
-function closeDrawer() {
-  drawerOpen = false;
-  navDrawer.classList.remove('open');
-  hamburger.setAttribute('aria-expanded','false');
-  hamburger.setAttribute('aria-label','Open navigation menu');
-  document.body.style.overflow = '';
-}
-hamburger.addEventListener('click', function() { drawerOpen ? closeDrawer() : openDrawer(); });
+  function openDrawer() {
+    drawerOpen = true;
+    if(navDrawer) navDrawer.classList.add('open');
+    if(hamburger) { hamburger.setAttribute('aria-expanded','true'); hamburger.setAttribute('aria-label','Close navigation menu'); }
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    drawerOpen = false;
+    if(navDrawer) navDrawer.classList.remove('open');
+    if(hamburger) { hamburger.setAttribute('aria-expanded','false'); hamburger.setAttribute('aria-label','Open navigation menu'); }
+    document.body.style.overflow = '';
+  }
+  if(hamburger) hamburger.addEventListener('click', function(){ drawerOpen ? closeDrawer() : openDrawer(); });
 
-var obs = new IntersectionObserver(function(entries) {
-  entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(function(el) { obs.observe(el); });
+  // Close drawer on any nav link click
+  if(navDrawer) navDrawer.querySelectorAll('a, button').forEach(function(el){ el.addEventListener('click', closeDrawer); });
 
-function scrollToContact(tier, label) {
-  closeDrawer();
-  document.getElementById('contact').scrollIntoView({ behavior:'smooth', block:'start' });
-  if (tier) {
-    setTimeout(function() {
+  // Reveal on scroll
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, {threshold:0.08});
+  document.querySelectorAll('.reveal').forEach(function(el){ obs.observe(el); });
+
+  // Expose globals
+  window.openDrawer  = openDrawer;
+  window.closeDrawer = closeDrawer;
+
+  window.scrollToContact = function(tier, label) {
+    closeDrawer();
+    var el = document.getElementById('contact');
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    if(tier) setTimeout(function(){
       var sel = document.getElementById('companySize');
       var sub = document.getElementById('subject');
       var hid = document.getElementById('sel-tier');
-      if (sel) sel.value = tier;
-      if (sub && label) sub.value = 'Inquiry: ' + label;
-      if (hid) hid.value = label || tier;
-      if (sel) sel.focus();
+      if(sel) sel.value = tier;
+      if(sub && label) sub.value = 'Inquiry: ' + label;
+      if(hid) hid.value = label || tier;
+      if(sel) sel.focus();
     }, 700);
-  }
-}
-
-function openModal(id) {
-  var m = document.getElementById(id);
-  m.classList.add('open');
-  document.body.style.overflow = 'hidden';
-  var btn = m.querySelector('.modal-close');
-  if (btn) setTimeout(function() { btn.focus(); }, 50);
-  m.addEventListener('click', function handler(e) {
-    if (e.target === m) { closeModal(id); m.removeEventListener('click', handler); }
-  });
-  document.addEventListener('keydown', function esc(e) {
-    if (e.key === 'Escape') { closeModal(id); document.removeEventListener('keydown', esc); }
-  });
-}
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-function handleSubmit(e) {
-  e.preventDefault();
-  var fields = [
-    {id:'firstName',err:'fn-err'},{id:'lastName',err:'ln-err'},
-    {id:'company',err:'co-err'},{id:'companySize',err:'sz-err'},{id:'email',err:'em-err'}
-  ];
-  var valid = true;
-  fields.forEach(function(f) {
-    var el = document.getElementById(f.id);
-    errEl = document.getElementById(f.err);
-    if (!el.value.trim()) {
-      valid = false;
-      if (errEl) { errEl.textContent = 'This field is required.'; errEl.style.display = 'block'; }
-      el.style.borderColor = 'var(--error)';
-    } else {
-      if (errEl) errEl.style.display = 'none';
-      el.style.borderColor = '';
-    }
-  });
-  return valid;
-}
-function submitContact() {
-  if (!validateContact()) return;
-  var btn = document.getElementById('contact-btn');
-  btn.textContent = 'Sending…';
-  btn.disabled = true;
-  var data = {
-    firstName: document.getElementById('firstName').value.trim(),
-    lastName:  document.getElementById('lastName').value.trim(),
-    company:   document.getElementById('company').value.trim(),
-    companySize: document.getElementById('companySize').value,
-    email:     document.getElementById('email').value.trim(),
-    message:   document.getElementById('message') ? document.getElementById('message').value.trim() : ''
   };
-  fetch('https://formspree.io/f/xzdjzdyr', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify(data)
-  }).then(function(r) {
-    if (r.ok) {
-      document.getElementById('contact-success').style.display = 'block';
-      document.getElementById('contact-form-inner').style.display = 'none';
-    } else {
-      btn.textContent = 'Send Message';
-      btn.disabled = false;
-      alert('Something went wrong. Please try again.');
+
+  window.openModal = function(id) {
+    var m = document.getElementById(id);
+    if(!m) return;
+    m.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    var btn = m.querySelector('.modal-close');
+    if(btn) setTimeout(function(){ btn.focus(); }, 50);
+    m.addEventListener('click', function handler(e){
+      if(e.target === m){ window.closeModal(id); m.removeEventListener('click', handler); }
+    });
+    document.addEventListener('keydown', function esc(e){
+      if(e.key === 'Escape'){ window.closeModal(id); document.removeEventListener('keydown', esc); }
+    });
+  };
+  window.closeModal = function(id) {
+    var m = document.getElementById(id);
+    if(m){ m.classList.remove('open'); document.body.style.overflow = ''; }
+  };
+
+  window.handleSubmit = function(e) {
+    e.preventDefault();
+    var fields = [
+      {id:'firstName',err:'fn-err'},{id:'lastName',err:'ln-err'},
+      {id:'company',err:'co-err'},{id:'companySize',err:'sz-err'},{id:'email',err:'em-err'}
+    ];
+    var valid = true;
+    fields.forEach(function(f){
+      var el = document.getElementById(f.id);
+      var errEl = document.getElementById(f.err);
+      if(!el) return;
+      if(!el.value.trim()){
+        valid = false;
+        el.classList.add('inp-err');
+        if(errEl) errEl.style.display = 'block';
+      } else {
+        el.classList.remove('inp-err');
+        if(errEl) errEl.style.display = 'none';
+      }
+    });
+    if(!valid) return;
+    var form = document.getElementById('contact-form');
+    if(form){
+      var data = new FormData(form);
+      fetch('https://formspree.io/f/' + CONTACT_FORM_ID, {
+        method:'POST', body:data, headers:{'Accept':'application/json'}
+      }).then(function(r){
+        if(r.ok){
+          var thanks = document.getElementById('form-thanks');
+          if(thanks){ form.style.display='none'; thanks.style.display='block'; }
+        }
+      }).catch(function(){});
     }
-  }).catch(function() {
-    btn.textContent = 'Send Message';
-    btn.disabled = false;
-    alert('Network error. Please try again.');
-  });
-}
+  };
+})();
 </script>
 </body>
 </html>

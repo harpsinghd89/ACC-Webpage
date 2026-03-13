@@ -148,7 +148,7 @@ select.finput{appearance:none;cursor:pointer;
 .toggle-info span{font-size:.75rem;color:#8a9bbf}
 .toggle{position:relative;width:42px;height:24px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;top:0;right:0;bottom:0;left:0;cursor:pointer;background:rgba(30,58,107,.8);border-radius:99px;transition:.2s}
+.toggle-slider{position:absolute;inset:0;cursor:pointer;background:rgba(30,58,107,.8);border-radius:99px;transition:.2s}
 .toggle input:checked + .toggle-slider{background:#4f8ef7}
 .toggle-slider::after{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
 .toggle input:checked + .toggle-slider::after{transform:translateX(18px)}
@@ -161,7 +161,7 @@ select.finput{appearance:none;cursor:pointer;
 .dl-btn:hover{background:rgba(56,217,169,.18)}
 
 /* MODAL */
-.modal-overlay{display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:9000;
+.modal-overlay{display:none;position:fixed;inset:0;z-index:9000;
   background:rgba(5,12,24,.9);backdrop-filter:blur(8px);
   align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
@@ -426,7 +426,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </div>
       <div class="card">
         <h2>&#9993; Zoho Email Automation</h2>
-        <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Automated AODA compliance reminders sent from <a href="/cdn-cgi/l/email-protection#680b070518040109060b0d28090b0b0d1b1b010a0104011c110b070518040109060b0d460b09" style="color:#4f8ef7"><span class="__cf_email__" data-cfemail="55363a3825393c343b3630153436363026263c373c393c212c363a3825393c343b36307b3634">[email&#160;protected]</span></a></p>
+        <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Automated AODA compliance reminders sent from <a href="mailto:compliance@accessibilitycompliance.ca" style="color:#4f8ef7">compliance@accessibilitycompliance.ca</a></p>
         <table class="data-table">
           <thead><tr><th>Date</th><th>Template</th><th>Recipients</th><th>Status</th></tr></thead>
           <tbody>
@@ -542,7 +542,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </table>
         <div style="margin-top:16px">
           <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:8px">CDN URL:</p>
-          <code style="font-family:ui-monospace,'SF Mono','Courier New',monospace;font-size:.78rem;color:#38d9a9;background:#060d1a;padding:8px 12px;border-radius:8px;display:block;word-break:break-all">https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js?v=12</code>
+          <code style="font-family:ui-monospace,'SF Mono','Courier New',monospace;font-size:.78rem;color:#38d9a9;background:#060d1a;padding:8px 12px;border-radius:8px;display:block;word-break:break-all">https://cdn.jsdelivr.net/gh/ACC-Widget.js</code>
         </div>
       </div>
     </div>
@@ -618,23 +618,17 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('add-client-modal')" aria-label="Close">&#10005;</button>
     <h2>&#128101; Add New Client</h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="fgroup"><label>Business Name *</label><input class="finput" id="nc-name" placeholder="e.g. Acme Corp Inc."></div>
-      <div class="fgroup"><label>Domain</label><input class="finput" id="nc-domain" placeholder="e.g. acmecorp.ca"></div>
-      <div class="fgroup"><label>Contact Email *</label><input class="finput" id="nc-email" type="email" placeholder="contact@company.ca"></div>
-      <div class="fgroup"><label>Phone</label><input class="finput" id="nc-phone" type="tel" placeholder="(416) 555-0100"></div>
-      <div class="fgroup"><label>Contact Name</label><input class="finput" id="nc-contact" placeholder="Jane Smith"></div>
-      <div class="fgroup"><label>Tier</label>
-        <select class="finput" id="nc-tier">
-          <option value="1">Tier 1 — Essential ($69/mo)</option>
-          <option value="2">Tier 2 — Managed ($199/mo)</option>
-          <option value="3">Tier 3 — Enterprise (Custom)</option>
-        </select>
-      </div>
-      <div class="fgroup"><label>Start Date</label><input class="finput" id="nc-start" type="date"></div>
-      <div class="fgroup"><label>Renewal Date</label><input class="finput" id="nc-renewal" type="date"></div>
+    <div class="fgroup"><label for="nc-name">Business Name</label><input class="finput" id="nc-name" placeholder="e.g. Acme Corp Inc."></div>
+    <div class="fgroup"><label for="nc-domain">Domain</label><input class="finput" id="nc-domain" placeholder="e.g. acmecorp.ca"></div>
+    <div class="fgroup"><label for="nc-email">Contact Email</label><input class="finput" id="nc-email" type="email" placeholder="contact@company.ca"></div>
+    <div class="fgroup"><label for="nc-tier">Tier</label>
+      <select class="finput" id="nc-tier">
+        <option value="1">Tier 1 — Essential ($69/mo)</option>
+        <option value="2">Tier 2 — Managed ($199/mo)</option>
+        <option value="3">Tier 3 — Enterprise (Custom)</option>
+      </select>
     </div>
-    <div class="btn-row" style="margin-top:16px">
+    <div class="btn-row" style="margin-top:8px">
       <button class="btn-sm btn-primary" onclick="addClient()">&#10003; Create Client</button>
       <button class="btn-sm btn-ghost" onclick="closeModal('add-client-modal')">Cancel</button>
     </div>
@@ -642,7 +636,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 </div>
 
 <!-- Client Full Editor -->
-<div class="modal-overlay" id="client-detail-modal" style="display:none" role="dialog" aria-modal="true" aria-label="Edit Client">
+<div class="modal-overlay" id="client-detail-modal" role="dialog" aria-modal="true" aria-label="Edit Client">
   <div class="modal-box" style="max-width:680px;width:100%">
     <button class="modal-close" onclick="closeModal('client-detail-modal')" aria-label="Close">&#10005;</button>
     <h2 id="client-modal-title">&#128100; Edit Client</h2>
@@ -655,6 +649,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <button class="btn-sm btn-ghost"   id="ctab-binder"  onclick="showClientTab('binder')"  style="font-size:.72rem">&#128193; Binder</button>
       <button class="btn-sm btn-ghost"   id="ctab-access"  onclick="showClientTab('access')"  style="font-size:.72rem">&#128274; Access</button>
       <button class="btn-sm btn-ghost"   id="ctab-notes"   onclick="showClientTab('notes')"   style="font-size:.72rem">&#128221; Notes</button>
+      <button class="btn-sm btn-ghost" id="ctab-files" onclick="showClientTab('files')" style="font-size:.72rem">&#128196; Files</button>
     </div>
 
     <!-- INFO TAB -->
@@ -943,6 +938,22 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
   </div>
 </div>
 
+<div id="ctab-panel-files" style="display:none">
+      <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:14px">Upload and manage client PDF files.</p>
+      <div style="margin-bottom:20px">
+        <h5 style="font-size:.8rem;color:#e8edf8;margin-bottom:8px">&#128202; Audit Reports</h5>
+        <div id="files-reports"><div style="color:#8a9bbf;font-size:.8rem">Open a client to manage files.</div></div>
+      </div>
+      <div style="margin-bottom:20px">
+        <h5 style="font-size:.8rem;color:#e8edf8;margin-bottom:8px">&#128218; Evidence Binder</h5>
+        <div id="files-evidence"><div style="color:#8a9bbf;font-size:.8rem">Open a client to manage files.</div></div>
+      </div>
+      <div style="margin-bottom:20px">
+        <h5 style="font-size:.8rem;color:#e8edf8;margin-bottom:8px">&#128179; Invoices</h5>
+        <div id="files-invoices"><div style="color:#8a9bbf;font-size:.8rem">Open a client to manage files.</div></div>
+      </div>
+    </div>
+
 <!-- Roadmap Editor -->
 >
 
@@ -951,8 +962,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
 <!-- Binder Editor -->
 >
+<script>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>// ── Panel switching ──
+// ── Panel switching ──
 function showPanel(id) {
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
   var panel = document.getElementById('panel-' + id);
@@ -1096,9 +1108,76 @@ function loadClientOverride(clientId) {
   }).join('');
 }
 
+// ── Auth ──
+
+
+// ── Auth guard ──
+(function(){
+  var proto = window.location.protocol;
+  var isFile = proto === 'file:' || proto === 'blob:';
+  if (!isFile && sessionStorage.getItem('acc_admin_auth') !== 'true') {
+    window.location.href = 'admin-login.html';
+  }
+})();
+
+// ── Client modal tabs ──
+
+
+
+
+
+
+
+
+function saveRoadmap() {
+  showAdminToast('Roadmap saved — client dashboard will reflect updates on next login.');
+}
+
+function showAdminToast(msg) {
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0d1f3c;border:1px solid #1e3a6b;border-radius:10px;padding:12px 20px;color:#38d9a9;font-size:.82rem;font-weight:700;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 3000);
+}
+
+function addBinderItem() {
+  var input = document.getElementById('binder-new-item');
+  var val = input.value.trim();
+  if (!val) return;
+  var list = document.getElementById('binder-items-list');
+  var div = document.createElement('div');
+  div.style.cssText = 'background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px';
+  var sel = document.createElement('select');
+  sel.className = 'finput';
+  sel.style.cssText = 'padding:3px 8px;font-size:.72rem;width:110px';
+  ['Pending Review','Verified','On File','Missing'].forEach(function(o){ var opt=document.createElement('option'); opt.textContent=o; sel.appendChild(opt); });
+  var del = document.createElement('button');
+  del.className = 'btn-sm btn-danger';
+  del.style.padding = '4px 8px';
+  del.textContent = '✕';
+  del.onclick = function(){ this.closest('div').remove(); };
+  var info = document.createElement('div');
+  info.innerHTML = '<div style="font-size:.85rem;font-weight:600">' + val + '</div><div style="font-size:.72rem;color:#8a9bbf">Added today</div>';
+  var ctrl = document.createElement('div');
+  ctrl.style.cssText = 'display:flex;gap:6px;flex-shrink:0';
+  ctrl.appendChild(sel); ctrl.appendChild(del);
+  div.appendChild(info); div.appendChild(ctrl);
+  list.appendChild(div);
+  input.value = '';
+}
+
+// ── Admin auth guard ──────────────────────────────────
+(function(){
+  var proto = window.location.protocol;
+  if (proto !== 'file:' && proto !== 'blob:' && sessionStorage.getItem('acc_admin_auth') !== 'true') {
+    window.location.replace('admin-login.html');
+  }
+})();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+
 // ══════════════════════════════════════════════════════════
 // ACC Admin Dashboard — Supabase Data Layer (Phase 5)
 // All DB reads/writes for admin-dashboard.html
@@ -1341,6 +1420,8 @@ async function openClientEditor(btn) {
 
     // ── Info tab ──
     document.getElementById('client-modal-title').textContent = '✎ Edit — ' + c.name;
+    window._editingClientCode = c.client_code;
+    window._editingClientCode = c.client_code;
     var f = function(id, val) { var el = document.getElementById(id); if(el) el.value = val||''; };
     f('ce-name',         c.name);
     f('ce-id',           c.client_code);
@@ -1539,7 +1620,21 @@ var _editingRow = null;
 
 // ── Client editor tabs ────────────────────────────────────
 function showClientTab(tab) {
-  var tabs = ['info','billing','roadmap','templates','binder','access','notes'];
+  if (tab === 'files' && _editingClientId && window._editingClientCode) {
+    setTimeout(function() {
+      renderFileManager('files-reports',  'reports',  window._editingClientCode);
+      renderFileManager('files-evidence', 'evidence', window._editingClientCode);
+      renderFileManager('files-invoices', 'invoices', window._editingClientCode);
+    }, 50);
+  }
+  if (tab === 'files' && _editingClientId && window._editingClientCode) {
+    setTimeout(function() {
+      renderFileManager('files-reports',  'reports',  window._editingClientCode);
+      renderFileManager('files-evidence', 'evidence', window._editingClientCode);
+      renderFileManager('files-invoices', 'invoices', window._editingClientCode);
+    }, 50);
+  }
+  var tabs = ['info','billing','roadmap','templates','binder','access','notes','files'];
   tabs.forEach(function(t) {
     var btn   = document.getElementById('ctab-' + t);
     var panel = document.getElementById('ctab-panel-' + t);
@@ -1579,6 +1674,229 @@ function signOut() {
   }
 }
 
+
+</script>
+<script>
+// ══════════════════════════════════════════════════════════
+// ACC Platform — Phase 3: Storage Layer
+// Inject into BOTH admin-dashboard.html and dashboard.html
+// ══════════════════════════════════════════════════════════
+
+// ── Signed URL helper (1hr expiry) ───────────────────────
+async function getSignedUrl(bucket, path) {
+  var sb = window._sb || window._sb_client;
+  var r = await sb.storage.from(bucket).createSignedUrl(path, 3600);
+  if (r.error) throw r.error;
+  return r.data.signedUrl;
+}
+
+// ── Download file via signed URL ─────────────────────────
+async function downloadSigned(bucket, path, filename) {
+  try {
+    var url = await getSignedUrl(bucket, path);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename || path.split('/').pop();
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch(e) {
+    console.error('downloadSigned error:', e);
+    alert('File not available yet. Please contact ACC to check your files.');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// CLIENT-SIDE DOWNLOAD FUNCTIONS
+// Replace the old hardcoded downloadReport / downloadTemplate
+// ══════════════════════════════════════════════════════════
+
+async 
+
+async 
+
+// openTemplate now also downloads (same as downloadTemplate)
+async 
+
+async 
+
+async 
+
+// ══════════════════════════════════════════════════════════
+// ADMIN UPLOAD FUNCTIONS
+// ══════════════════════════════════════════════════════════
+
+async function adminUploadFile(bucket, path, file, onSuccess) {
+  var sb = window._sb;
+  if (!sb) { alert('Not authenticated.'); return; }
+
+  var btnId = 'upload-btn-' + bucket + '-' + path.replace(/[^a-z0-9]/gi,'-');
+  var btn = document.getElementById(btnId);
+  if (btn) { btn.textContent = 'Uploading…'; btn.disabled = true; }
+
+  try {
+    var r = await sb.storage.from(bucket).upload(path, file, {
+      upsert: true,
+      contentType: 'application/pdf'
+    });
+    if (r.error) throw r.error;
+    if (typeof showToastAdmin === 'function') showToastAdmin('Uploaded: ' + path, 'success');
+    if (typeof onSuccess === 'function') onSuccess();
+  } catch(e) {
+    console.error('upload error:', e);
+    alert('Upload failed: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.textContent = '↑ Upload'; btn.disabled = false; }
+  }
+}
+
+async function adminDeleteFile(bucket, path, onSuccess) {
+  if (!confirm('Delete ' + path + '? This cannot be undone.')) return;
+  var sb = window._sb;
+  try {
+    var r = await sb.storage.from(bucket).remove([path]);
+    if (r.error) throw r.error;
+    if (typeof showToastAdmin === 'function') showToastAdmin('Deleted: ' + path, 'success');
+    if (typeof onSuccess === 'function') onSuccess();
+  } catch(e) {
+    alert('Delete failed: ' + (e.message || e));
+  }
+}
+
+// ── List files for a client in a bucket ──────────────────
+async function listClientFiles(bucket, clientCode) {
+  var sb = window._sb;
+  var r = await sb.storage.from(bucket).list(clientCode, {
+    limit: 100, sortBy: { column: 'name', order: 'desc' }
+  });
+  if (r.error) { console.warn('list error:', r.error); return []; }
+  return r.data || [];
+}
+
+// ── Render file manager for a client editor tab ───────────
+async function renderFileManager(containerId, bucket, clientCode, labelPrefix) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem">Loading…</div>';
+
+  var files = await listClientFiles(bucket, clientCode);
+
+  var html = '<div style="margin-bottom:12px">';
+  // Upload input
+  html += '<label style="font-size:.78rem;color:#8a9bbf;display:block;margin-bottom:6px">Upload PDF (replaces existing)</label>';
+  html += '<div style="display:flex;gap:8px;align-items:center">';
+  html += '<input type="file" accept=".pdf" id="file-input-' + bucket + '" style="font-size:.78rem;color:#e8edf8;flex:1">';
+  html += '<input type="text" id="file-name-' + bucket + '" placeholder="filename (e.g. 2026-03)" style="font-size:.78rem;padding:4px 8px;background:#0a1e38;border:1px solid #1e3a6b;border-radius:6px;color:#e8edf8;width:160px">';
+  html += '<button class="btn-sm btn-primary" style="font-size:.75rem" onclick="handleAdminUpload(\'' + bucket + '\',\'' + clientCode + '\')">↑ Upload</button>';
+  html += '</div></div>';
+
+  // File list
+  if (!files.length) {
+    html += '<div style="color:#8a9bbf;font-size:.78rem;padding:12px 0">No files uploaded yet.</div>';
+  } else {
+    html += '<table style="width:100%;border-collapse:collapse;font-size:.78rem">';
+    html += '<thead><tr><th style="text-align:left;color:#8a9bbf;padding:4px 0">File</th><th style="color:#8a9bbf">Size</th><th style="color:#8a9bbf">Uploaded</th><th></th></tr></thead><tbody>';
+    files.forEach(function(f) {
+      var kb = f.metadata && f.metadata.size ? Math.round(f.metadata.size/1024) + ' KB' : '—';
+      var dt = f.created_at ? new Date(f.created_at).toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'}) : '—';
+      var filePath = clientCode + '/' + f.name;
+      html += '<tr style="border-top:1px solid #1e3a6b">';
+      html += '<td style="padding:6px 0"><span style="color:#4f8ef7">&#128196;</span> ' + f.name + '</td>';
+      html += '<td style="color:#8a9bbf;text-align:center">' + kb + '</td>';
+      html += '<td style="color:#8a9bbf;text-align:center">' + dt + '</td>';
+      html += '<td style="text-align:right"><button class="btn-sm btn-ghost" style="font-size:.7rem;color:#f05f5f;padding:2px 8px" onclick="adminDeleteFile(\'' + bucket + '\',\'' + filePath + '\',function(){renderFileManager(\'' + containerId + '\',\'' + bucket + '\',\'' + clientCode + '\')})">✕ Delete</button></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+  }
+
+  container.innerHTML = html;
+}
+
+async function handleAdminUpload(bucket, clientCode) {
+  var fileInput = document.getElementById('file-input-' + bucket);
+  var nameInput = document.getElementById('file-name-' + bucket);
+  if (!fileInput || !fileInput.files[0]) { alert('Please select a PDF file.'); return; }
+  var file = fileInput.files[0];
+  var rawName = nameInput ? nameInput.value.trim() : '';
+  if (!rawName) { alert('Please enter a filename (e.g. 2026-03 for reports, shared/template-key for templates).'); return; }
+  if (!rawName.endsWith('.pdf')) rawName += '.pdf';
+  var path = clientCode + '/' + rawName;
+  await adminUploadFile(bucket, path, file, function() {
+    fileInput.value = '';
+    if (nameInput) nameInput.value = '';
+    // Refresh the list
+    var containerId = 'files-' + bucket;
+    renderFileManager(containerId, bucket, clientCode);
+  });
+}
+
+// ── Templates upload (shared/ folder, no client prefix) ──
+async function handleTemplateUpload() {
+  var fileInput = document.getElementById('file-input-templates');
+  var nameInput = document.getElementById('file-name-templates');
+  if (!fileInput || !fileInput.files[0]) { alert('Please select a PDF file.'); return; }
+  var file = fileInput.files[0];
+  var rawName = nameInput ? nameInput.value.trim() : '';
+  if (!rawName) { alert('Please enter the template key (e.g. template-accessibility-policy).'); return; }
+  if (!rawName.endsWith('.pdf')) rawName += '.pdf';
+  var path = 'shared/' + rawName;
+  await adminUploadFile('templates', path, file, function() {
+    fileInput.value = '';
+    if (nameInput) nameInput.value = '';
+    renderTemplateManager();
+  });
+}
+
+async function renderTemplateManager() {
+  var container = document.getElementById('files-templates');
+  if (!container) return;
+  container.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem">Loading…</div>';
+  var sb = window._sb;
+  var r = await sb.storage.from('templates').list('shared', { limit: 100, sortBy: { column: 'name', order: 'asc' } });
+  var files = (r.error ? [] : r.data) || [];
+
+  var html = '<div style="margin-bottom:12px">';
+  html += '<label style="font-size:.78rem;color:#8a9bbf;display:block;margin-bottom:6px">Upload Template PDF</label>';
+  html += '<div style="display:flex;gap:8px;align-items:center">';
+  html += '<input type="file" accept=".pdf" id="file-input-templates" style="font-size:.78rem;color:#e8edf8;flex:1">';
+  html += '<input type="text" id="file-name-templates" placeholder="e.g. template-accessibility-policy" style="font-size:.78rem;padding:4px 8px;background:#0a1e38;border:1px solid #1e3a6b;border-radius:6px;color:#e8edf8;width:220px">';
+  html += '<button class="btn-sm btn-primary" style="font-size:.75rem" onclick="handleTemplateUpload()">↑ Upload</button>';
+  html += '</div></div>';
+
+  if (!files.length) {
+    html += '<div style="color:#8a9bbf;font-size:.78rem;padding:12px 0">No templates uploaded yet.</div>';
+  } else {
+    html += '<table style="width:100%;border-collapse:collapse;font-size:.78rem">';
+    html += '<thead><tr><th style="text-align:left;color:#8a9bbf;padding:4px 0">Template</th><th style="color:#8a9bbf">Size</th><th></th></tr></thead><tbody>';
+    files.forEach(function(f) {
+      var kb = f.metadata && f.metadata.size ? Math.round(f.metadata.size/1024) + ' KB' : '—';
+      html += '<tr style="border-top:1px solid #1e3a6b">';
+      html += '<td style="padding:6px 0"><span style="color:#4f8ef7">&#128196;</span> ' + f.name + '</td>';
+      html += '<td style="color:#8a9bbf;text-align:center">' + kb + '</td>';
+      html += '<td style="text-align:right"><button class="btn-sm btn-ghost" style="font-size:.7rem;color:#f05f5f;padding:2px 8px" onclick="adminDeleteFile(\'templates\',\'shared/' + f.name + '\',renderTemplateManager)">✕ Delete</button></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+  }
+  container.innerHTML = html;
+}
+
+</script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof flatpickr!=='undefined'){
+    document.querySelectorAll('input[type="date"]').forEach(function(el){
+      if(!el._flatpickr) flatpickr(el,{dateFormat:'Y-m-d',allowInput:true});
+    });
+  }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof renderTemplateManager==='function') renderTemplateManager();
+});
 </script>
 </body>
 </html>
