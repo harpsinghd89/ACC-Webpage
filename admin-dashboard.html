@@ -946,32 +946,450 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ── Supabase + Auth Guard ──
-var _sb = window.supabase.createClient(
-  'https://wfyzvmfvlukawidowuym.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M'
-);
+// ══════════════════════════════════════════════════════════
+// ACC Admin Dashboard — Supabase Data Layer (Phase 5)
+// All DB reads/writes for admin-dashboard.html
+// ══════════════════════════════════════════════════════════
 
+var SUPABASE_URL  = 'https://wfyzvmfvlukawidowuym.supabase.co';
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
+var _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── Auth guard ───────────────────────────────────────────
 (async function() {
   try {
     var s = await _sb.auth.getSession();
-    if (!s.data || !s.data.session) {
-      window.location.replace('admin-login.html');
-      return;
-    }
+    if (!s.data || !s.data.session) { window.location.replace('admin-login.html'); return; }
     var ar = await _sb.from('admins').select('id,name').eq('email', s.data.session.user.email).single();
-    if (ar.error || !ar.data) {
-      await _sb.auth.signOut();
-      window.location.replace('admin-login.html');
-      return;
-    }
-    // Auth passed — dashboard loads normally
-  } catch(e) {
-    window.location.replace('admin-login.html');
-  }
+    if (ar.error || !ar.data) { await _sb.auth.signOut(); window.location.replace('admin-login.html'); return; }
+    // Personalise topbar
+    var nameEl = document.getElementById('user-name');
+    if (nameEl) nameEl.textContent = ar.data.name || s.data.session.user.email;
+    var avatarEl = document.getElementById('user-avatar');
+    if (avatarEl) avatarEl.textContent = (ar.data.name || 'AD').substring(0,2).toUpperCase();
+    // Load client list
+    loadClients();
+  } catch(e) { window.location.replace('admin-login.html'); }
 })();
 
-// ── Panel switching ──
+// ── Helpers ──────────────────────────────────────────────
+function genClientCode() {
+  // CLI- + 5 random digits
+  return 'CLI-' + Math.floor(10000 + Math.random() * 90000);
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  var dt = new Date(d);
+  return dt.toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' });
+}
+
+function tierLabel(n) {
+  return n == 1 ? 'Tier 1' : n == 2 ? 'Tier 2' : 'Tier 3';
+}
+
+function statusColor(s) {
+  var m = { active:'green', current:'green', overdue:'red', pending:'yellow', cancelled:'red', inactive:'red' };
+  return m[(s||'').toLowerCase()] || 'blue';
+}
+
+function showToastAdmin(msg, type) {
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;padding:12px 20px;border-radius:8px;font-size:.85rem;font-weight:600;color:#fff;background:' + (type==='error' ? '#f05f5f' : '#38d9a9') + ';box-shadow:0 4px 20px rgba(0,0,0,.3);transition:opacity .3s';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); },300); }, 3000);
+}
+
+// Default roadmap milestones for new clients
+function defaultMilestones(clientId, tier) {
+  var now = new Date();
+  var yr  = now.getFullYear();
+  var rows = [
+    { client_id: clientId, year: yr,   phase: 'Phase 1 — Onboarding',     milestone: 'ACC Widget deployed',                    target_date: yr+'-01-15', status: 'planned' },
+    { client_id: clientId, year: yr,   phase: 'Phase 1 — Onboarding',     milestone: 'Initial WCAG audit',                     target_date: yr+'-02-01', status: 'planned' },
+    { client_id: clientId, year: yr,   phase: 'Phase 2 — Implementation',  milestone: 'Accessibility Statement published',       target_date: yr+'-02-15', status: 'planned' },
+    { client_id: clientId, year: yr,   phase: 'Phase 2 — Implementation',  milestone: 'Staff accessibility training (all)',      target_date: yr+'-03-31', status: 'planned' },
+    { client_id: clientId, year: yr,   phase: 'Phase 3 — Compliance',      milestone: 'WCAG 2.1 AA full conformance',            target_date: yr+'-06-30', status: 'planned' },
+    { client_id: clientId, year: yr,   phase: 'Phase 3 — Compliance',      milestone: 'Annual Evidence Binder',                  target_date: yr+'-12-01', status: 'planned' },
+    { client_id: clientId, year: yr,   phase: 'Phase 3 — Compliance',      milestone: 'AODA filing deadline',                    target_date: yr+'-12-31', status: 'planned' },
+    { client_id: clientId, year: yr+1, phase: 'Phase 4 — Maintenance',     milestone: 'WCAG 2.2 gap analysis',                   target_date: (yr+1)+'-03-31', status: 'planned' },
+    { client_id: clientId, year: yr+1, phase: 'Phase 4 — Maintenance',     milestone: 'Annual re-audit',                         target_date: (yr+1)+'-06-30', status: 'planned' },
+    { client_id: clientId, year: yr+2, phase: 'Phase 4 — Maintenance',     milestone: 'Three-year compliance review',             target_date: (yr+2)+'-01-31', status: 'planned' }
+  ];
+  if (tier >= 2) {
+    rows.push({ client_id: clientId, year: yr, phase: 'Phase 2 — Implementation', milestone: 'Automated staff training portal live', target_date: yr+'-03-01', status: 'planned' });
+    rows.push({ client_id: clientId, year: yr, phase: 'Phase 2 — Implementation', milestone: '3-Year Compliance Roadmap delivered',   target_date: yr+'-02-28', status: 'planned' });
+  }
+  if (tier >= 3) {
+    rows.push({ client_id: clientId, year: yr, phase: 'Phase 2 — Implementation', milestone: 'Custom staff workshops delivered',       target_date: yr+'-04-30', status: 'planned' });
+    rows.push({ client_id: clientId, year: yr, phase: 'Phase 3 — Compliance',     milestone: 'VPAT & full audit defense package',      target_date: yr+'-06-30', status: 'planned' });
+  }
+  return rows;
+}
+
+// ── Load & render clients table ──────────────────────────
+async function loadClients() {
+  try {
+    var r = await _sb.from('clients').select('*').is('deleted_at', null).order('created_at', { ascending: false });
+    if (r.error) throw r.error;
+    renderClientsTable(r.data || []);
+    updateOverviewStats(r.data || []);
+  } catch(e) {
+    console.error('loadClients:', e);
+  }
+}
+
+function renderClientsTable(clients) {
+  var tbody = document.getElementById('client-tbody');
+  if (!tbody) return;
+  if (!clients.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#8a9bbf;padding:32px">No clients yet. Click + Add Client to create the first one.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = clients.map(function(c) {
+    var renewal = c.renewal_date ? fmtDate(c.renewal_date) : '—';
+    var statusKey = (c.status || 'active').toLowerCase();
+    var displayStatus = statusKey.charAt(0).toUpperCase() + statusKey.slice(1);
+    return '<tr data-id="' + c.id + '" data-name="' + (c.name||'').toLowerCase() + '" data-tier="' + c.tier + '" data-status="' + statusKey + '">' +
+      '<td><strong>' + esc(c.name) + '</strong><div style="font-size:.72rem;color:#8a9bbf">' + esc(c.client_code) + '</div></td>' +
+      '<td><span class="pill blue">' + tierLabel(c.tier) + '</span></td>' +
+      '<td style="font-size:.8rem;color:#8a9bbf">' + esc(c.domain||'') + '</td>' +
+      '<td style="font-size:.8rem">' + renewal + '</td>' +
+      '<td><span class="pill ' + statusColor(statusKey) + '">' + displayStatus + '</span></td>' +
+      '<td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:4px 10px">&#9998; Edit</button></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updateOverviewStats(clients) {
+  var active = clients.filter(function(c){ return (c.status||'').toLowerCase() === 'active' || (c.status||'').toLowerCase() === 'current'; }).length;
+  var overdue = clients.filter(function(c){ return (c.status||'').toLowerCase() === 'overdue'; }).length;
+  // Update any stat cards that exist on overview panel
+  var els = {
+    'stat-total-clients': clients.length,
+    'stat-active-clients': active,
+    'stat-overdue-clients': overdue
+  };
+  Object.keys(els).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = els[id];
+  });
+}
+
+// ── Add Client ───────────────────────────────────────────
+async function addClient() {
+  var name    = (document.getElementById('nc-name')    ||{}).value.trim();
+  var email   = (document.getElementById('nc-email')   ||{}).value.trim();
+  var domain  = (document.getElementById('nc-domain')  ||{}).value.trim();
+  var contact = (document.getElementById('nc-contact') ||{}).value.trim();
+  var phone   = (document.getElementById('nc-phone')   ||{}).value.trim();
+  var start   = (document.getElementById('nc-start')   ||{}).value;
+  var renewal = (document.getElementById('nc-renewal') ||{}).value;
+  var tierEl  = document.getElementById('nc-tier');
+  var tier    = tierEl ? parseInt(tierEl.value) : 1;
+
+  if (!name)  { alert('Business Name is required.'); return; }
+  if (!email) { alert('Contact Email is required.'); return; }
+
+  var btn = document.querySelector('#add-client-modal .btn-primary');
+  if (btn) { btn.textContent = 'Creating…'; btn.disabled = true; }
+
+  try {
+    var code = genClientCode();
+    // Check uniqueness (retry once if collision)
+    var check = await _sb.from('clients').select('id').eq('client_code', code).maybeSingle();
+    if (check.data) code = genClientCode();
+
+    var payload = {
+      client_code:      code,
+      name:             name,
+      email:            email,
+      domain:           domain || null,
+      phone:            phone  || null,
+      tier:             tier,
+      status:           'active',
+      start_date:       start   || null,
+      renewal_date:     renewal || null
+    };
+    if (contact) payload.onboarding_notes = 'Contact: ' + contact;
+
+    var r = await _sb.from('clients').insert(payload).select('id,client_code').single();
+    if (r.error) throw r.error;
+
+    // Insert default roadmap milestones
+    var milestones = defaultMilestones(r.data.id, tier);
+    var rm = await _sb.from('roadmap').insert(milestones);
+    if (rm.error) console.warn('roadmap insert:', rm.error);
+
+    // Insert template_access rows based on tier
+    var templates = getTemplatesForTier(tier).map(function(key) {
+      return { client_id: r.data.id, template_key: key, enabled: true };
+    });
+    if (templates.length) {
+      var ta = await _sb.from('template_access').insert(templates);
+      if (ta.error) console.warn('template_access insert:', ta.error);
+    }
+
+    closeModal('add-client-modal');
+    // Reset form
+    ['nc-name','nc-email','nc-domain','nc-contact','nc-phone','nc-start','nc-renewal'].forEach(function(id){
+      var el = document.getElementById(id); if (el) el.value = '';
+    });
+    if (tierEl) tierEl.value = '1';
+
+    showToastAdmin('Client ' + name + ' created (' + code + ')', 'success');
+    loadClients();
+
+  } catch(e) {
+    console.error('addClient:', e);
+    var msg = e.message || 'Error creating client';
+    if (msg.includes('unique') && msg.includes('email')) msg = 'A client with that email already exists.';
+    alert('Error: ' + msg);
+  } finally {
+    if (btn) { btn.textContent = '✓ Create Client'; btn.disabled = false; }
+  }
+}
+
+function getTemplatesForTier(tier) {
+  var t1 = ['accessibility-policy','scope-acknowledgment','wcag-checklist','staff-training-log','feedback-form'];
+  var t2 = t1.concat(['compliance-roadmap','evidence-binder-cover','annual-report','staff-workshop-agenda','remediation-tracker','aoda-filing-template']);
+  var t3 = t2.concat(['vpat-template','multi-year-plan','bespoke-policy','audit-defense-package']);
+  return tier >= 3 ? t3 : tier >= 2 ? t2 : t1;
+}
+
+// ── Open client editor & populate all tabs ───────────────
+var _editingClientId = null;
+
+async function openClientEditor(btn) {
+  var row = btn.closest('tr');
+  _editingRow = row;
+  _editingClientId = row.getAttribute('data-id');
+
+  // Show loading state
+  document.getElementById('client-modal-title').textContent = '⌛ Loading client…';
+  var modal = document.getElementById('client-detail-modal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  showClientTab('info');
+
+  try {
+    // Load client + roadmap in parallel
+    var [cr, rr] = await Promise.all([
+      _sb.from('clients').select('*').eq('id', _editingClientId).single(),
+      _sb.from('roadmap').select('*').eq('client_id', _editingClientId).is('deleted_at', null).order('year').order('target_date')
+    ]);
+    if (cr.error) throw cr.error;
+    var c = cr.data;
+
+    // ── Info tab ──
+    document.getElementById('client-modal-title').textContent = '✎ Edit — ' + c.name;
+    var f = function(id, val) { var el = document.getElementById(id); if(el) el.value = val||''; };
+    f('ce-name',         c.name);
+    f('ce-id',           c.client_code);
+    f('ce-domain',       c.domain);
+    f('ce-contact',      c.phone ? c.phone : '');  // reuse phone for contact display
+    f('ce-email',        c.email);
+    f('ce-phone',        c.phone);
+    f('ce-start',        c.start_date   || '');
+    f('ce-renewal',      c.renewal_date || '');
+    f('ce-billing-note', c.billing_notes || '');
+
+    var tierSel = document.getElementById('ce-tier');
+    if (tierSel) tierSel.value = c.tier || '1';
+
+    var statusSel = document.getElementById('ce-status');
+    if (statusSel) {
+      var capS = (c.status||'active').charAt(0).toUpperCase() + (c.status||'active').slice(1);
+      for (var i=0; i<statusSel.options.length; i++) {
+        if (statusSel.options[i].text.toLowerCase() === (c.status||'').toLowerCase() ||
+            statusSel.options[i].value.toLowerCase() === (c.status||'').toLowerCase()) {
+          statusSel.selectedIndex = i; break;
+        }
+      }
+    }
+
+    // ── Notes tab ──
+    f('ce-onboard-notes', c.onboarding_notes);
+    f('ce-last-contact',  c.last_contact  || '');
+    f('ce-followup',      c.next_followup || '');
+
+    // ── Roadmap tab — render milestone rows ──
+    renderAdminRoadmapRows(rr.data || [], c.tier);
+
+    setTimeout(function(){ var el = document.getElementById('ce-name'); if(el) el.focus(); }, 50);
+
+  } catch(e) {
+    console.error('openClientEditor load:', e);
+    document.getElementById('client-modal-title').textContent = '✎ Edit Client';
+  }
+}
+
+function renderAdminRoadmapRows(milestones, tier) {
+  var yearGroups = {};
+  milestones.forEach(function(m) {
+    if (!yearGroups[m.year]) yearGroups[m.year] = [];
+    yearGroups[m.year].push(m);
+  });
+
+  // Render into milestones-YEAR tbodies in the roadmap tab
+  Object.keys(yearGroups).forEach(function(yr) {
+    var tbody = document.getElementById('milestones-' + yr);
+    if (!tbody) return;
+    tbody.innerHTML = yearGroups[yr].map(function(m) {
+      return '<tr data-rid="' + m.id + '">' +
+        '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="' + esc(m.milestone) + '"></td>' +
+        '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="' + esc(m.target_date||'') + '"></td>' +
+        '<td>' + renderStatusSelect(m.status) + '</td>' +
+        '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeMilestoneRow(this)">✕</button></td>' +
+        '</tr>';
+    }).join('');
+  });
+}
+
+function renderStatusSelect(current) {
+  var opts = ['planned','in-progress','done','deferred'];
+  var labels = {'planned':'Planned','in-progress':'In Progress','done':'Done','deferred':'Deferred'};
+  return '<select class="finput" style="padding:4px 6px;font-size:.78rem">' +
+    opts.map(function(o){ return '<option value="'+o+'"'+(o===current?' selected':'')+'>'+labels[o]+'</option>'; }).join('') +
+    '</select>';
+}
+
+// ── Save client info (writes to Supabase) ────────────────
+async function saveClientInfo() {
+  if (!_editingClientId) return;
+
+  var btn = document.querySelector('#client-detail-modal .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+
+  try {
+    var name       = (document.getElementById('ce-name')         ||{}).value.trim();
+    var domain     = (document.getElementById('ce-domain')       ||{}).value.trim();
+    var email      = (document.getElementById('ce-email')        ||{}).value.trim();
+    var phone      = (document.getElementById('ce-phone')        ||{}).value.trim();
+    var start      = (document.getElementById('ce-start')        ||{}).value || null;
+    var renewal    = (document.getElementById('ce-renewal')      ||{}).value || null;
+    var billNotes  = (document.getElementById('ce-billing-note') ||{}).value.trim();
+    var onbNotes   = (document.getElementById('ce-onboard-notes')||{}).value.trim();
+    var lastCont   = (document.getElementById('ce-last-contact') ||{}).value || null;
+    var nextFup    = (document.getElementById('ce-followup')     ||{}).value || null;
+
+    var tierEl   = document.getElementById('ce-tier');
+    var tier     = tierEl ? parseInt(tierEl.value) : 1;
+    var statusEl = document.getElementById('ce-status');
+    var status   = statusEl ? statusEl.options[statusEl.selectedIndex].text.toLowerCase() : 'active';
+
+    if (!name)  { alert('Business Name is required.'); return; }
+    if (!email) { alert('Contact Email is required.'); return; }
+
+    // ── UPDATE clients ──
+    var update = {
+      name:             name,
+      domain:           domain || null,
+      email:            email,
+      phone:            phone  || null,
+      tier:             tier,
+      status:           status,
+      start_date:       start,
+      renewal_date:     renewal,
+      billing_notes:    billNotes || null,
+      onboarding_notes: onbNotes  || null,
+      last_contact:     lastCont,
+      next_followup:    nextFup
+    };
+    var r = await _sb.from('clients').update(update).eq('id', _editingClientId);
+    if (r.error) throw r.error;
+
+    // ── UPDATE roadmap milestones ──
+    var rmPanel = document.getElementById('ctab-panel-roadmap');
+    if (rmPanel) {
+      var rmRows = rmPanel.querySelectorAll('tr[data-rid]');
+      var rmUpdates = [];
+      rmRows.forEach(function(row) {
+        var inputs = row.querySelectorAll('input, select');
+        if (inputs.length >= 3) {
+          rmUpdates.push(_sb.from('roadmap').update({
+            milestone:   inputs[0].value.trim(),
+            target_date: inputs[1].value.trim() || null,
+            status:      inputs[2].value,
+            updated_at:  new Date().toISOString()
+          }).eq('id', row.getAttribute('data-rid')));
+        }
+      });
+      await Promise.all(rmUpdates);
+    }
+
+    // ── UPDATE table row display ──
+    if (_editingRow) {
+      var cells = _editingRow.querySelectorAll('td');
+      var nameEl = cells[0] && cells[0].querySelector('strong');
+      if (nameEl) nameEl.textContent = name;
+      if (cells[1]) cells[1].innerHTML = '<span class="pill blue">' + tierLabel(tier) + '</span>';
+      if (cells[2]) cells[2].textContent = domain;
+      if (cells[3]) cells[3].textContent = renewal ? fmtDate(renewal) : '—';
+      if (cells[4]) cells[4].innerHTML = '<span class="pill ' + statusColor(status) + '">' + status.charAt(0).toUpperCase()+status.slice(1) + '</span>';
+      _editingRow.setAttribute('data-name',   name.toLowerCase());
+      _editingRow.setAttribute('data-tier',   tier);
+      _editingRow.setAttribute('data-status', status);
+    }
+
+    showToastAdmin('Client updated successfully', 'success');
+    closeModal('client-detail-modal');
+    document.body.style.overflow = '';
+    _editingRow = null;
+    _editingClientId = null;
+
+  } catch(e) {
+    console.error('saveClientInfo:', e);
+    var msg = e.message || 'Error saving client';
+    if (msg.includes('unique') && msg.includes('email')) msg = 'That email is already in use by another client.';
+    alert('Error: ' + msg);
+  } finally {
+    if (btn) { btn.textContent = '✓ Save Changes'; btn.disabled = false; }
+  }
+}
+
+// ── Add milestone row (roadmap editor) ───────────────────
+function addMilestoneRow(tbodyId) {
+  var tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  var tr = document.createElement('tr');
+  tr.setAttribute('data-rid', 'new-' + Date.now());
+  tr.innerHTML =
+    '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" placeholder="Milestone description"></td>' +
+    '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" placeholder="e.g. Jun 2026"></td>' +
+    '<td>' + renderStatusSelect('planned') + '</td>' +
+    '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeMilestoneRow(this)">✕</button></td>';
+  tbody.appendChild(tr);
+}
+
+function removeMilestoneRow(btn) {
+  var row = btn.closest('tr');
+  var rid = row && row.getAttribute('data-rid');
+  if (rid && !rid.startsWith('new-')) {
+    // Mark deleted in DB (soft delete)
+    _sb.from('roadmap').update({ deleted_at: new Date().toISOString() }).eq('id', rid).then(function(r){
+      if (r.error) console.warn('roadmap soft delete:', r.error);
+    });
+  }
+  if (row) row.remove();
+}
+
+// ── Sign out ─────────────────────────────────────────────
+function signOut() {
+  if (confirm('Sign out of admin?')) {
+    _sb.auth.signOut().then(function() {
+      window.location.replace('admin-login.html');
+    });
+  }
+}
+
+</script>
+<script>// ── Panel switching ──
 function showPanel(id) {
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
   var panel = document.getElementById('panel-' + id);
@@ -1121,58 +1539,10 @@ function loadClientOverride(clientId) {
 }
 
 // ── Auth ──
-function signOut() {
-  if (confirm('Sign out of admin?')) {
-    sessionStorage.removeItem('acc_admin_auth');
-    window.location.href = 'admin-login.html';
-  }
-}
 
 
 // ── Client Editor (full tabbed modal) ──
-var _editingRow = null;
 
-function openClientEditor(btn) {
-  var row = btn.closest('tr');
-  _editingRow = row;
-  var cells = row.querySelectorAll('td');
-
-  var nameEl = cells[0].querySelector('strong');
-  var idEl   = cells[0].querySelector('div');
-  var name   = nameEl ? nameEl.textContent.trim() : '';
-  var cid    = idEl   ? idEl.textContent.trim()   : '';
-  var domain = cells[2] ? cells[2].textContent.trim() : '';
-  var renews = cells[3] ? cells[3].textContent.trim() : '';
-  var tier   = row.getAttribute('data-tier') || '1';
-  var status = (row.getAttribute('data-status') || 'current');
-
-  // Populate Info tab
-  document.getElementById('client-modal-title').textContent = '✎ Edit — ' + name;
-  var f = function(id, val) { var el = document.getElementById(id); if(el) el.value = val; };
-  f('ce-name',    name);
-  f('ce-id',      cid);
-  f('ce-domain',  domain);
-  f('ce-tier',    tier);
-  f('ce-renewal', '');  // date input — renews is text like "Apr 10, 2026"
-
-  // Set status select by matching text
-  var statusSel = document.getElementById('ce-status');
-  if (statusSel) {
-    var capStatus = status.charAt(0).toUpperCase() + status.slice(1);
-    for (var i = 0; i < statusSel.options.length; i++) {
-      if (statusSel.options[i].text === capStatus || statusSel.options[i].value === status) {
-        statusSel.selectedIndex = i; break;
-      }
-    }
-  }
-
-  // Open modal on Info tab
-  showClientTab('info');
-  var modal = document.getElementById('client-detail-modal');
-  modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-  setTimeout(function(){ var el = document.getElementById('ce-name'); if(el) el.focus(); }, 50);
-}
 
 function showClientTab(tab) {
   var tabs = ['info','billing','roadmap','templates','binder','access','notes'];
@@ -1184,51 +1554,8 @@ function showClientTab(tab) {
   });
 }
 
-function saveClientInfo() {
-  if (!_editingRow) return;
-  var cells = _editingRow.querySelectorAll('td');
-
-  var name   = (document.getElementById('ce-name')   || {}).value || '';
-  var domain = (document.getElementById('ce-domain') || {}).value || '';
-  var tier   = (document.getElementById('ce-tier')   || {}).value || '1';
-  var statusEl = document.getElementById('ce-status');
-  var status = statusEl ? statusEl.options[statusEl.selectedIndex].text.toLowerCase() : 'current';
-
-  if (!name) { alert('Business Name is required.'); return; }
-
-  var tierLabels  = {'1':'Tier 1','2':'Tier 2','3':'Tier 3'};
-  var statusColors = {current:'green', overdue:'red', pending:'yellow', cancelled:'red'};
-  var statusLabels = {current:'Current', overdue:'Overdue', pending:'Pending', cancelled:'Cancelled'};
-
-  // Update table row
-  var nameEl = cells[0].querySelector('strong');
-  if (nameEl) nameEl.textContent = name;
-  cells[1].innerHTML = '<span class="pill blue">' + (tierLabels[tier]||'Tier '+tier) + '</span>';
-  cells[2].textContent = domain;
-  var statusText = statusEl ? statusEl.options[statusEl.selectedIndex].text : 'Current';
-  var statusKey  = statusText.toLowerCase();
-  cells[4].innerHTML = '<span class="pill ' + (statusColors[statusKey]||'blue') + '">' + statusText + '</span>';
-
-  // Update row data-attributes for filtering
-  _editingRow.setAttribute('data-name',   name.toLowerCase());
-  _editingRow.setAttribute('data-tier',   tier);
-  _editingRow.setAttribute('data-status', statusKey);
-
-  closeModal('client-detail-modal');
-  document.body.style.overflow = '';
-  _editingRow = null;
-}
 
 // Close on backdrop click
-document.addEventListener('click', function(e) {
-  var modal = document.getElementById('client-detail-modal');
-  if (modal && e.target === modal) {
-    modal.style.display = 'none';
-    document.body.style.overflow = '';
-    _editingRow = null;
-  }
-});
-
 </script>
 </body>
 </html>

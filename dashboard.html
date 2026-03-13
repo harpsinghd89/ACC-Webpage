@@ -1654,6 +1654,415 @@ Questions? Reply to this email.
 </div>
 
 <!-- ACC Widget not loaded on dashboard - client-facing only -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ══════════════════════════════════════════════════════════
+// ACC Client Dashboard — Supabase Data Layer (Phase 2)
+// Loads ALL client data from Supabase on login
+// ══════════════════════════════════════════════════════════
+
+var SUPABASE_URL  = 'https://wfyzvmfvlukawidowuym.supabase.co';
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
+var _sb_client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+var _clientData = null;
+
+// ── Auth guard + full data load ───────────────────────────
+(async function() {
+  try {
+    var s = await _sb_client.auth.getSession();
+    if (!s.data || !s.data.session) {
+      window.location.replace('login.html');
+      return;
+    }
+    var uid = s.data.session.user.id;
+
+    // Load client profile
+    var cr = await _sb_client.from('clients')
+      .select('*')
+      .eq('auth_user_id', uid)
+      .is('deleted_at', null)
+      .single();
+
+    if (cr.error || !cr.data) {
+      // No client record — signed in but not provisioned yet
+      await _sb_client.auth.signOut();
+      window.location.replace('login.html');
+      return;
+    }
+
+    _clientData = cr.data;
+
+    // Load all supporting data in parallel
+    var [rr, br, fr] = await Promise.all([
+      _sb_client.from('roadmap')
+        .select('*')
+        .eq('client_id', _clientData.id)
+        .is('deleted_at', null)
+        .order('year').order('target_date'),
+      _sb_client.from('billing')
+        .select('*')
+        .eq('client_id', _clientData.id)
+        .order('created_at', { ascending: false })
+        .limit(12),
+      _sb_client.from('feedback')
+        .select('*')
+        .eq('client_id', _clientData.id)
+        .order('created_at', { ascending: false })
+        .limit(50)
+    ]);
+
+    // Populate everything
+    populateOverview(_clientData);
+    populateEmbed(_clientData);
+    populateRoadmap(rr.data || []);
+    populateTraining(_clientData);
+    populateAccount(_clientData, br.data || []);
+    populateFeedback(fr.data || []);
+    populateA11yStatement(_clientData);
+    populateStandards(_clientData);
+    populateEvidence(_clientData, rr.data || []);
+    populateReports(_clientData);
+
+  } catch(e) {
+    console.error('Client auth/load error:', e);
+    window.location.replace('login.html');
+  }
+})();
+
+// ── Helpers ───────────────────────────────────────────────
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' });
+}
+function fmtDateLong(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-CA', { year:'numeric', month:'long' });
+}
+function set(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = String(val||'');
+}
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.value = String(val||'');
+}
+function setHtml(id, html) {
+  var el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+function daysUntil(dateStr) {
+  var d = new Date(dateStr);
+  var today = new Date();
+  return Math.max(0, Math.ceil((d - today) / 86400000));
+}
+function tierName(n) {
+  return n == 1 ? 'Tier 1 — Essential' : n == 2 ? 'Tier 2 — Managed' : 'Tier 3 — Enterprise';
+}
+function tierPrice(n) {
+  return n == 1 ? '$69' : n == 2 ? '$199' : 'Custom';
+}
+
+// ── Overview panel ────────────────────────────────────────
+function populateOverview(c) {
+  // Greeting
+  var hour = new Date().getHours();
+  var greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  var firstName = (c.name || '').split(' ')[0];
+
+  // Greeting h1
+  var h1s = document.querySelectorAll('#panel-overview h1');
+  h1s.forEach(function(h){ h.innerHTML = '&#128075; ' + greeting + ', ' + esc(firstName); });
+
+  // Domain in subtitle
+  var domain = c.domain || 'your website';
+  var subs = document.querySelectorAll('#panel-overview p');
+  if (subs[0]) subs[0].innerHTML = 'Your website <strong>' + esc(domain) + '</strong> is active and monitored. Here&rsquo;s your compliance snapshot.';
+
+  // Days to AODA deadline
+  set('days-left', daysUntil('2026-12-31'));
+
+  // User name + avatar in topbar
+  var nameEl = document.getElementById('user-name');
+  if (nameEl) nameEl.textContent = c.name || '';
+  var avatarEl = document.getElementById('user-avatar');
+  if (avatarEl) avatarEl.textContent = (c.name||'CL').substring(0,2).toUpperCase();
+}
+
+// ── Embed code panel ──────────────────────────────────────
+function populateEmbed(c) {
+  var domain = c.domain || '';
+  var code   = c.client_code || '';
+  var tier   = c.tier || 1;
+
+  var snippet = '&lt;!-- ACC Accessibility Widget | ' + esc(domain) + ' --&gt;\n' +
+    '&lt;script\n' +
+    '  src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js"\n' +
+    '  id="ACCWidget"\n' +
+    '  data-domain="' + esc(domain) + '"\n' +
+    '  data-client="' + esc(code) + '"\n' +
+    '  data-tier="' + tier + '"\n' +
+    '&gt;&lt;/script&gt;';
+
+  var embedEl = document.getElementById('embed-code');
+  if (embedEl) embedEl.innerHTML = snippet;
+
+  var wpSnippet = "add_action('wp_footer', function() { ?>\n" +
+    '  &lt;script src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js"\n' +
+    '  id="ACCWidget" data-domain="' + esc(domain) + '"\n' +
+    '  data-client="' + esc(code) + '" data-tier="' + tier + '"&gt;&lt;/script&gt;\n' +
+    "&lt;?php }); ?>";
+
+  var wpEl = document.getElementById('wp-code');
+  if (wpEl) wpEl.innerHTML = wpSnippet;
+
+  // Update domain lock notice
+  var domainNotices = document.querySelectorAll('#panel-embed strong');
+  domainNotices.forEach(function(el){
+    if (el.textContent.includes('acmecorp') || el.textContent.includes('your domain')) {
+      el.textContent = domain || 'your domain';
+    }
+  });
+}
+
+// ── Roadmap panel ─────────────────────────────────────────
+function populateRoadmap(milestones) {
+  if (!milestones.length) return;
+
+  // Group by year
+  var groups = {};
+  milestones.forEach(function(m) {
+    if (!groups[m.year]) groups[m.year] = [];
+    groups[m.year].push(m);
+  });
+
+  var statusBadge = {
+    'done':        '<span class="pill green" style="font-size:.72rem">Done</span>',
+    'in-progress': '<span class="pill yellow" style="font-size:.72rem">In Progress</span>',
+    'planned':     '<span class="pill blue" style="font-size:.72rem">Planned</span>',
+    'deferred':    '<span class="pill" style="font-size:.72rem;background:rgba(138,155,191,.2);color:#8a9bbf">Deferred</span>'
+  };
+
+  // For each year group find the tbody (id="roadmap-tbody-YEAR") or build one
+  var rmPanel = document.getElementById('panel-roadmap');
+  if (!rmPanel) return;
+
+  // Replace all tbodies in the roadmap panel with live data
+  var tables = rmPanel.querySelectorAll('table');
+  var yearIdx = 0;
+  var sortedYears = Object.keys(groups).sort();
+
+  sortedYears.forEach(function(yr) {
+    var rows = groups[yr];
+    var tbody;
+    if (tables[yearIdx]) {
+      tbody = tables[yearIdx].querySelector('tbody');
+    }
+    if (!tbody) { yearIdx++; return; }
+
+    tbody.innerHTML = rows.map(function(m) {
+      var badge = statusBadge[m.status] || statusBadge['planned'];
+      var dateStr = m.target_date ? fmtDate(m.target_date) : '—';
+      return '<tr><td>' + esc(m.milestone) + '</td><td>' + esc(dateStr) + '</td><td>' + badge + '</td></tr>';
+    }).join('');
+
+    yearIdx++;
+  });
+}
+
+// ── Training panel ────────────────────────────────────────
+function populateTraining(c) {
+  var code  = c.client_code || 'CLI-00000';
+  var token = code.toLowerCase().replace('cli-','') + (c.name||'client').replace(/\s+/g,'').toLowerCase().substring(0,4);
+  var link  = 'https://accessibilitycompliance.ca/training.html?org=' + encodeURIComponent(code) + '&token=' + token;
+
+  var linkEl = document.getElementById('training-link');
+  if (linkEl) linkEl.textContent = link;
+
+  // Update any <a> elements wrapping the training link
+  var linkAnchors = document.querySelectorAll('#panel-training a[href*="training.html"]');
+  linkAnchors.forEach(function(a){ a.href = link; });
+}
+
+// ── Account panel ─────────────────────────────────────────
+function populateAccount(c, billingRows) {
+  // Account details inputs
+  setVal('acc-name',    c.name  || '');
+  setVal('acc-email',   c.email || '');
+  setVal('acc-company', c.name  || '');
+  setVal('acc-url',     c.domain ? 'https://' + c.domain : '');
+
+  // Subscription card — update tier name, price, status, renewal
+  var subCard = document.querySelector('#panel-account .subscription-card, #panel-account [class*="sub"]');
+  var tierNameEls = document.querySelectorAll('#panel-account strong');
+  tierNameEls.forEach(function(el){
+    if (el.textContent.includes('Tier')) el.textContent = tierName(c.tier);
+  });
+
+  // Price
+  var priceEls = document.querySelectorAll('#panel-account [style*="1.6rem"]');
+  priceEls.forEach(function(el){
+    if (el.textContent.match(/\$\d+/)) {
+      el.innerHTML = tierPrice(c.tier) + ' <span style="font-size:.85rem;font-weight:400;color:var(--muted)">CAD / month</span>';
+    }
+  });
+
+  // Status pill
+  var statusPills = document.querySelectorAll('#panel-account .pill');
+  statusPills.forEach(function(pill){
+    if (['Active','Inactive','Overdue','Pending','Cancelled'].includes(pill.textContent.trim())) {
+      var s = (c.status||'active');
+      pill.textContent = s.charAt(0).toUpperCase() + s.slice(1);
+      pill.className = 'pill ' + (s==='active'||s==='current' ? 'green' : s==='overdue' ? 'red' : 'yellow');
+    }
+  });
+
+  // Next billing
+  var renewalEls = document.querySelectorAll('#panel-account [style*=".78rem"]');
+  renewalEls.forEach(function(el){
+    if (el.textContent.includes('Next billing')) {
+      el.textContent = 'Next billing: ' + (c.renewal_date ? fmtDate(c.renewal_date) : '—');
+    }
+  });
+
+  // Billing history table
+  populateBillingHistory(billingRows, c);
+}
+
+function populateBillingHistory(rows, c) {
+  var tbody = document.querySelector('#panel-account table tbody');
+  if (!tbody) return;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No billing records yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(function(b) {
+    var amt = b.amount ? '$' + parseFloat(b.amount).toFixed(2) + ' ' + (b.currency||'CAD') : '—';
+    var paid = b.paid_at ? fmtDate(b.paid_at) : fmtDate(b.created_at);
+    var status = b.paid_at ? '<span class="pill green" style="font-size:.72rem">Paid</span>' : '<span class="pill yellow" style="font-size:.72rem">Pending</span>';
+    return '<tr><td style="font-size:.8rem">' + paid + '</td><td style="font-size:.8rem">' + amt + '</td><td>' + status + '</td><td><button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="downloadReport(\'invoice\')">&#8659; PDF</button></td></tr>';
+  }).join('');
+}
+
+// ── Feedback panel ────────────────────────────────────────
+function populateFeedback(rows) {
+  var tbody = document.querySelector('#panel-feedback table tbody');
+  if (!tbody) return;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:20px">No feedback entries yet. Feedback submitted via your widget will appear here.</td></tr>';
+    return;
+  }
+  var statusBadge = {
+    'new':      '<span class="pill blue" style="font-size:.72rem">New</span>',
+    'reviewed': '<span class="pill green" style="font-size:.72rem">Reviewed</span>',
+    'resolved': '<span class="pill" style="font-size:.72rem;background:rgba(56,217,169,.15);color:#38d9a9">Resolved</span>'
+  };
+  tbody.innerHTML = rows.map(function(fb) {
+    var badge = statusBadge[fb.status] || statusBadge['new'];
+    var typeLabel = fb.submitted_by ? esc(fb.submitted_by) : 'Widget';
+    return '<tr>' +
+      '<td style="font-size:.8rem">' + fmtDate(fb.created_at) + '</td>' +
+      '<td style="font-size:.8rem">' + typeLabel + '</td>' +
+      '<td style="font-size:.8rem">' + esc((fb.message||'').substring(0,60)) + (fb.message && fb.message.length>60 ? '…' : '') + '</td>' +
+      '<td>' + badge + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+// ── Accessibility statement panel ─────────────────────────
+function populateA11yStatement(c) {
+  var domain  = c.domain || '[yourdomain].ca';
+  var company = c.name   || 'Your Organization';
+  var email   = 'accessibility@' + domain;
+
+  // Update stmt-email-display spans
+  document.querySelectorAll('#stmt-email-display, [id="stmt-email-display"]').forEach(function(el){
+    el.textContent = email;
+  });
+
+  // Update company name in statement preview
+  var stmtPanel = document.getElementById('panel-a11y-stmt');
+  if (!stmtPanel) return;
+  var strongs = stmtPanel.querySelectorAll('strong');
+  strongs.forEach(function(el){
+    if (el.textContent.includes('Acme Corp') || el.textContent.includes('Your Organization')) {
+      el.textContent = company;
+    }
+  });
+
+  // Update any domain references
+  var allText = stmtPanel.querySelectorAll('p, li, span');
+  allText.forEach(function(el){
+    if (el.children.length === 0) {
+      el.textContent = el.textContent.replace(/acmecorp\.ca/g, domain).replace(/\[yourdomain\]\.ca/g, domain);
+    }
+  });
+
+  // Pre-fill the statement editor inputs
+  var stmtCo = document.getElementById('stmt-co');
+  if (stmtCo) stmtCo.value = company;
+  var stmtEmail = document.getElementById('stmt-email');
+  if (stmtEmail) stmtEmail.value = email;
+}
+
+// ── Standards / Templates panel ───────────────────────────
+function populateStandards(c) {
+  // Tier-gate: Tier 1 gets 5 templates, Tier 2 gets 11, Tier 3 gets all 15
+  // Just update any "Tier X" references shown in the panel
+  var stdPanel = document.getElementById('panel-standards');
+  if (!stdPanel) return;
+  var tierRefs = stdPanel.querySelectorAll('[class*="tier-gate"], [data-tier-min]');
+  tierRefs.forEach(function(el){
+    var min = parseInt(el.getAttribute('data-tier-min') || '1');
+    el.style.display = c.tier >= min ? '' : 'none';
+  });
+}
+
+// ── Evidence binder panel ─────────────────────────────────
+function populateEvidence(c, milestones) {
+  var evPanel = document.getElementById('panel-evidence');
+  if (!evPanel) return;
+  var now = new Date();
+  var monthsCompiled = now.getMonth(); // 0-based = months completed so far
+  
+  // Update month progress
+  var progEls = evPanel.querySelectorAll('[style*="font-size:2"]');
+  progEls.forEach(function(el){
+    if (el.textContent.match(/^\d+\s*\/\s*12/)) {
+      el.textContent = monthsCompiled + ' / 12 months compiled';
+    }
+  });
+
+  // Training completions count (from milestones with status=done)
+  var doneCount = milestones.filter(function(m){ return m.status === 'done'; }).length;
+  var countEls = evPanel.querySelectorAll('td');
+  countEls.forEach(function(el){
+    if (el.textContent === '3 completions') el.textContent = doneCount + ' completions';
+  });
+}
+
+// ── Reports panel ─────────────────────────────────────────
+function populateReports(c) {
+  var repPanel = document.getElementById('panel-reports');
+  if (!repPanel) return;
+  var domainEls = repPanel.querySelectorAll('strong, span, td');
+  domainEls.forEach(function(el){
+    if (el.children.length === 0 && el.textContent.includes('acmecorp')) {
+      el.textContent = el.textContent.replace(/acmecorp\.ca/g, c.domain || '');
+    }
+  });
+}
+
+// ── Sign out ──────────────────────────────────────────────
+function clientSignOut() {
+  _sb_client.auth.signOut().then(function(){
+    window.location.replace('login.html');
+  });
+}
+
+</script>
 <script>
 // ── Training Search ──
 function filterTraining() {
@@ -2153,20 +2562,6 @@ function saveBillingAddress() {
   var postal = document.getElementById('bill-postal').value.trim();
   if (!addr || !city || !postal) { alert('Please fill in all address fields.'); return; }
   closeModal('billing-address-modal');
-  alert('Billing address saved.');
-}
-
-// ── Scope acknowledgement ──
-function signScopeAck() {
-  var btn = document.getElementById('scope-ack-btn');
-  if (btn) {
-    btn.textContent = '✓ Signed';
-    btn.disabled = true;
-    btn.style.background = 'rgba(56,217,169,.15)';
-    btn.style.color = '#38d9a9';
-    btn.style.borderColor = 'rgba(56,217,169,.3)';
-  }
-  showToast('Scope acknowledgement signed and saved to your binder.');
 }
 </script>
 </body>
