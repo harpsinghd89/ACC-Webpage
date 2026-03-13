@@ -291,7 +291,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     </div>
     <div class="topbar-user">
       <div class="topbar-avatar" id="user-avatar" aria-hidden="true">CL</div>
-      <span id="user-name">Jane Smith</span>
+      <span id="user-name">Loading…</span>
     </div>
     <button class="topbar-logout" onclick="clientSignOut()" aria-label="Sign out">
       Sign Out
@@ -390,7 +390,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <!-- OVERVIEW -->
     <div class="panel active" id="panel-overview">
       <div class="page-header">
-        <h1 style="color:#ffffff">&#128075; Good evening, Jane</h1>
+        <h1 style="color:#ffffff" id="hero-greeting">&#128075; Welcome</h1>
         <p>Your website <strong>acmecorp.ca</strong> is active and monitored. Here&rsquo;s your compliance snapshot.</p>
       </div>
       <div class="stat-grid">
@@ -812,13 +812,13 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px">
               <input type="checkbox" id="scope-chk" style="margin-top:3px;accent-color:#4f8ef7;width:16px;height:16px"/>
               <label for="scope-chk" style="font-size:.82rem;color:#8a9bbf;cursor:pointer">
-                I, <strong style="color:#e8edf8">Jane Smith</strong> (authorized representative of Acme Corp Inc.), confirm that I have read and understood the Scope of Responsibility. I acknowledge that Accessibility Compliance Canada Inc. is responsible only for the deliverables listed, and that operational implementation is the responsibility of our organization.
+                I, <strong style="color:#e8edf8" id="signoff-name">—</strong> (authorized representative of <span id="signoff-company">your organization</span>), confirm that I have read and understood the Scope of Responsibility. I acknowledge that Accessibility Compliance Canada Inc. is responsible only for the deliverables listed, and that operational implementation is the responsibility of our organization.
               </label>
             </div>
             <button class="btn-sm btn-primary" onclick="signScopeAck()">&#9989; Sign &amp; Confirm — 2026</button>
           </div>
           <div id="signoff-signed" style="display:none">
-            <span class="pill green" style="font-size:.8rem">&#9989; Signed by Jane Smith — <span id="signoff-date"></span></span>
+            <span class="pill green" style="font-size:.8rem">&#9989; Signed by <span id="signoff-signer">—</span> — <span id="signoff-date"></span></span>
             <p style="font-size:.78rem;color:#8a9bbf;margin-top:8px">A copy has been added to your 2026 Evidence Binder.</p>
           </div>
         </div>
@@ -1041,7 +1041,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div class="fgroup">
             <label for="acc-name">Full Name</label>
-            <input class="finput" type="text" id="acc-name" value="Jane Smith" style="width:100%"/>
+            <input class="finput" type="text" id="acc-name" value="" style="width:100%"/>
           </div>
           <div class="fgroup">
             <label for="acc-email">Email</label>
@@ -1067,7 +1067,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             <div style="background:#1a3060;border-radius:6px;padding:6px 10px;font-size:.75rem;font-weight:700;color:#4f8ef7;letter-spacing:.04em">VISA</div>
             <div>
               <div style="font-size:.88rem;font-weight:600">•••• •••• •••• 4242</div>
-              <div style="font-size:.75rem;color:#8a9bbf">Expires 08 / 2028 &nbsp;&bull;&nbsp; Jane Smith</div>
+              <div style="font-size:.75rem;color:#8a9bbf">Expires 08 / 2028 &nbsp;&bull;&nbsp; —</div>
             </div>
           </div>
           <span class="pill green" style="font-size:.72rem">Default</span>
@@ -2184,11 +2184,24 @@ function setHtml(id, html) {
 function populateOverview(c) {
   var hour = new Date().getHours();
   var greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  var firstName = (c.name || 'there').split(' ')[0];
   set('client-greeting', greeting + ', ' + (c.name || 'there'));
   set('overview-domain', c.domain || '—');
   var days = daysUntil(c.renewal_date);
   set('overview-days-left', days !== null ? days + ' days' : '—');
   set('overview-tier', tierName(c.tier));
+  // Update nav
+  var unEl = document.getElementById('user-name');
+  if (unEl) unEl.textContent = c.name || c.email || '—';
+  var avEl = document.getElementById('user-avatar');
+  if (avEl) avEl.textContent = firstName.charAt(0).toUpperCase();
+  // Update hero greeting
+  var heroEl = document.getElementById('hero-greeting');
+  if (heroEl) heroEl.innerHTML = '&#128075; ' + greeting + ', ' + firstName;
+  // Update signoff
+  var snEl = document.getElementById('signoff-name');    if (snEl) snEl.textContent = c.name || '—';
+  var scEl = document.getElementById('signoff-company'); if (scEl) scEl.textContent = c.name || 'your organization';
+  var ssEl = document.getElementById('signoff-signer');  if (ssEl) ssEl.textContent = c.name || '—';
 }
 
 function populateEmbed(c) {
@@ -2227,6 +2240,7 @@ function populateTraining(c) {
 
 function populateAccount(c, billingRows) {
   set('acc-name',  c.name);
+  var _an = document.getElementById('acc-name'); if (_an && _an.tagName === 'INPUT') _an.value = c.name || '';
   set('acc-email', c.email);
   set('acc-tier',  tierName(c.tier));
   set('acc-price', tierPrice(c.tier));

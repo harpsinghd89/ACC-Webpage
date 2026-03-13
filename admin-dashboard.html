@@ -630,7 +630,8 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </select>
     </div>
     <div class="btn-row" style="margin-top:8px">
-      <button class="btn-sm btn-primary" onclick="addClient()">&#10003; Create Client</button>
+      <div id="nc-error" style="display:none;background:#3d1515;border:1px solid #f05f5f;border-radius:8px;padding:10px 14px;color:#f05f5f;font-size:.85rem;margin-bottom:12px"></div>
+  <button class="btn-sm btn-primary" onclick="addClient()">&#10003; Create Client</button>
       <button class="btn-sm btn-ghost" onclick="closeModal('add-client-modal')">Cancel</button>
     </div>
   </div>
@@ -1372,13 +1373,14 @@ async function addClient() {
 
   } catch(e) {
     console.error('addClient error:', e);
-    var msg = (e && e.message) ? e.message : JSON.stringify(e);
+    var msg = (e && e.message) ? e.message : (typeof e === 'string' ? e : JSON.stringify(e));
     if (msg.includes('unique') || msg.includes('duplicate')) msg = 'A client with that email already exists.';
-    if (msg.includes('violates row') || msg.includes('policy') || msg.includes('permission')) {
-      msg = 'Permission denied — check Supabase RLS policies on the clients table.';
+    if (msg.includes('violates row-level') || msg.includes('policy') || msg.includes('permission')) {
+      msg = 'Permission denied. Go to Supabase SQL Editor and run the RLS policy fix.';
     }
-    showToastAdmin('Error: ' + msg, 'error');
-    alert('Could not create client:\n' + msg);
+    var errEl = document.getElementById('nc-error');
+    if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+    else { alert('Error: ' + msg); }
   } finally {
     if (btn) { btn.textContent = '\u2713 Create Client'; btn.disabled = false; }
   }
