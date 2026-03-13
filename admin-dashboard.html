@@ -1286,7 +1286,7 @@ function renderClientsTable(clients) {
       '<td style="font-size:.8rem;color:#8a9bbf">' + esc(c.domain||'') + '</td>' +
       '<td style="font-size:.8rem">' + renewal + '</td>' +
       '<td><span class="pill ' + statusColor(statusKey) + '">' + displayStatus + '</span></td>' +
-      '<td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:4px 10px">&#9998; Edit</button></td>' +
+      '<td style="white-space:nowrap"><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:4px 10px">&#9998; Edit</button> <button class="btn-sm" onclick="sendLoginInvite(\'' + esc(c.email) + '\',\'' + esc(c.name) + '\',\'' + esc(c.id) + '\')" style="font-size:.75rem;padding:4px 10px;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;cursor:pointer" title="Send login invite email">&#9993; Invite</button></td>' +
       '</tr>';
   }).join('');
 }
@@ -1887,6 +1887,48 @@ async function renderTemplateManager() {
 
 </script>
 <script>
+// ── Send Login Invite ─────────────────────────────────────────
+async function sendLoginInvite(email, name, clientId) {
+  if (!email) { showToastAdmin('No email on file for this client.', 'error'); return; }
+
+  var confirmed = confirm('Send a login invite to ' + email + '?\n\nThis will create a Supabase auth account if one does not exist and email them a magic login link.');
+  if (!confirmed) return;
+
+  showToastAdmin('Sending invite to ' + email + '…', 'info');
+
+  try {
+    // Step 1: Create auth user via Supabase Admin API (uses service role — done via Edge Function)
+    // For now we use the invite link API which sends a magic link email automatically
+    var r = await fetch('https://wfyzvmfvlukawidowuym.supabase.co/auth/v1/magiclink', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M',
+        'Authorization': 'Bearer ' + (await _sb.auth.getSession()).data.session.access_token
+      },
+      body: JSON.stringify({ email: email })
+    });
+    var res = await r.json();
+
+    if (!r.ok) {
+      // If magic link fails, try generating a password reset link instead
+      throw new Error(res.msg || res.error_description || 'Could not send invite');
+    }
+
+    // Step 2: Mark client as invited in DB
+    await _sb.from('clients').update({
+      onboarding_notes: ((await _sb.from('clients').select('onboarding_notes').eq('id', clientId).single()).data?.onboarding_notes || '') +
+        '\nLogin invite sent: ' + new Date().toISOString().split('T')[0]
+    }).eq('id', clientId);
+
+    showToastAdmin('\u2705 Login invite sent to ' + email, 'success');
+
+  } catch(e) {
+    console.error('sendLoginInvite:', e);
+    showToastAdmin('Error: ' + (e.message || String(e)), 'error');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   if (typeof flatpickr !== 'undefined') {
     document.querySelectorAll('input[type="date"]').forEach(function(el) {

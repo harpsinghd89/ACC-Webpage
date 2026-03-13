@@ -559,14 +559,14 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <li>To send compliance status emails and AODA updates (with consent).</li>
     </ul>
     <h3>3. CASL &amp; Consent Records</h3>
-    <p>We only send commercial emails with express consent. Consent records include: email, date/time, method, and IP, stored with CASL compliance mode enabled. Withdraw consent anytime via unsubscribe link or by emailing <a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a>.</p>
+    <p>We only send commercial emails with express consent. Consent records include: email, date/time, method, and IP, stored with CASL compliance mode enabled. Withdraw consent anytime via unsubscribe link or by emailing <a href="/cdn-cgi/l/email-protection#b2c2d3c0c6dcd7c0f2d3d1d1d7c1c1dbd0dbdedbc6cbd1dddfc2dedbd3dcd1d79cd1d3" style="color:var(--accent)"><span class="__cf_email__" data-cfemail="51213023253f3423113032323422223833383d382528323e3c213d38303f32347f3230">[email&#160;protected]</span></a>.</p>
     <h3>4. Security</h3>
     <p>AES-256 encryption at rest, TLS 1.3 in transit. PCI-DSS Level 1 compliant payment processing. We do not sell personal data.</p>
     <h3>5. Your Rights (PIPEDA)</h3>
     <p>You may access, correct, or request deletion of your data at any time from your dashboard or by contacting us.</p>
     <h3>6. Contact</h3>
     <p>2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON L6H 5V1<br>
-    <a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a></p>
+    <a href="/cdn-cgi/l/email-protection#fe8e9f8c8a909b8cbe9f9d9d9b8d8d979c9792978a879d91938e92979f909d9bd09d9f" style="color:var(--accent)"><span class="__cf_email__" data-cfemail="70001102041e1502301113131503031912191c190409131f1d001c19111e13155e1311">[email&#160;protected]</span></a></p>
   </div>
 </div>
 
@@ -589,7 +589,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <h3>ACCWidget</h3>
     <p>This page includes the ACC Accessibility Widget for adjusting font size, contrast, spacing, dyslexia fonts, and reading guides.</p>
     <h3>Feedback</h3>
-    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--teal)">partner@accessibilitycompliance.ca</a> &middot; (416) 526-9645</p>
+    <p><a href="/cdn-cgi/l/email-protection#25554457514b4057654446464056564c474c494c515c464a4855494c444b46400b4644" style="color:var(--teal)"><span class="__cf_email__" data-cfemail="4f3f2e3d3b212a3d0f2e2c2c2a3c3c262d2623263b362c20223f23262e212c2a612c2e">[email&#160;protected]</span></a> &middot; (416) 526-9645</p>
   </div>
 </div>
 
@@ -619,7 +619,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <h3>6. Governing Law</h3>
     <p>These terms are governed by the laws of Ontario, Canada. Disputes shall be resolved in Ontario courts.</p>
     <h3>7. Contact</h3>
-    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a></p>
+    <p><a href="/cdn-cgi/l/email-protection#10607162647e7562507173737563637972797c796469737f7d607c79717e73753e7371" style="color:var(--accent)"><span class="__cf_email__" data-cfemail="41312033352f2433012022222432322823282d283538222e2c312d28202f22246f2220">[email&#160;protected]</span></a></p>
   </div>
 </div>
 <script src="https://helcim.com/helcim-pay/services/start.js"></script>
@@ -823,27 +823,109 @@ function submitPayment(){
     else throw new Error('Payment processor not loaded. Please refresh.');
     resetSubmitBtn();
   });}).catch(function(e){showCardError(e.message||"Something went wrong.");resetSubmitBtn();});
+}function handleHelcimSuccess(data){
+  var btn=document.getElementById('submit-btn'),lbl=document.getElementById('submit-label');
+  if(btn)btn.disabled=true;
+  if(lbl)lbl.textContent='Creating your account…';
+
+  var p=_pendingPayload;
+  if(!p){ resetSubmitBtn(); return; }
+
+  var ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
+  var SB_URL='https://wfyzvmfvlukawidowuym.supabase.co';
+
+  // Step 1: Create Supabase auth user
+  fetch(SB_URL+'/auth/v1/signup',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON},
+    body:JSON.stringify({email:p.email,password:p.password,
+      options:{data:{full_name:p.firstName+' '+p.lastName,company:p.company}}})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(sb){
+    if(!sb.user&&!sb.id) throw new Error(
+      (sb.msg||sb.error_description||sb.message||'Account creation failed. Email may already be registered.')
+    );
+    var uid = (sb.user||sb).id;
+    var token = (sb.session&&sb.session.access_token) ? sb.session.access_token : ANON;
+
+    // Step 2: Insert into clients table
+    var today   = new Date().toISOString().split('T')[0];
+    var renewal = new Date(Date.now()+365*24*60*60*1000).toISOString().split('T')[0];
+    var code    = 'CLI-'+Math.floor(10000+Math.random()*90000);
+    var tierNum = p.tier||1;
+
+    return fetch(SB_URL+'/rest/v1/clients',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'apikey':ANON,
+        'Authorization':'Bearer '+token,
+        'Prefer':'return=representation'
+      },
+      body:JSON.stringify({
+        auth_user_id: uid,
+        client_code:  code,
+        name:         p.company||p.firstName+' '+p.lastName,
+        email:        p.email,
+        domain:       p.domain||null,
+        phone:        p.phone||null,
+        tier:         tierNum,
+        status:       'active',
+        start_date:   today,
+        renewal_date: renewal,
+        billing_cycle: p.billingCycle||'monthly'
+      })
+    })
+    .then(function(r){ return r.json().then(function(d){ return {client:d,token:token}; }); });
+  })
+  .then(function(res){
+    var clientRow = Array.isArray(res.client) ? res.client[0] : res.client;
+
+    // Step 3: Generate invoice via edge function
+    if(clientRow&&clientRow.id){
+      fetch(SB_URL+'/functions/v1/generate-invoice',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',
+          'Authorization':'Bearer '+res.token,
+          'apikey':ANON},
+        body:JSON.stringify({client_id:clientRow.id})
+      }).catch(function(e){ console.warn('Invoice generation:', e); });
+    }
+
+    // Step 4: Show success screen
+    showSuccessScreen(p.firstName, p.email);
+  })
+  .catch(function(e){
+    console.error('handleHelcimSuccess error:',e);
+    showCardError('Account setup failed: '+(e.message||String(e))+
+      '. Your payment was processed. Please contact partner@accessibilitycompliance.ca');
+    resetSubmitBtn();
+  });
 }
 
-function handleHelcimSuccess(data){
-  var btn=document.getElementById('submit-btn'),lbl=document.getElementById('submit-label');
-  if(btn)btn.disabled=true;if(lbl)lbl.textContent='Creating your account…';
-  var p=_pendingPayload;if(!p){resetSubmitBtn();return;}
-  fetch('https://wfyzvmfvlukawidowuym.supabase.co/auth/v1/signup',{
-    method:"POST",
-    headers:{"Content-Type":"application/json","apikey":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M"},
-    body:JSON.stringify({email:p.email,password:p.password})
-  }).then(function(r){return r.json();})
-  .then(function(sb){
-    var uid=(sb&&sb.user)?sb.user.id:null;
-    return fetch('https://wfyzvmfvlukawidowuym.supabase.co/functions/v1/helcim-checkout',{
-      method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M"},
-      body:JSON.stringify({event:'payment.success',
-        transactionId:data.transactionId||(data.data&&data.data.transactionId),
-        authUserId:uid,payload:p})});
-  }).then(function(){var ss=document.getElementById('success-screen'),se=document.getElementById('success-email');
-    if(ss)ss.style.display='flex';if(se)se.textContent=p.email;window.scrollTo(0,0);
-  }).catch(function(){showCardError('Payment succeeded but account setup failed. Contact compliance@accessibilitycompliance.ca');resetSubmitBtn();});
+function showSuccessScreen(firstName, email){
+  var wrap = document.getElementById('payment-wrap');
+  var tc   = document.getElementById('tier-card');
+  if(wrap) wrap.style.display='none';
+  if(tc)   tc.style.display='none';
+  var success = document.getElementById('success-screen');
+  if(success){
+    success.style.display='block';
+    var nameEl = document.getElementById('success-name');
+    if(nameEl) nameEl.textContent = firstName||'there';
+    var emailEl = document.getElementById('success-email');
+    if(emailEl) emailEl.textContent = email||'';
+  } else {
+    // Fallback if no success screen element
+    document.body.innerHTML='<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#060d1a;font-family:sans-serif;text-align:center;padding:40px">'
+      +'<div><div style="font-size:3rem">\u2705</div>'
+      +'<h1 style="color:#38d9a9;margin:16px 0">You\u2019re in!</h1>'
+      +'<p style="color:#e8edf8;font-size:1.1rem">Welcome, '+firstName+'.</p>'
+      +'<p style="color:#8a9bbf">Your login credentials have been sent to <strong style=\"color:#e8edf8\">'+email+'</strong>.</p>'
+      +'<p style="color:#8a9bbf;margin-top:24px"><a href="dashboard.html" style="color:#4f8ef7">Go to your dashboard &rarr;</a></p>'
+      +'</div></div>';
+  }
 }
 </script>
 </body>
