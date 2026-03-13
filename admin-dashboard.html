@@ -210,6 +210,8 @@ select.finput{appearance:none;cursor:pointer;
 h1,h2,h3,h4,h5,h6{color:#fff !important}
 *{min-width:0}
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body style="background:#0a1628 !important;color:#e8edf8 !important;font-family:Sora,sans-serif">
 
@@ -1531,6 +1533,44 @@ function removeMilestoneRow(btn) {
 }
 
 // ── Sign out ─────────────────────────────────────────────
+
+// ── Editing state ─────────────────────────────────────────
+var _editingRow = null;
+
+// ── Client editor tabs ────────────────────────────────────
+function showClientTab(tab) {
+  var tabs = ['info','billing','roadmap','templates','binder','access','notes'];
+  tabs.forEach(function(t) {
+    var btn   = document.getElementById('ctab-' + t);
+    var panel = document.getElementById('ctab-panel-' + t);
+    var active = t === tab;
+    if (btn)   { btn.className   = active ? 'btn-sm btn-primary' : 'btn-sm btn-ghost'; btn.style.fontSize = '.72rem'; }
+    if (panel) panel.style.display = active ? 'block' : 'none';
+  });
+}
+
+// ── Date pickers (flatpickr) ──────────────────────────────
+function initDatePickers() {
+  var dateOpts = { dateFormat: 'Y-m-d', allowInput: true, disableMobile: false };
+  var dateIds = ['nc-start','nc-renewal','ce-start','ce-renewal','ce-last-contact','ce-followup'];
+  dateIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && !el._flatpickr) flatpickr(el, dateOpts);
+  });
+}
+
+// Init date pickers when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  initDatePickers();
+});
+
+// Also re-init when modals open (in case elements weren't in DOM yet)
+var _origOpenModal = window.openModal;
+window.openModal = function(id) {
+  if (_origOpenModal) _origOpenModal(id);
+  setTimeout(initDatePickers, 100);
+};
+
 function signOut() {
   if (confirm('Sign out of admin?')) {
     _sb.auth.signOut().then(function() {
