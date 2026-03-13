@@ -424,7 +424,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </div>
       <div class="card">
         <h2>&#9993; Zoho Email Automation</h2>
-        <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Automated AODA compliance reminders sent from <a href="mailto:compliance@accessibilitycompliance.ca" style="color:#4f8ef7">compliance@accessibilitycompliance.ca</a></p>
+        <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Automated AODA compliance reminders sent from <a href="/cdn-cgi/l/email-protection#680b070518040109060b0d28090b0b0d1b1b010a0104011c110b070518040109060b0d460b09" style="color:#4f8ef7"><span class="__cf_email__" data-cfemail="55363a3825393c343b3630153436363026263c373c393c212c363a3825393c343b36307b3634">[email&#160;protected]</span></a></p>
         <table class="data-table">
           <thead><tr><th>Date</th><th>Template</th><th>Recipients</th><th>Status</th></tr></thead>
           <tbody>
@@ -944,7 +944,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 <!-- Binder Editor -->
 >
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ══════════════════════════════════════════════════════════
 // ACC Admin Dashboard — Supabase Data Layer (Phase 5)
@@ -1477,12 +1477,7 @@ function exportClients() {
   alert('Client list exported as CSV.');
 }
 
-function addClient() {
-  var name = document.getElementById('nc-name').value.trim();
-  if (!name) { alert('Please enter a business name.'); return; }
-  alert('Client ' + name + ' created successfully!');
-  closeModal('add-client-modal');
-}
+
 
 // ── Discount codes ──
 function generateCode() {
@@ -1547,15 +1542,4 @@ function loadClientOverride(clientId) {
 function showClientTab(tab) {
   var tabs = ['info','billing','roadmap','templates','binder','access','notes'];
   tabs.forEach(function(t) {
-    var btn   = document.getElementById('ctab-' + t);
-    var panel = document.getElementById('ctab-panel-' + t);
-    if (btn)   btn.className   = t === tab ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
-    if (panel) panel.style.display = t === tab ? '' : 'none';
-  });
-}
-
-
-// Close on backdrop click
-</script>
-</body>
-</html>
+    var btn   = document.getElementById('ctab-'
