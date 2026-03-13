@@ -1658,7 +1658,7 @@ Questions? Reply to this email.
 
 <!-- ACC Widget not loaded on dashboard - client-facing only -->
 <div id="auth-error-msg" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#f05f5f;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-size:.9rem"></div>
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ── Training Search ──
 function filterTraining() {
   var q = (document.getElementById('training-search').value || '').toLowerCase();
@@ -2110,7 +2110,6 @@ function saveBillingAddress() {
 }
 
 </script>
-
 <script>
 // ══════════════════════════════════════════════════════════
 // ACC Platform — Client Dashboard Supabase Layer
@@ -2421,4 +2420,20 @@ async function downloadInvoice(yearMonth) {
     populateFeedback(fr.data || []);
     populateA11yStatement(_clientData);
     populateStandards(_clientData);
-    populateEvidence(_clien
+    
+    populateEvidence(_clientData, rr.data || []);
+    populateReports(_clientData);
+
+  } catch(e) {
+    console.error('Client auth/load error:', e);
+    var errEl = document.getElementById('auth-error-msg');
+    if (errEl) {
+      errEl.style.display = 'block';
+      errEl.textContent = 'Something went wrong. Please refresh or log in again.';
+    }
+    // Do NOT redirect — avoids login loop
+  }
+})();
+</script>
+</body>
+</html>

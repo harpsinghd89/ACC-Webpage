@@ -963,7 +963,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
 <!-- Binder Editor -->
 >
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 
 // ── Panel switching ──
 function showPanel(id) {
@@ -1371,12 +1371,16 @@ async function addClient() {
     loadClients();
 
   } catch(e) {
-    console.error('addClient:', e);
-    var msg = e.message || 'Error creating client';
-    if (msg.includes('unique') && msg.includes('email')) msg = 'A client with that email already exists.';
-    alert('Error: ' + msg);
+    console.error('addClient error:', e);
+    var msg = (e && e.message) ? e.message : JSON.stringify(e);
+    if (msg.includes('unique') || msg.includes('duplicate')) msg = 'A client with that email already exists.';
+    if (msg.includes('violates row') || msg.includes('policy') || msg.includes('permission')) {
+      msg = 'Permission denied — check Supabase RLS policies on the clients table.';
+    }
+    showToastAdmin('Error: ' + msg, 'error');
+    alert('Could not create client:\n' + msg);
   } finally {
-    if (btn) { btn.textContent = '✓ Create Client'; btn.disabled = false; }
+    if (btn) { btn.textContent = '\u2713 Create Client'; btn.disabled = false; }
   }
 }
 
@@ -1878,4 +1882,13 @@ async function renderTemplateManager() {
 
 </script>
 <script>
-do
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof flatpickr !== 'undefined') {
+    document.querySelectorAll('input[type="date"]').forEach(function(el) {
+      flatpickr(el, { dateFormat: 'Y-m-d', allowInput: true });
+    });
+  }
+});
+</script>
+</body>
+</html>
