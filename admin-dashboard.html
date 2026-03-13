@@ -212,6 +212,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body style="background:#0a1628 !important;color:#e8edf8 !important;font-family:Sora,sans-serif">
 
@@ -1113,11 +1114,7 @@ function loadClientOverride(clientId) {
 
 // ── Auth guard ──
 (function(){
-  var proto = window.location.protocol;
-  var isFile = proto === 'file:' || proto === 'blob:';
-  if (!isFile && sessionStorage.getItem('acc_admin_auth') !== 'true') {
-    window.location.href = 'admin-login.html';
-  }
+  
 })();
 
 // ── Client modal tabs ──
@@ -1169,13 +1166,9 @@ function addBinderItem() {
 
 // ── Admin auth guard ──────────────────────────────────
 (function(){
-  var proto = window.location.protocol;
-  if (proto !== 'file:' && proto !== 'blob:' && sessionStorage.getItem('acc_admin_auth') !== 'true') {
-    window.location.replace('admin-login.html');
-  }
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
 
 // ══════════════════════════════════════════════════════════
@@ -1885,17 +1878,12 @@ async function renderTemplateManager() {
 
 </script>
 <script>
-document.addEventListener('DOMContentLoaded',function(){
-  if(typeof flatpickr!=='undefined'){
-    document.querySelectorAll('input[type="date"]').forEach(function(el){
-      if(!el._flatpickr) flatpickr(el,{dateFormat:'Y-m-d',allowInput:true});
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof flatpickr !== 'undefined') {
+    document.querySelectorAll('input[type="date"]').forEach(function(el) {
+      flatpickr(el, { dateFormat: 'Y-m-d', allowInput: true });
     });
   }
-});
-</script>
-<script>
-document.addEventListener('DOMContentLoaded',function(){
-  if(typeof renderTemplateManager==='function') renderTemplateManager();
 });
 </script>
 </body>
