@@ -193,7 +193,7 @@ body{font-family:'Sora',sans-serif;background:#060d1a;color:var(--text);min-heig
 </div>
 
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 function openModal(id) {
   var m = document.getElementById(id);
@@ -225,7 +225,11 @@ document.addEventListener('click', function(e) {
 </script>
 
 <script>
-var _sb = window.supabase.createClient('https://wfyzvmfvlukawidowuym.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M');
+if (!window.supabase) {
+  document.getElementById('login-err').textContent = 'Connection error — please refresh the page.';
+  document.getElementById('login-err').style.display = 'block';
+}
+var _sb = window.supabase && window.supabase.createClient('https://wfyzvmfvlukawidowuym.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M');
 
 (async function() {
   try {
@@ -245,6 +249,11 @@ async function doLogin() {
   var err   = document.getElementById('login-err');
   var btn   = document.getElementById('signin-btn');
   err.style.display = 'none';
+  if (!_sb) {
+    err.textContent = 'Connection error — please refresh the page.';
+    err.style.display = 'block';
+    return;
+  }
   if (!email || !pw) {
     err.textContent = 'Please enter your email and password.';
     err.style.display = 'block';

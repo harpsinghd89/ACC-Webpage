@@ -240,7 +240,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script data-cfasync="false" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body style="background:#0a1628 !important;color:#e8edf8 !important;font-family:Sora,sans-serif">
 
@@ -383,48 +383,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <p style="font-size:.75rem;color:#8a9bbf;margin-bottom:12px">Showing <span id="client-count">12</span> clients</p>
         <table class="data-table" id="client-table">
           <thead><tr><th>Client</th><th>Tier</th><th>Domain</th><th>Renews</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody id="client-tbody">
-            <tr data-name="acme corp" data-tier="1" data-status="current">
-              <td><strong>Acme Corp Inc.</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00142</div></td>
-              <td><span class="pill blue">Tier 1</span></td>
-              <td style="font-size:.8rem;color:#8a9bbf">acmecorp.ca</td>
-              <td style="font-size:.8rem">Apr 10, 2026</td>
-              <td><span class="pill green">Current</span></td>
-              <td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:5px 12px">&#9998; Edit</button></td>
-            </tr>
-            <tr data-name="maple health" data-tier="2" data-status="current">
-              <td><strong>Maple Health Clinic</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00189</div></td>
-              <td><span class="pill blue">Tier 2</span></td>
-              <td style="font-size:.8rem;color:#8a9bbf">maplehealth.ca</td>
-              <td style="font-size:.8rem">Apr 8, 2026</td>
-              <td><span class="pill green">Current</span></td>
-              <td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:5px 12px">&#9998; Edit</button></td>
-            </tr>
-            <tr data-name="northern plumbing" data-tier="1" data-status="overdue">
-              <td><strong>Northern Plumbing Co.</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00201</div></td>
-              <td><span class="pill blue">Tier 1</span></td>
-              <td style="font-size:.8rem;color:#8a9bbf">northernplumbing.ca</td>
-              <td style="font-size:.8rem">Mar 1, 2026</td>
-              <td><span class="pill red">Overdue</span></td>
-              <td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:5px 12px">&#9998; Edit</button></td>
-            </tr>
-            <tr data-name="sunrise legal" data-tier="2" data-status="current">
-              <td><strong>Sunrise Legal</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00215</div></td>
-              <td><span class="pill blue">Tier 2</span></td>
-              <td style="font-size:.8rem;color:#8a9bbf">sunriselegal.ca</td>
-              <td style="font-size:.8rem">Apr 28, 2026</td>
-              <td><span class="pill green">Current</span></td>
-              <td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:5px 12px">&#9998; Edit</button></td>
-            </tr>
-            <tr data-name="hartwell dental" data-tier="1" data-status="pending">
-              <td><strong>Hartwell Dental</strong><div style="font-size:.72rem;color:#8a9bbf">CLI-00228</div></td>
-              <td><span class="pill blue">Tier 1</span></td>
-              <td style="font-size:.8rem;color:#8a9bbf">hartwelldental.ca</td>
-              <td style="font-size:.8rem">—</td>
-              <td><span class="pill yellow">Pending</span></td>
-              <td><button class="btn-sm btn-primary" onclick="openClientEditor(this)" style="font-size:.75rem;padding:5px 12px">&#9998; Edit</button></td>
-            </tr>
-          </tbody>
+          <tbody id="client-tbody"><tr><td colspan="6" style="text-align:center;color:#8a9bbf;padding:32px">Loading clients…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -618,10 +577,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             <label for="override-client-sel">Select Client</label>
             <select class="finput" id="override-client-sel" onchange="loadClientOverride(this.value)">
               <option value="">— Choose a client —</option>
-              <option value="CLI-00142">CLI-00142 — Acme Corp Inc. (Tier 1)</option>
-              <option value="CLI-00189">CLI-00189 — Maple Health Clinic (Tier 2)</option>
-              <option value="CLI-00201">CLI-00201 — Northern Plumbing Co. (Tier 1)</option>
-              <option value="CLI-00215">CLI-00215 — Sunrise Legal (Tier 2)</option>
             </select>
           </div>
           <div id="client-override-panel" style="display:none">
@@ -689,7 +644,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div id="ctab-panel-info">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="fgroup" style="grid-column:1/-1"><label>Business Name</label><input class="finput" id="ce-name" value="Acme Corp Inc."></div>
-        <div class="fgroup"><label>Client ID</label><input class="finput" id="ce-id" value="CLI-00142" readonly style="opacity:.6"></div>
+        <div class="fgroup"><label>Client ID</label><input class="finput" id="ce-id" value="" readonly style="opacity:.6" aria-label="Client ID (auto-assigned)"></div>
         <div class="fgroup"><label>Domain</label><input class="finput" id="ce-domain" value="acmecorp.ca"></div>
         <div class="fgroup"><label>Contact Name</label><input class="finput" id="ce-contact" value="Jane Smith"></div>
         <div class="fgroup"><label>Contact Email</label><input class="finput" id="ce-email" value="admin@acmecorp.ca"></div>
@@ -1060,6 +1015,28 @@ function showAccessTab(tab) {
   document.getElementById('acc-view-client').style.display = tab === 'client' ? 'block' : 'none';
   document.getElementById('acc-tab-tier').className = tab === 'tier' ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
   document.getElementById('acc-tab-client').className = tab === 'client' ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
+  // Populate client dropdown from Supabase when switching to client tab
+  if (tab === 'client') populateOverrideClientDropdown();
+}
+
+async function populateOverrideClientDropdown() {
+  var sel = document.getElementById('override-client-sel');
+  if (!sel || !_sb) return;
+  // Only reload if still showing placeholder
+  if (sel.options.length > 1) return;
+  try {
+    var r = await _sb.from('clients').select('id,client_code,name,tier')
+      .is('deleted_at', null).eq('status','active').order('name');
+    if (r.error) throw r.error;
+    (r.data || []).forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.client_code + ' — ' + c.name + ' (Tier ' + c.tier + ')';
+      sel.appendChild(opt);
+    });
+  } catch(e) {
+    console.warn('populateOverrideClientDropdown:', e);
+  }
 }
 
 var TABS = ['Dashboard Overview','Widget Settings','Embed Code','Audit Reports','Evidence Binder','3-Year Roadmap','Template Standards','Training Portal'];
@@ -1387,7 +1364,8 @@ async function saveNotes() {
 
 var SUPABASE_URL  = 'https://wfyzvmfvlukawidowuym.supabase.co';
 var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
-var _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+if (!window.supabase) { console.error('Supabase SDK not loaded — check CDN or network.'); }
+var _sb = window.supabase && window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ── Auth guard ───────────────────────────────────────────
 (async function() {
@@ -1517,6 +1495,7 @@ function updateOverviewStats(clients) {
 
 // ── Add Client ───────────────────────────────────────────
 async function addClient() {
+  if (!_sb) { alert('Connection error — please refresh the page.'); return; }
   var name    = (document.getElementById('nc-name')    ||{}).value.trim();
   var email   = (document.getElementById('nc-email')   ||{}).value.trim();
   var domain  = (document.getElementById('nc-domain')  ||{}).value.trim();
@@ -1607,7 +1586,11 @@ var _editingClientId = null;
 async function openClientEditor(btn) {
   var row = btn.closest('tr');
   _editingRow = row;
-  _editingClientId = row.getAttribute('data-id');
+  _editingClientId = row ? row.getAttribute('data-id') : null;
+  if (!_editingClientId) {
+    showToastAdmin('Client ID missing — please refresh the page.', 'error');
+    return;
+  }
 
   // Show loading state
   document.getElementById('client-modal-title').textContent = '⌛ Loading client…';
@@ -1902,10 +1885,14 @@ document.addEventListener('DOMContentLoaded', function() {
   initDatePickers();
 });
 
-// Also re-init when modals open (in case elements weren't in DOM yet)
+// Re-init date pickers when modals open
 var _origOpenModal = window.openModal;
 window.openModal = function(id) {
-  if (_origOpenModal) _origOpenModal(id);
+  var m = document.getElementById(id);
+  if (!m) { console.warn('openModal: element not found:', id); return; }
+  m.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ var c = m.querySelector('.modal-close'); if(c) c.focus(); }, 50);
   setTimeout(initDatePickers, 100);
 };
 
