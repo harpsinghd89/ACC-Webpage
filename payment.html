@@ -1092,16 +1092,43 @@ function createAccount(p){
 }
 
 function showSuccessScreen(firstName, email){
-  var wrap=document.getElementById('payment-wrap');
-  var tc=document.getElementById('tier-card');
-  if(wrap)wrap.style.display='none';
-  if(tc)tc.style.display='none';
-  var s=document.getElementById('success-screen');
-  if(s){
-    s.style.display='block';
-    var n=document.getElementById('success-name'); if(n) n.textContent=firstName||'there';
-    var e=document.getElementById('success-email'); if(e) e.textContent=email||'';
+  // Hide everything and scroll to top
+  var main = document.getElementById('main-content') || document.querySelector('main');
+  if(main){
+    // Hide all children except success screen
+    Array.from(main.children).forEach(function(el){
+      if(el.id !== 'success-screen') el.style.display = 'none';
+    });
+    // Also reset grid to single column for success
+    main.style.display = 'block';
   }
+  // Also hide nav back button and footer if present
+  var navBack = document.querySelector('.nav-back');
+  if(navBack) navBack.style.display = 'none';
+  var formWrap = document.querySelector('.payment-form-wrap');
+  if(formWrap) formWrap.style.display = 'none';
+  var planSummary = document.querySelector('.plan-summary');
+  if(planSummary) planSummary.style.display = 'none';
+
+  var s = document.getElementById('success-screen');
+  if(s){
+    s.style.cssText = [
+      'display:flex',
+      'flex-direction:column',
+      'align-items:center',
+      'justify-content:center',
+      'min-height:80vh',
+      'text-align:center',
+      'padding:40px 24px',
+      'grid-column:1/-1'
+    ].join(';');
+    var n = document.getElementById('success-name');
+    if(n) n.textContent = firstName || 'there';
+    var e = document.getElementById('success-email');
+    if(e) e.textContent = email || '';
+  }
+  // Scroll to very top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 </body>
