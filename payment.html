@@ -269,7 +269,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
   font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:4px}
 
 </style>
-<script src="https://js.stripe.com/v3/" async></script>
+<script src="https://js.stripe.com/v3/"></script>
 </head>
 <body style="background:#0a1628 !important;color:#e8edf8 !important;font-family:Sora,sans-serif">
 
@@ -785,6 +785,7 @@ function resetSubmitBtn(){
 var _stripe      = null;
 var _cardElement = null;
 
+document.addEventListener('DOMContentLoaded', function() {
 (function tryInitStripe(attempts) {
   if (typeof Stripe !== 'undefined') {
     _stripe      = Stripe('pk_test_51TAdyX3z0tL7YFm9rLapHmEDQsytfBpgMA91MNo3RER5HgVgIdRh8G0gjzzNTFL4olHl1M0F3B5sZbdxTjnBUFUV00w6ugJRbZ');
@@ -813,6 +814,7 @@ var _cardElement = null;
     if (el) el.innerHTML = '<p style="color:#f05f5f;font-size:.82rem">Payment system failed to load. Please refresh.</p>';
   }
 })(0);
+});
 
 function submitPayment(){
   var ok=true;
