@@ -1059,6 +1059,35 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <button class="btn-sm btn-primary" style="margin-top:8px" onclick="alert('Account details saved successfully.')">Save Changes</button>
       </div>
 
+      <!-- Change Password -->
+      <div class="card" id="card-change-password">
+        <h2>&#128274; Change Password</h2>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px">Update your login password. You will stay signed in after changing it.</p>
+        <div id="pw-change-msg" role="alert" style="display:none;padding:10px 14px;border-radius:8px;font-size:.82rem;margin-bottom:14px"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="fgroup">
+            <label for="pw-new">New Password</label>
+            <div class="pw-wrap">
+              <input class="finput" type="password" id="pw-new" placeholder="Min. 8 characters"
+                     autocomplete="new-password" minlength="8" style="width:100%"/>
+              <button class="pw-eye" type="button" onclick="togglePwField('pw-new')" aria-label="Show or hide new password">&#128065;</button>
+            </div>
+          </div>
+          <div class="fgroup">
+            <label for="pw-confirm">Confirm New Password</label>
+            <div class="pw-wrap">
+              <input class="finput" type="password" id="pw-confirm" placeholder="Repeat new password"
+                     autocomplete="new-password" minlength="8" style="width:100%"/>
+              <button class="pw-eye" type="button" onclick="togglePwField('pw-confirm')" aria-label="Show or hide confirm password">&#128065;</button>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn-sm btn-primary" onclick="changePassword()">&#128274; Update Password</button>
+          <button class="btn-sm btn-ghost" onclick="sendResetEmail()">&#128231; Email Reset Link Instead</button>
+        </div>
+      </div>
+
       <!-- Payment Method -->
       <div class="card">
         <h2>&#128179; Payment Method</h2>
@@ -1656,6 +1685,35 @@ Questions? Reply to this email.
   </div>
 </div>
 
+<!-- Set Password Modal — shown on first login via magic link or password recovery -->
+<div class="modal-overlay" id="set-password-modal" role="dialog" aria-modal="true" aria-labelledby="set-pw-title" style="z-index:10000">
+  <div class="modal-box" style="max-width:440px">
+    <h2 id="set-pw-title" style="margin-bottom:6px">&#128274; Set Your Password</h2>
+    <p id="set-pw-subtitle" style="font-size:.85rem;color:var(--muted);margin-bottom:20px">Welcome to ACC! Please set a password for your account so you can log in next time.</p>
+    <div id="set-pw-msg" role="alert" style="display:none;padding:10px 14px;border-radius:8px;font-size:.82rem;margin-bottom:14px"></div>
+    <div class="fgroup">
+      <label for="set-pw-new">New Password</label>
+      <div class="pw-wrap">
+        <input class="finput" type="password" id="set-pw-new" placeholder="Min. 8 characters"
+               autocomplete="new-password" minlength="8" style="width:100%"/>
+        <button class="pw-eye" type="button" onclick="togglePwField('set-pw-new')" aria-label="Show or hide password">&#128065;</button>
+      </div>
+    </div>
+    <div class="fgroup">
+      <label for="set-pw-confirm">Confirm Password</label>
+      <div class="pw-wrap">
+        <input class="finput" type="password" id="set-pw-confirm" placeholder="Repeat password"
+               autocomplete="new-password" minlength="8" style="width:100%"/>
+        <button class="pw-eye" type="button" onclick="togglePwField('set-pw-confirm')" aria-label="Show or hide confirm password">&#128065;</button>
+      </div>
+    </div>
+    <div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:.78rem;color:var(--muted)">
+      &#128274; Password must be at least 8 characters. You will stay signed in after setting it.
+    </div>
+    <button class="btn-sm btn-primary" style="width:100%" onclick="submitSetPassword()">&#10003; Set Password &amp; Continue</button>
+  </div>
+</div>
+
 <!-- ACC Widget not loaded on dashboard - client-facing only -->
 <div id="auth-error-msg" style="display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#f05f5f;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-size:.9rem"></div>
 <script>
@@ -2130,8 +2188,159 @@ function clientSignOut() {
   _sb_client.auth.signOut().then(function() {
     window.location.replace('login.html');
   }).catch(function() {
-    // Even if signOut fails, clear locally and redirect
     window.location.replace('login.html');
+  });
+}
+
+// ── Password management ───────────────────────────────────
+
+// Toggle show/hide on any password field by ID
+function togglePwField(id) {
+  var el = document.getElementById(id);
+  if (el) el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+// Change password from Account panel
+async function changePassword() {
+  var pwNew     = (document.getElementById('pw-new')     || {}).value || '';
+  var pwConfirm = (document.getElementById('pw-confirm') || {}).value || '';
+  var msg       = document.getElementById('pw-change-msg');
+
+  function showMsg(text, ok) {
+    msg.textContent = text;
+    msg.style.display = 'block';
+    msg.style.background  = ok ? 'rgba(56,217,169,.08)' : 'rgba(240,95,95,.08)';
+    msg.style.borderColor = ok ? 'rgba(56,217,169,.3)'  : 'rgba(240,95,95,.3)';
+    msg.style.color       = ok ? '#38d9a9'               : '#f05f5f';
+    msg.style.border      = '1px solid';
+    msg.style.padding     = '10px 14px';
+    msg.style.borderRadius = '8px';
+  }
+
+  if (pwNew.length < 8)         { showMsg('Password must be at least 8 characters.', false); return; }
+  if (pwNew !== pwConfirm)      { showMsg('Passwords do not match.', false); return; }
+
+  var btn = document.querySelector('#card-change-password .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+
+  var r = await _sb_client.auth.updateUser({ password: pwNew });
+
+  if (btn) { btn.textContent = '🔒 Update Password'; btn.disabled = false; }
+
+  if (r.error) {
+    showMsg('Error: ' + r.error.message, false);
+  } else {
+    showMsg('✓ Password updated successfully.', true);
+    document.getElementById('pw-new').value     = '';
+    document.getElementById('pw-confirm').value = '';
+  }
+}
+
+// Send password reset email from Account panel (alternative to typing inline)
+async function sendResetEmail() {
+  var email = window._clientData && window._clientData.email;
+  if (!email) { alert('Could not find your email address. Please contact ACC.'); return; }
+  var btn = document.querySelector('#card-change-password .btn-ghost');
+  if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
+  var r = await _sb_client.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/dashboard.html'
+  });
+  if (btn) { btn.textContent = '📧 Email Reset Link Instead'; btn.disabled = false; }
+  var msg = document.getElementById('pw-change-msg');
+  if (r.error) {
+    msg.textContent = 'Error: ' + r.error.message;
+    msg.style.color = '#f05f5f';
+  } else {
+    msg.textContent = '✓ Reset link sent to ' + email + '. Check your inbox.';
+    msg.style.color = '#38d9a9';
+    msg.style.background = 'rgba(56,217,169,.08)';
+    msg.style.border = '1px solid rgba(56,217,169,.3)';
+    msg.style.padding = '10px 14px';
+    msg.style.borderRadius = '8px';
+  }
+  msg.style.display = 'block';
+}
+
+// Set password modal — submit handler
+async function submitSetPassword() {
+  var pwNew     = (document.getElementById('set-pw-new')     || {}).value || '';
+  var pwConfirm = (document.getElementById('set-pw-confirm') || {}).value || '';
+  var msg       = document.getElementById('set-pw-msg');
+
+  function showSetMsg(text, ok) {
+    msg.textContent = text;
+    msg.style.display = 'block';
+    msg.style.background  = ok ? 'rgba(56,217,169,.08)' : 'rgba(240,95,95,.08)';
+    msg.style.border      = '1px solid ' + (ok ? 'rgba(56,217,169,.3)' : 'rgba(240,95,95,.3)');
+    msg.style.color       = ok ? '#38d9a9' : '#f05f5f';
+    msg.style.padding     = '10px 14px';
+    msg.style.borderRadius = '8px';
+  }
+
+  if (pwNew.length < 8)     { showSetMsg('Password must be at least 8 characters.', false); return; }
+  if (pwNew !== pwConfirm)  { showSetMsg('Passwords do not match.', false); return; }
+
+  var btn = document.querySelector('#set-password-modal .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+
+  var r = await _sb_client.auth.updateUser({ password: pwNew });
+
+  if (btn) { btn.textContent = '✓ Set Password & Continue'; btn.disabled = false; }
+
+  if (r.error) {
+    showSetMsg('Error: ' + r.error.message, false);
+  } else {
+    showSetMsg('✓ Password set! Taking you to your dashboard…', true);
+    setTimeout(function() {
+      var modal = document.getElementById('set-password-modal');
+      if (modal) modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }, 1500);
+  }
+}
+
+// Detect magic link / password recovery on page load
+// Uses onAuthStateChange so we wait for Supabase to fully exchange the hash token
+// before showing the set-password modal — avoids race conditions
+function checkAuthRedirectType() {
+  // Parse the hash first to know what type of link this is
+  var hash = window.location.hash;
+  if (!hash) return;
+  var params = {};
+  hash.replace('#', '').split('&').forEach(function(pair) {
+    var kv = pair.split('=');
+    if (kv[0]) params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || '');
+  });
+  var type = params['type'];
+  if (type !== 'recovery' && type !== 'magiclink' && type !== 'invite') return;
+
+  // Clean hash immediately so it doesn't re-trigger on refresh
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+
+  // Wait for Supabase to confirm the session is established via onAuthStateChange
+  // This fires once the token exchange is complete — safe to call updateUser after this
+  var unsub = _sb_client.auth.onAuthStateChange(function(event, session) {
+    if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED') {
+      // Unsubscribe so this only fires once
+      if (unsub && unsub.data && unsub.data.subscription) {
+        unsub.data.subscription.unsubscribe();
+      }
+
+      var modal = document.getElementById('set-password-modal');
+      if (!modal) return;
+
+      if (type === 'recovery' || event === 'PASSWORD_RECOVERY') {
+        document.getElementById('set-pw-title').textContent = '\uD83D\uDD12 Reset Your Password';
+        document.getElementById('set-pw-subtitle').textContent = 'Enter your new password below to complete the reset.';
+      } else {
+        document.getElementById('set-pw-title').textContent = '\uD83D\uDD12 Set Your Password';
+        document.getElementById('set-pw-subtitle').textContent = 'Welcome to ACC! Please set a password so you can log in next time.';
+      }
+
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      showPanel('account');
+    }
   });
 }
 
@@ -2382,6 +2591,9 @@ async function downloadInvoice(yearMonth) {
   // Prevent redirect loop: if we arrived via a signOut redirect,
   // don't redirect again on error — show an error card instead.
   var redirected = sessionStorage.getItem('_acc_redirected');
+
+  // Check if arriving via magic link or password reset email
+  checkAuthRedirectType();
 
   try {
     var s = await _sb_client.auth.getSession();
