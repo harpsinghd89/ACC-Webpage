@@ -1669,14 +1669,10 @@ function showClientTab(tab) {
   // Scroll tab button into view (important on mobile)
   var activeBtn = document.getElementById('ctab-' + tab);
   if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-  if (tab === 'files' && _editingClientId && _editingClientCode) {
-    renderFileList('reports',   _editingClientCode);
-    renderFileList('evidence',  _editingClientCode);
-    renderFileList('invoices',  _editingClientCode);
-    renderFileList('templates', _editingClientCode);
-    // Scroll modal to top so upload buttons are visible
+  if (tab === 'files') {
+    // Scroll modal to top so upload buttons are immediately visible
     var modalBox = document.querySelector('#client-detail-modal .modal-box');
-    if (modalBox) setTimeout(function(){ modalBox.scrollTop = 0; }, 50);
+    if (modalBox) setTimeout(function(){ modalBox.scrollTop = 0; }, 30);
   }
 
   var tabs = ['info','billing','roadmap','templates','binder','access','notes','files'];
