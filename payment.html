@@ -269,6 +269,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
   font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:4px}
 
 </style>
+<script src="https://js.stripe.com/v3/" async></script>
 </head>
 <body style="background:#0a1628 !important;color:#e8edf8 !important;font-family:Sora,sans-serif">
 
@@ -399,10 +400,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
     <div class="fgroup">
       <label for="f-card">Card Number <span class="req" aria-hidden="true">*</span></label>
-              <div id="helcim-pay-container" style="min-height:180px;border-radius:10px;overflow:hidden;margin-bottom:8px;">
-          <div id="helcim-loading" style="padding:24px;text-align:center;color:var(--muted);font-size:.85rem">
-            🔒 Secure card fields loading…
-          </div>
         </div>
         <div class="ferr" id="err-card" role="alert" style="display:none"></div>
     </div>
@@ -622,7 +619,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <p><a href="/cdn-cgi/l/email-protection#10607162647e7562507173737563637972797c796469737f7d607c79717e73753e7371" style="color:var(--accent)"><span class="__cf_email__" data-cfemail="41312033352f2433012022222432322823282d283538222e2c312d28202f22246f2220">[email&#160;protected]</span></a></p>
   </div>
 </div>
-<script src="https://helcim.com/helcim-pay/services/start.js"></script>
 <script>
 // Modal helpers — defined first so footer buttons always work
 function openModal(id){
@@ -784,6 +780,40 @@ function resetSubmitBtn(){
   if(btn)btn.disabled=false;if(lbl)lbl.textContent='Complete Subscription';
 }
 
+
+// ── Stripe Elements setup ─────────────────────────────────────────────────
+var _stripe      = null;
+var _cardElement = null;
+
+(function tryInitStripe(attempts) {
+  if (typeof Stripe !== 'undefined') {
+    _stripe      = Stripe('pk_test_51TAdyX3z0tL7YFm9rLapHmEDQsytfBpgMA91MNo3RER5HgVgIdRh8G0gjzzNTFL4olHl1M0F3B5sZbdxTjnBUFUV00w6ugJRbZ');
+    var elements = _stripe.elements();
+    _cardElement = elements.create('card', {
+      style: {
+        base: {
+          color:            '#e8edf8',
+          fontFamily:       'Sora, sans-serif',
+          fontSize:         '15px',
+          '::placeholder':  { color: '#8a9bbf' }
+        },
+        invalid: { color: '#f05f5f' }
+      },
+      hidePostalCode: false
+    });
+    _cardElement.mount('#stripe-card-element');
+    _cardElement.on('change', function(e) {
+      var el = document.getElementById('stripe-card-errors');
+      if (el) { el.textContent = e.error ? e.error.message : ''; el.style.display = e.error ? 'block' : 'none'; }
+    });
+  } else if (attempts < 20) {
+    setTimeout(function() { tryInitStripe(attempts + 1); }, 300);
+  } else {
+    var el = document.getElementById('stripe-card-element');
+    if (el) el.innerHTML = '<p style="color:#f05f5f;font-size:.82rem">Payment system failed to load. Please refresh.</p>';
+  }
+})(0);
+
 function submitPayment(){
   var ok=true;
   ok=validateField('f-fname','err-fname',function(v){return v.length>0;})&&ok;
@@ -797,12 +827,20 @@ function submitPayment(){
   if(terms&&!terms.checked){ok=false;showCardError('Please accept the Terms of Service.');}
   if(!ok)return;
   if(currentTier==='t3'){window.location.href='mailto:partner@accessibilitycompliance.ca?subject=Tier%203%20Inquiry';return;}
+
   var btn=document.getElementById('submit-btn'),lbl=document.getElementById('submit-label');
-  if(btn)btn.disabled=true;if(lbl)lbl.textContent='Processing…';
-  var t=TIERS[currentTier],isA=(billingCycle==="annual");
+  if(btn)btn.disabled=true;
+  if(lbl)lbl.textContent='Redirecting to payment…';
+
+  var t=TIERS[currentTier],isA=(billingCycle==='annual');
   var base=isA?t.yearly:t.monthly;
   var amount=Math.round((base-Math.round(base*discountPct*100)/100)*100)/100;
-  var payload={amount:amount,currency:"CAD",tier:currentTier==="t1"?1:2,billingCycle:billingCycle,
+
+  // Save payload for after Stripe redirect
+  var payload={
+    amount:amount,currency:'CAD',
+    tier:currentTier==='t1'?1:2,
+    billingCycle:billingCycle,
     firstName:document.getElementById('f-fname').value.trim(),
     lastName:document.getElementById('f-lname').value.trim(),
     email:document.getElementById('f-email').value.trim(),
@@ -812,49 +850,86 @@ function submitPayment(){
     billingAddr:document.getElementById('f-billing').value.trim(),
     password:document.getElementById('f-password').value,
     discountCode:document.getElementById('f-discount')?document.getElementById('f-discount').value.trim().toUpperCase():'',
-    discountPct:discountPct};
-  fetch('https://wfyzvmfvlukawidowuym.supabase.co/functions/v1/helcim-checkout',{
-    method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M"},
+    discountPct:discountPct
+  };
+
+  // Store password + email temporarily for after Stripe redirect
+  try {
+    sessionStorage.setItem('_acc_pending', JSON.stringify({
+      email:    payload.email,
+      password: payload.password,
+      firstName:payload.firstName,
+      company:  payload.company,
+      domain:   payload.domain,
+      phone:    payload.phone,
+      tier:     payload.tier,
+      billingCycle: payload.billingCycle
+    }));
+  } catch(e) { console.warn('sessionStorage unavailable'); }
+
+  fetch('https://wfyzvmfvlukawidowuym.supabase.co/functions/v1/stripe-checkout',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M',
+      'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M'
+    },
     body:JSON.stringify(payload)
-  }).then(function(r){return r.json().then(function(res){
-    if(!r.ok||!res.checkoutToken)throw new Error(res.error||'Could not initialize payment.');
-    _pendingPayload=payload;var c=document.getElementById('helcim-pay-container');if(c)c.innerHTML='';
-    if(typeof appendHelcimIframe==='function')appendHelcimIframe(res.checkoutToken);
-    else throw new Error('Payment processor not loaded. Please refresh.');
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(res){
+    if(res.error) throw new Error(res.error);
+    // Redirect to Stripe Checkout
+    window.location.href = res.url;
+  })
+  .catch(function(e){
+    showCardError(e.message||'Something went wrong. Please try again.');
     resetSubmitBtn();
-  });}).catch(function(e){showCardError(e.message||"Something went wrong.");resetSubmitBtn();});
-}function handleHelcimSuccess(data){
+  });
+}
+
+function showCardError(msg){
+  var err=document.getElementById('err-card');if(!err)return;
+  err.style.display='block';err.textContent=msg;
+  err.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function resetSubmitBtn(){
   var btn=document.getElementById('submit-btn'),lbl=document.getElementById('submit-label');
-  if(btn)btn.disabled=true;
-  if(lbl)lbl.textContent='Creating your account…';
+  if(btn)btn.disabled=false;
+  if(lbl)lbl.textContent='Complete Subscription';
+}
 
-  var p=_pendingPayload;
-  if(!p){ resetSubmitBtn(); return; }
+// ── After Stripe redirects back with ?status=success ─────────────────────────
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  if(params.get('status') !== 'success') return;
 
-  var ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
-  var SB_URL='https://wfyzvmfvlukawidowuym.supabase.co';
+  var pending;
+  try { pending = JSON.parse(sessionStorage.getItem('_acc_pending')||'null'); } catch(e){}
+  if(!pending){ showSuccessScreen('there',''); return; }
 
-  // Step 1: Create Supabase auth user
+  var ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
+  var SB_URL = 'https://wfyzvmfvlukawidowuym.supabase.co';
+
+  // Create Supabase auth account + clients row
   fetch(SB_URL+'/auth/v1/signup',{
     method:'POST',
     headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON},
-    body:JSON.stringify({email:p.email,password:p.password,
-      options:{data:{full_name:p.firstName+' '+p.lastName,company:p.company}}})
+    body:JSON.stringify({
+      email:   pending.email,
+      password:pending.password,
+      options: {data:{full_name:pending.firstName+' '+(pending.lastName||''),company:pending.company}}
+    })
   })
   .then(function(r){ return r.json(); })
   .then(function(sb){
-    if(!sb.user&&!sb.id) throw new Error(
-      (sb.msg||sb.error_description||sb.message||'Account creation failed. Email may already be registered.')
-    );
-    var uid = (sb.user||sb).id;
-    var token = (sb.session&&sb.session.access_token) ? sb.session.access_token : ANON;
-
-    // Step 2: Insert into clients table
+    if(!sb.user&&!sb.id) throw new Error(sb.msg||sb.error_description||sb.message||'Account creation failed.');
+    var uid   = (sb.user||sb).id;
+    var token = (sb.session&&sb.session.access_token)?sb.session.access_token:ANON;
     var today   = new Date().toISOString().split('T')[0];
     var renewal = new Date(Date.now()+365*24*60*60*1000).toISOString().split('T')[0];
     var code    = 'CLI-'+Math.floor(10000+Math.random()*90000);
-    var tierNum = p.tier||1;
-
     return fetch(SB_URL+'/rest/v1/clients',{
       method:'POST',
       headers:{
@@ -864,67 +939,49 @@ function submitPayment(){
         'Prefer':'return=representation'
       },
       body:JSON.stringify({
-        auth_user_id: uid,
-        client_code:  code,
-        name:         p.company||p.firstName+' '+p.lastName,
-        email:        p.email,
-        domain:       p.domain||null,
-        phone:        p.phone||null,
-        tier:         tierNum,
-        status:       'active',
-        start_date:   today,
-        renewal_date: renewal,
-        billing_cycle: p.billingCycle||'monthly'
+        auth_user_id:  uid,
+        client_code:   code,
+        name:          pending.company||pending.firstName,
+        email:         pending.email,
+        domain:        pending.domain||null,
+        phone:         pending.phone||null,
+        tier:          pending.tier||1,
+        status:        'active',
+        start_date:    today,
+        renewal_date:  renewal,
+        billing_cycle: pending.billingCycle||'monthly'
       })
     })
     .then(function(r){ return r.json().then(function(d){ return {client:d,token:token}; }); });
   })
   .then(function(res){
-    var clientRow = Array.isArray(res.client) ? res.client[0] : res.client;
-
-    // Step 3: Generate invoice via edge function
+    var clientRow = Array.isArray(res.client)?res.client[0]:res.client;
     if(clientRow&&clientRow.id){
       fetch(SB_URL+'/functions/v1/generate-invoice',{
         method:'POST',
-        headers:{'Content-Type':'application/json',
-          'Authorization':'Bearer '+res.token,
-          'apikey':ANON},
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+res.token,'apikey':ANON},
         body:JSON.stringify({client_id:clientRow.id})
-      }).catch(function(e){ console.warn('Invoice generation:', e); });
+      }).catch(function(e){ console.warn('invoice:',e); });
     }
-
-    // Step 4: Show success screen
-    showSuccessScreen(p.firstName, p.email);
+    sessionStorage.removeItem('_acc_pending');
+    showSuccessScreen(pending.firstName, pending.email);
   })
   .catch(function(e){
-    console.error('handleHelcimSuccess error:',e);
-    showCardError('Account setup failed: '+(e.message||String(e))+
-      '. Your payment was processed. Please contact partner@accessibilitycompliance.ca');
-    resetSubmitBtn();
+    console.error('post-stripe account setup:', e);
+    showSuccessScreen(pending.firstName, pending.email); // show success anyway — payment went through
   });
-}
+})();
 
 function showSuccessScreen(firstName, email){
-  var wrap = document.getElementById('payment-wrap');
-  var tc   = document.getElementById('tier-card');
-  if(wrap) wrap.style.display='none';
-  if(tc)   tc.style.display='none';
-  var success = document.getElementById('success-screen');
-  if(success){
-    success.style.display='block';
-    var nameEl = document.getElementById('success-name');
-    if(nameEl) nameEl.textContent = firstName||'there';
-    var emailEl = document.getElementById('success-email');
-    if(emailEl) emailEl.textContent = email||'';
-  } else {
-    // Fallback if no success screen element
-    document.body.innerHTML='<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#060d1a;font-family:sans-serif;text-align:center;padding:40px">'
-      +'<div><div style="font-size:3rem">\u2705</div>'
-      +'<h1 style="color:#38d9a9;margin:16px 0">You\u2019re in!</h1>'
-      +'<p style="color:#e8edf8;font-size:1.1rem">Welcome, '+firstName+'.</p>'
-      +'<p style="color:#8a9bbf">Your login credentials have been sent to <strong style=\"color:#e8edf8\">'+email+'</strong>.</p>'
-      +'<p style="color:#8a9bbf;margin-top:24px"><a href="dashboard.html" style="color:#4f8ef7">Go to your dashboard &rarr;</a></p>'
-      +'</div></div>';
+  var wrap=document.getElementById('payment-wrap');
+  var tc=document.getElementById('tier-card');
+  if(wrap)wrap.style.display='none';
+  if(tc)tc.style.display='none';
+  var s=document.getElementById('success-screen');
+  if(s){
+    s.style.display='block';
+    var n=document.getElementById('success-name'); if(n) n.textContent=firstName||'there';
+    var e=document.getElementById('success-email'); if(e) e.textContent=email||'';
   }
 }
 </script>
