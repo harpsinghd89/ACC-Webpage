@@ -166,15 +166,26 @@ select.finput{appearance:none;cursor:pointer;
   align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
 .modal-box{background:#0d1f3c;border:1px solid #1e3a6b;border-radius:20px;
-  max-width:520px;width:100%;max-height:85vh;overflow-y:auto;padding:32px;position:relative}
+  max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:32px;position:relative}
 .modal-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.06);
   border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;
   color:#8a9bbf;font-size:.9rem;display:flex;align-items:center;justify-content:center}
 .modal-close:hover{background:rgba(255,255,255,.12)}
 .modal-box h2{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:16px}
+.ctab-btn{background:none;border:none;border-bottom:3px solid transparent;color:#8a9bbf;cursor:pointer;font-family:inherit;font-size:.68rem;font-weight:600;padding:8px 10px 10px;text-align:center;white-space:nowrap;transition:all .18s;line-height:1.3;min-width:52px;}
+.ctab-btn span{display:block;font-size:.64rem;margin-top:2px}
+.ctab-btn:hover{color:#c8d8f8;border-bottom-color:rgba(79,142,247,.4)}
+.ctab-btn.active-tab{color:#4f8ef7;border-bottom-color:#4f8ef7;font-weight:700}
 .fgroup{margin-bottom:16px}
 .fgroup label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.06em;
   text-transform:uppercase;color:#8a9bbf;margin-bottom:6px}
+@media(max-width:768px){
+  #client-detail-modal .modal-box{height:88vh;display:flex;flex-direction:column}
+  #client-detail-modal .modal-box>*:last-child{flex:1;overflow-y:auto}
+  #ctab-panel-files{flex:1;overflow-y:auto;min-height:300px}
+  #ctab-panel-info,#ctab-panel-billing,#ctab-panel-roadmap,#ctab-panel-templates,
+  #ctab-panel-binder,#ctab-panel-access,#ctab-panel-notes{flex:1;overflow-y:auto;min-height:300px}
+}
 
 /* PROGRESS BAR */
 .progress-bar{height:6px;background:rgba(30,58,107,.6);border-radius:99px;overflow:hidden;margin:8px 0}
@@ -209,6 +220,23 @@ select.finput{appearance:none;cursor:pointer;
 }
 h1,h2,h3,h4,h5,h6{color:#fff !important}
 *{min-width:0}
+
+@media(max-width:768px){
+  #client-detail-modal .modal-box{
+    width:100% !important;
+    max-width:100% !important;
+    height:auto !important;
+    max-height:88vh !important;
+    border-radius:16px;
+    padding:20px 16px;
+    margin-top:8px;
+  }
+  #client-detail-modal .modal-box .btn-sm{
+    font-size:.65rem !important;
+    padding:5px 6px !important;
+  }
+}
+
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -642,19 +670,19 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
 <!-- Client Full Editor -->
 <div class="modal-overlay" id="client-detail-modal" role="dialog" aria-modal="true" aria-label="Edit Client">
-  <div class="modal-box" style="max-width:680px;width:100%;max-height:92vh">
+  <div class="modal-box" style="max-width:680px;width:100%;max-height:90vh">
     <button class="modal-close" onclick="closeModal('client-detail-modal')" aria-label="Close">&#10005;</button>
     <h2 id="client-modal-title">&#128100; Edit Client</h2>
     <!-- Tab bar -->
-    <div style="display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;border-bottom:1px solid rgba(30,58,107,.5);padding-bottom:10px;margin-bottom:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none">
-      <button class="btn-sm btn-primary" id="ctab-info"    onclick="showClientTab('info')"    style="font-size:.72rem">&#128100; Info</button>
-      <button class="btn-sm btn-ghost"   id="ctab-billing" onclick="showClientTab('billing')" style="font-size:.72rem">&#128180; Billing</button>
-      <button class="btn-sm btn-ghost"   id="ctab-roadmap" onclick="showClientTab('roadmap')" style="font-size:.72rem">&#128204; Roadmap</button>
-      <button class="btn-sm btn-ghost"   id="ctab-templates" onclick="showClientTab('templates')" style="font-size:.72rem">&#128196; Templates</button>
-      <button class="btn-sm btn-ghost"   id="ctab-binder"  onclick="showClientTab('binder')"  style="font-size:.72rem">&#128193; Binder</button>
-      <button class="btn-sm btn-ghost"   id="ctab-access"  onclick="showClientTab('access')"  style="font-size:.72rem">&#128274; Access</button>
-      <button class="btn-sm btn-ghost"   id="ctab-notes"   onclick="showClientTab('notes')"   style="font-size:.72rem">&#128221; Notes</button>
-      <button class="btn-sm btn-ghost" id="ctab-files" onclick="showClientTab('files')" style="font-size:.72rem">&#128196; Files</button>
+    <div style="display:flex;gap:0;flex-wrap:nowrap;overflow-x:auto;border-bottom:2px solid rgba(30,58,107,.6);padding-bottom:0;margin-bottom:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;">
+      <button class="ctab-btn active-tab" id="ctab-info"      onclick="showClientTab('info')">&#128100;<br><span>Info</span></button>
+      <button class="ctab-btn"            id="ctab-billing"   onclick="showClientTab('billing')">&#128180;<br><span>Billing</span></button>
+      <button class="ctab-btn"            id="ctab-roadmap"   onclick="showClientTab('roadmap')">&#128204;<br><span>Roadmap</span></button>
+      <button class="ctab-btn"            id="ctab-templates" onclick="showClientTab('templates')">&#128196;<br><span>Templ.</span></button>
+      <button class="ctab-btn"            id="ctab-binder"    onclick="showClientTab('binder')">&#128193;<br><span>Binder</span></button>
+      <button class="ctab-btn"            id="ctab-access"    onclick="showClientTab('access')">&#128274;<br><span>Access</span></button>
+      <button class="ctab-btn"            id="ctab-notes"     onclick="showClientTab('notes')">&#128221;<br><span>Notes</span></button>
+      <button class="ctab-btn"            id="ctab-files"     onclick="showClientTab('files')">&#128449;<br><span>Files</span></button>
     </div>
 
     <!-- INFO TAB -->
@@ -940,10 +968,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <button class="btn-sm btn-primary" onclick="alert('Notes saved!')">&#10003; Save Notes</button>
     </div>
 
-  </div>
-</div>
-
-<div id="ctab-panel-files" style="display:none">
+    <div id="ctab-panel-files" style="display:none">
       <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:16px">Upload and manage PDF files for this client. Files are stored privately in Supabase Storage.</p>
 
       <!-- Audit Reports -->
@@ -1002,6 +1027,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </div>
       </div>
     </div>
+
+  </div>
+</div>
 
 <!-- Roadmap Editor -->
 >
@@ -1680,7 +1708,7 @@ function showClientTab(tab) {
     var btn   = document.getElementById('ctab-' + t);
     var panel = document.getElementById('ctab-panel-' + t);
     var active = t === tab;
-    if (btn)   { btn.className   = active ? 'btn-sm btn-primary' : 'btn-sm btn-ghost'; btn.style.fontSize = '.72rem'; }
+    if (btn)   { btn.className   = active ? 'ctab-btn active-tab' : 'ctab-btn'; }
     if (panel) panel.style.display = active ? 'block' : 'none';
   });
 }
