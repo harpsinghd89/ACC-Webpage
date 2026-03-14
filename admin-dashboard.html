@@ -1364,8 +1364,7 @@ async function saveNotes() {
 
 var SUPABASE_URL  = 'https://wfyzvmfvlukawidowuym.supabase.co';
 var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
-if (!window.supabase) { console.error('Supabase SDK not loaded — check CDN or network.'); }
-var _sb = window.supabase && window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+var _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ── Auth guard ───────────────────────────────────────────
 (async function() {
@@ -1448,7 +1447,11 @@ async function loadClients() {
     renderClientsTable(r.data || []);
     updateOverviewStats(r.data || []);
   } catch(e) {
-    console.error('loadClients:', e);
+    console.error('loadClients error:', e);
+    var tbody = document.getElementById('client-tbody');
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f05f5f;padding:32px">Error loading clients: ' + (e.message || String(e)) + '</td></tr>';
+    }
   }
 }
 
@@ -1495,7 +1498,6 @@ function updateOverviewStats(clients) {
 
 // ── Add Client ───────────────────────────────────────────
 async function addClient() {
-  if (!_sb) { alert('Connection error — please refresh the page.'); return; }
   var name    = (document.getElementById('nc-name')    ||{}).value.trim();
   var email   = (document.getElementById('nc-email')   ||{}).value.trim();
   var domain  = (document.getElementById('nc-domain')  ||{}).value.trim();
