@@ -406,11 +406,51 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     </div>
 
     <div class="fgroup">
-      <label for="f-billing">Billing Address <span class="req" aria-hidden="true">*</span></label>
-      <input class="finput" type="text" id="f-billing" name="billing_address"
-        placeholder="123 Main St, Toronto, ON M5V 1A1" autocomplete="street-address"
+      <label for="f-bill-street">Street Address <span class="req" aria-hidden="true">*</span></label>
+      <input class="finput" type="text" id="f-bill-street" name="billing_street"
+        placeholder="123 Main St" autocomplete="address-line1"
         required aria-required="true"/>
-      <div class="ferr" id="err-billing" role="alert">Please enter your billing address.</div>
+      <div class="ferr" id="err-billing" role="alert">Please enter your street address.</div>
+    </div>
+    <div class="frow">
+      <div class="fgroup">
+        <label for="f-bill-city">City <span class="req" aria-hidden="true">*</span></label>
+        <input class="finput" type="text" id="f-bill-city" name="billing_city"
+          placeholder="Toronto" autocomplete="address-level2" required aria-required="true"/>
+      </div>
+      <div class="fgroup">
+        <label for="f-bill-province">Province <span class="req" aria-hidden="true">*</span></label>
+        <select class="finput" id="f-bill-province" name="billing_province" autocomplete="address-level1">
+          <option value="AB">Alberta</option>
+          <option value="BC">British Columbia</option>
+          <option value="MB">Manitoba</option>
+          <option value="NB">New Brunswick</option>
+          <option value="NL">Newfoundland</option>
+          <option value="NS">Nova Scotia</option>
+          <option value="NT">Northwest Territories</option>
+          <option value="NU">Nunavut</option>
+          <option value="ON" selected>Ontario</option>
+          <option value="PE">PEI</option>
+          <option value="QC">Quebec</option>
+          <option value="SK">Saskatchewan</option>
+          <option value="YT">Yukon</option>
+        </select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fgroup">
+        <label for="f-bill-postal">Postal Code <span class="req" aria-hidden="true">*</span></label>
+        <input class="finput" type="text" id="f-bill-postal" name="billing_postal"
+          placeholder="A1A 1A1" autocomplete="postal-code" maxlength="7"
+          required aria-required="true" style="text-transform:uppercase"/>
+      </div>
+      <div class="fgroup">
+        <label for="f-bill-country">Country</label>
+        <select class="finput" id="f-bill-country" name="billing_country" autocomplete="country">
+          <option value="CA" selected>Canada</option>
+          <option value="US">United States</option>
+        </select>
+      </div>
     </div>
 
     <!-- Discount Code -->
@@ -771,6 +811,100 @@ window.addEventListener('message',function(e){
     showCardError('Payment declined: '+(d.eventMessage||'Please try a different card.'));resetSubmitBtn();}
 });
 
+
+function submitPayment(){
+  var ok=true;
+  ok=validateField('f-fname','err-fname',function(v){return v.length>0;})&&ok;
+  ok=validateField('f-lname','err-lname',function(v){return v.length>0;})&&ok;
+  ok=validateField('f-email','err-email',function(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);})&&ok;
+  ok=validateField('f-company','err-company',function(v){return v.length>0;})&&ok;
+  ok=validateField('f-website','err-website',function(v){return v.length>3;})&&ok;
+  ok=validateField('f-password','err-password',function(v){return v.length>=8&&/\d/.test(v);})&&ok;
+  ok=validateField('f-bill-street','err-billing',function(v){return v.length>3;})&&ok;
+  var terms=document.getElementById('chk-terms');
+  if(terms&&!terms.checked){ok=false;showCardError('Please accept the Terms of Service.');}
+  if(!ok)return;
+  if(currentTier==='t3'){window.location.href='mailto:partner@accessibilitycompliance.ca?subject=Tier%203%20Inquiry';return;}
+  if(!_stripe||!_cardElement){showCardError('Payment system not loaded. Please refresh.');return;}
+
+  var btn=document.getElementById('submit-btn'),lbl=document.getElementById('submit-label');
+  if(btn)btn.disabled=true;
+  if(lbl)lbl.textContent='Processing…';
+
+  var t=TIERS[currentTier],isA=(billingCycle==='annual');
+  var base=isA?t.yearly:t.monthly;
+  var amount=Math.round((base-Math.round(base*discountPct*100)/100)*100)/100;
+
+  var payload={
+    amount:amount,currency:'CAD',
+    tier:currentTier==='t1'?1:2,
+    billingCycle:billingCycle,
+    firstName:document.getElementById('f-fname').value.trim(),
+    lastName:document.getElementById('f-lname').value.trim(),
+    email:document.getElementById('f-email').value.trim(),
+    company:document.getElementById('f-company').value.trim(),
+    domain:document.getElementById('f-website').value.trim(),
+    phone:(document.getElementById('f-phone')||{value:''}).value.trim(),
+    billingAddr:(
+      (document.getElementById('f-bill-street')||{value:''}).value.trim() + ', ' +
+      (document.getElementById('f-bill-city')||{value:''}).value.trim() + ', ' +
+      (document.getElementById('f-bill-province')||{value:'ON'}).value + ' ' +
+      (document.getElementById('f-bill-postal')||{value:''}).value.trim().toUpperCase()
+    ),
+    billingCity:(document.getElementById('f-bill-city')||{value:''}).value.trim(),
+    billingProvince:(document.getElementById('f-bill-province')||{value:'ON'}).value,
+    billingPostal:(document.getElementById('f-bill-postal')||{value:''}).value.trim().toUpperCase(),
+    billingCountry:(document.getElementById('f-bill-country')||{value:'CA'}).value,
+    password:document.getElementById('f-password').value,
+    discountCode:document.getElementById('f-discount')?document.getElementById('f-discount').value.trim().toUpperCase():'',
+    discountPct:discountPct
+  };
+
+  // Step 1: Get SetupIntent clientSecret from Edge Function
+  fetch('https://wfyzvmfvlukawidowuym.supabase.co/functions/v1/stripe-checkout',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M',
+      'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M'
+    },
+    body:JSON.stringify(payload)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(res){
+    if(res.error) throw new Error(res.error);
+    if(!res.clientSecret) throw new Error('No client secret returned from payment server.');
+    // Step 2: Confirm card with Stripe Elements
+    return _stripe.confirmCardSetup(res.clientSecret, {
+      payment_method: {
+        card: _cardElement,
+        billing_details: {
+          name:  payload.firstName + ' ' + payload.lastName,
+          email: payload.email,
+          address: {
+              line1:       payload.billingAddr,
+              city:        payload.billingCity    || '',
+              state:       payload.billingProvince || 'ON',
+              postal_code: payload.billingPostal  || '',
+              country:     payload.billingCountry || 'CA'
+            }
+        }
+      }
+    });
+  })
+  .then(function(result){
+    if(result.error) throw new Error(result.error.message);
+    if(result.setupIntent && result.setupIntent.status === 'succeeded'){
+      return createAccount(payload);
+    }
+    throw new Error('Card setup not completed.');
+  })
+  .catch(function(e){
+    showCardError(e.message||'Payment failed. Please try again.');
+    resetSubmitBtn();
+  });
+}
+
 function showCardError(msg){
   var err=document.getElementById('err-card');if(!err)return;
   err.style.display='block';err.textContent=msg;
@@ -801,7 +935,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         invalid: { color: '#f05f5f' }
       },
-      hidePostalCode: false
+      hidePostalCode: true
     });
     // Small delay ensures the DOM element is rendered and visible before mount
     setTimeout(function() {
@@ -820,79 +954,7 @@ document.addEventListener('DOMContentLoaded', function() {
 })(0);
 });
 
-function submitPayment(){
-  var ok=true;
-  ok=validateField('f-fname','err-fname',function(v){return v.length>0;})&&ok;
-  ok=validateField('f-lname','err-lname',function(v){return v.length>0;})&&ok;
-  ok=validateField('f-email','err-email',function(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);})&&ok;
-  ok=validateField('f-company','err-company',function(v){return v.length>0;})&&ok;
-  ok=validateField('f-website','err-website',function(v){return v.length>3;})&&ok;
-  ok=validateField('f-password','err-password',function(v){return v.length>=8&&/\d/.test(v);})&&ok;
-  ok=validateField('f-billing','err-billing',function(v){return v.length>5;})&&ok;
-  var terms=document.getElementById('chk-terms');
-  if(terms&&!terms.checked){ok=false;showCardError('Please accept the Terms of Service.');}
-  if(!ok)return;
-  if(currentTier==='t3'){window.location.href='mailto:partner@accessibilitycompliance.ca?subject=Tier%203%20Inquiry';return;}
 
-  var btn=document.getElementById('submit-btn'),lbl=document.getElementById('submit-label');
-  if(btn)btn.disabled=true;
-  if(lbl)lbl.textContent='Redirecting to payment…';
-
-  var t=TIERS[currentTier],isA=(billingCycle==='annual');
-  var base=isA?t.yearly:t.monthly;
-  var amount=Math.round((base-Math.round(base*discountPct*100)/100)*100)/100;
-
-  // Save payload for after Stripe redirect
-  var payload={
-    amount:amount,currency:'CAD',
-    tier:currentTier==='t1'?1:2,
-    billingCycle:billingCycle,
-    firstName:document.getElementById('f-fname').value.trim(),
-    lastName:document.getElementById('f-lname').value.trim(),
-    email:document.getElementById('f-email').value.trim(),
-    company:document.getElementById('f-company').value.trim(),
-    domain:document.getElementById('f-website').value.trim(),
-    phone:(document.getElementById('f-phone')||{value:''}).value.trim(),
-    billingAddr:document.getElementById('f-billing').value.trim(),
-    password:document.getElementById('f-password').value,
-    discountCode:document.getElementById('f-discount')?document.getElementById('f-discount').value.trim().toUpperCase():'',
-    discountPct:discountPct
-  };
-
-  // Store password + email temporarily for after Stripe redirect
-  try {
-    sessionStorage.setItem('_acc_pending', JSON.stringify({
-      email:    payload.email,
-      password: payload.password,
-      firstName:payload.firstName,
-      company:  payload.company,
-      domain:   payload.domain,
-      phone:    payload.phone,
-      tier:     payload.tier,
-      billingCycle: payload.billingCycle
-    }));
-  } catch(e) { console.warn('sessionStorage unavailable'); }
-
-  fetch('https://wfyzvmfvlukawidowuym.supabase.co/functions/v1/stripe-checkout',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M',
-      'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M'
-    },
-    body:JSON.stringify(payload)
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(res){
-    if(res.error) throw new Error(res.error);
-    // Redirect to Stripe Checkout
-    window.location.href = res.url;
-  })
-  .catch(function(e){
-    showCardError(e.message||'Something went wrong. Please try again.');
-    resetSubmitBtn();
-  });
-}
 
 function showCardError(msg){
   var err=document.getElementById('err-card');if(!err)return;
@@ -977,6 +1039,57 @@ function resetSubmitBtn(){
     showSuccessScreen(pending.firstName, pending.email); // show success anyway — payment went through
   });
 })();
+
+
+function createAccount(p){
+  var ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
+  var SB_URL = 'https://wfyzvmfvlukawidowuym.supabase.co';
+  return fetch(SB_URL+'/auth/v1/signup',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+ANON},
+    body:JSON.stringify({
+      email:p.email, password:p.password,
+      options:{data:{full_name:p.firstName+' '+p.lastName, company:p.company}}
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(sb){
+    if(!sb.user&&!sb.id) throw new Error(sb.msg||sb.error_description||'Account creation failed.');
+    var uid   = (sb.user||sb).id;
+    var token = (sb.session&&sb.session.access_token)?sb.session.access_token:ANON;
+    var today   = new Date().toISOString().split('T')[0];
+    var renewal = new Date(Date.now()+365*24*60*60*1000).toISOString().split('T')[0];
+    var code    = 'CLI-'+Math.floor(10000+Math.random()*90000);
+    return fetch(SB_URL+'/rest/v1/clients',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+token,'Prefer':'return=representation'},
+      body:JSON.stringify({
+        auth_user_id:uid, client_code:code,
+        name:p.company||p.firstName, email:p.email,
+        domain:p.domain||null, phone:p.phone||null,
+        tier:p.tier||1, status:'active',
+        start_date:today, renewal_date:renewal,
+        billing_cycle:p.billingCycle||'monthly'
+      })
+    })
+    .then(function(r){ return r.json().then(function(d){ return {client:d,token:token}; }); });
+  })
+  .then(function(res){
+    var row = Array.isArray(res.client)?res.client[0]:res.client;
+    if(row&&row.id){
+      fetch(SB_URL+'/functions/v1/generate-invoice',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+res.token,'apikey':ANON},
+        body:JSON.stringify({client_id:row.id})
+      }).catch(function(e){ console.warn('invoice:',e); });
+    }
+    showSuccessScreen(p.firstName, p.email);
+  })
+  .catch(function(e){
+    console.error('createAccount:',e);
+    showSuccessScreen(p.firstName, p.email);
+  });
+}
 
 function showSuccessScreen(firstName, email){
   var wrap=document.getElementById('payment-wrap');
