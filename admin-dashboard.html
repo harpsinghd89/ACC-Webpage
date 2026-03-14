@@ -944,18 +944,62 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 </div>
 
 <div id="ctab-panel-files" style="display:none">
-      <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:14px">Upload and manage client PDF files.</p>
-      <div style="margin-bottom:20px">
-        <h5 style="font-size:.8rem;color:#e8edf8;margin-bottom:8px">&#128202; Audit Reports</h5>
-        <div id="files-reports"><div style="color:#8a9bbf;font-size:.8rem">Open a client to manage files.</div></div>
+      <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:16px">Upload and manage PDF files for this client. Files are stored privately in Supabase Storage.</p>
+
+      <!-- Audit Reports -->
+      <div style="margin-bottom:24px;background:#0a1e38;border:1px solid #1e3a6b;border-radius:10px;padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <h5 style="font-size:.82rem;color:#e8edf8;font-weight:700">&#128202; Audit Reports</h5>
+          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:5px 12px;font-size:.75rem;font-weight:700">
+            &#8593; Upload PDF
+            <input type="file" accept=".pdf" style="display:none" onchange="handleAdminUpload(this,'reports')">
+          </label>
+        </div>
+        <div id="files-reports" style="min-height:40px">
+          <div style="color:#8a9bbf;font-size:.8rem">No files yet.</div>
+        </div>
       </div>
-      <div style="margin-bottom:20px">
-        <h5 style="font-size:.8rem;color:#e8edf8;margin-bottom:8px">&#128218; Evidence Binder</h5>
-        <div id="files-evidence"><div style="color:#8a9bbf;font-size:.8rem">Open a client to manage files.</div></div>
+
+      <!-- Evidence Binder -->
+      <div style="margin-bottom:24px;background:#0a1e38;border:1px solid #1e3a6b;border-radius:10px;padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <h5 style="font-size:.82rem;color:#e8edf8;font-weight:700">&#128218; Evidence Binder</h5>
+          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:5px 12px;font-size:.75rem;font-weight:700">
+            &#8593; Upload PDF
+            <input type="file" accept=".pdf" style="display:none" onchange="handleAdminUpload(this,'evidence')">
+          </label>
+        </div>
+        <div id="files-evidence" style="min-height:40px">
+          <div style="color:#8a9bbf;font-size:.8rem">No files yet.</div>
+        </div>
       </div>
-      <div style="margin-bottom:20px">
-        <h5 style="font-size:.8rem;color:#e8edf8;margin-bottom:8px">&#128179; Invoices</h5>
-        <div id="files-invoices"><div style="color:#8a9bbf;font-size:.8rem">Open a client to manage files.</div></div>
+
+      <!-- Invoices -->
+      <div style="margin-bottom:24px;background:#0a1e38;border:1px solid #1e3a6b;border-radius:10px;padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <h5 style="font-size:.82rem;color:#e8edf8;font-weight:700">&#128179; Invoices</h5>
+          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:5px 12px;font-size:.75rem;font-weight:700">
+            &#8593; Upload PDF
+            <input type="file" accept=".pdf" style="display:none" onchange="handleAdminUpload(this,'invoices')">
+          </label>
+        </div>
+        <div id="files-invoices" style="min-height:40px">
+          <div style="color:#8a9bbf;font-size:.8rem">No files yet.</div>
+        </div>
+      </div>
+
+      <!-- Templates / Other -->
+      <div style="margin-bottom:8px;background:#0a1e38;border:1px solid #1e3a6b;border-radius:10px;padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <h5 style="font-size:.82rem;color:#e8edf8;font-weight:700">&#128196; Templates &amp; Other</h5>
+          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:5px 12px;font-size:.75rem;font-weight:700">
+            &#8593; Upload PDF
+            <input type="file" accept=".pdf" style="display:none" onchange="handleAdminUpload(this,'templates')">
+          </label>
+        </div>
+        <div id="files-templates" style="min-height:40px">
+          <div style="color:#8a9bbf;font-size:.8rem">No files yet.</div>
+        </div>
       </div>
     </div>
 
@@ -1622,6 +1666,12 @@ var _editingRow = null;
 
 // ── Client editor tabs ────────────────────────────────────
 function showClientTab(tab) {
+  if (tab === 'files' && _editingClientId && _editingClientCode) {
+    renderFileList('reports',   _editingClientCode);
+    renderFileList('evidence',  _editingClientCode);
+    renderFileList('invoices',  _editingClientCode);
+    renderFileList('templates', _editingClientCode);
+  }
   if (tab === 'files' && _editingClientId && window._editingClientCode) {
     setTimeout(function() {
       renderFileManager('files-reports',  'reports',  window._editingClientCode);
@@ -1816,22 +1866,103 @@ async function renderFileManager(containerId, bucket, clientCode, labelPrefix) {
   container.innerHTML = html;
 }
 
-async function handleAdminUpload(bucket, clientCode) {
-  var fileInput = document.getElementById('file-input-' + bucket);
-  var nameInput = document.getElementById('file-name-' + bucket);
-  if (!fileInput || !fileInput.files[0]) { alert('Please select a PDF file.'); return; }
-  var file = fileInput.files[0];
-  var rawName = nameInput ? nameInput.value.trim() : '';
-  if (!rawName) { alert('Please enter a filename (e.g. 2026-03 for reports, shared/template-key for templates).'); return; }
-  if (!rawName.endsWith('.pdf')) rawName += '.pdf';
-  var path = clientCode + '/' + rawName;
-  await adminUploadFile(bucket, path, file, function() {
-    fileInput.value = '';
-    if (nameInput) nameInput.value = '';
-    // Refresh the list
-    var containerId = 'files-' + bucket;
-    renderFileManager(containerId, bucket, clientCode);
-  });
+async function handleAdminUpload(input, bucket) {
+  var file = input.files[0];
+  if (!file) return;
+  if (!_editingClientId) { showToastAdmin('No client selected', 'error'); return; }
+
+  var clientCode = _editingClientCode || _editingClientId;
+  var path = clientCode + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+  // Show uploading state
+  var label = input.parentElement;
+  var origText = label ? label.childNodes[0].textContent.trim() : '';
+  if (label) label.style.opacity = '0.5';
+  showToastAdmin('Uploading ' + file.name + '…', 'info');
+
+  try {
+    var { error } = await _sb.storage.from(bucket).upload(path, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: 'application/pdf'
+    });
+    if (error) throw error;
+
+    showToastAdmin('\u2705 ' + file.name + ' uploaded', 'success');
+    // Refresh the file list for this bucket
+    renderFileList(bucket, clientCode);
+  } catch(e) {
+    console.error('upload error:', e);
+    showToastAdmin('Upload failed: ' + (e.message || String(e)), 'error');
+  } finally {
+    if (label) label.style.opacity = '1';
+    input.value = ''; // reset so same file can be re-uploaded
+  }
+}
+
+async function renderFileList(bucket, clientCode) {
+  var containerId = 'files-' + bucket;
+  var container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem">Loading…</div>';
+
+  try {
+    var { data, error } = await _sb.storage.from(bucket).list(clientCode + '/', {
+      limit: 100, offset: 0, sortBy: { column: 'created_at', order: 'desc' }
+    });
+
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem">No files yet.</div>';
+      return;
+    }
+
+    container.innerHTML = data.map(function(f) {
+      var filePath = clientCode + '/' + f.name;
+      var sizeMB   = f.metadata && f.metadata.size ? (f.metadata.size / 1024 / 1024).toFixed(2) + ' MB' : '';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;' +
+             'padding:8px 0;border-bottom:1px solid rgba(30,58,107,.4);font-size:.8rem">' +
+        '<div>' +
+          '<div style="color:#e8edf8;font-weight:600">&#128196; ' + f.name + '</div>' +
+          (sizeMB ? '<div style="color:#8a9bbf;font-size:.73rem">' + sizeMB + '</div>' : '') +
+        '</div>' +
+        '<div style="display:flex;gap:8px">' +
+          '<button onclick="downloadAdminFile(\'' + bucket + '\',\'' + filePath + '\')" ' +
+            'style="background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;' +
+            'padding:4px 10px;font-size:.72rem;cursor:pointer">&#8595; Download</button>' +
+          '<button onclick="deleteAdminFile(\'' + bucket + '\',\'' + filePath + '\',\'' + bucket + '\',\'' + clientCode + '\')" ' +
+            'style="background:rgba(240,95,95,.1);color:#f05f5f;border:1px solid #f05f5f;border-radius:6px;' +
+            'padding:4px 10px;font-size:.72rem;cursor:pointer">&#128465;</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+  } catch(e) {
+    container.innerHTML = '<div style="color:#f05f5f;font-size:.8rem">Error loading files: ' + (e.message || e) + '</div>';
+  }
+}
+
+async function downloadAdminFile(bucket, path) {
+  try {
+    var { data, error } = await _sb.storage.from(bucket).createSignedUrl(path, 60);
+    if (error) throw error;
+    window.open(data.signedUrl, '_blank');
+  } catch(e) {
+    showToastAdmin('Download failed: ' + (e.message || e), 'error');
+  }
+}
+
+async function deleteAdminFile(bucket, path, bucketForRefresh, clientCode) {
+  if (!confirm('Delete this file? This cannot be undone.')) return;
+  try {
+    var { error } = await _sb.storage.from(bucket).remove([path]);
+    if (error) throw error;
+    showToastAdmin('File deleted', 'success');
+    renderFileList(bucketForRefresh, clientCode);
+  } catch(e) {
+    showToastAdmin('Delete failed: ' + (e.message || e), 'error');
+  }
 }
 
 // ── Templates upload (shared/ folder, no client prefix) ──
