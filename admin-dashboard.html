@@ -642,11 +642,11 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
 <!-- Client Full Editor -->
 <div class="modal-overlay" id="client-detail-modal" role="dialog" aria-modal="true" aria-label="Edit Client">
-  <div class="modal-box" style="max-width:680px;width:100%">
+  <div class="modal-box" style="max-width:680px;width:100%;max-height:92vh">
     <button class="modal-close" onclick="closeModal('client-detail-modal')" aria-label="Close">&#10005;</button>
     <h2 id="client-modal-title">&#128100; Edit Client</h2>
     <!-- Tab bar -->
-    <div style="display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid rgba(30,58,107,.5);padding-bottom:10px;margin-bottom:16px">
+    <div style="display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;border-bottom:1px solid rgba(30,58,107,.5);padding-bottom:10px;margin-bottom:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none">
       <button class="btn-sm btn-primary" id="ctab-info"    onclick="showClientTab('info')"    style="font-size:.72rem">&#128100; Info</button>
       <button class="btn-sm btn-ghost"   id="ctab-billing" onclick="showClientTab('billing')" style="font-size:.72rem">&#128180; Billing</button>
       <button class="btn-sm btn-ghost"   id="ctab-roadmap" onclick="showClientTab('roadmap')" style="font-size:.72rem">&#128204; Roadmap</button>
@@ -948,9 +948,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
       <!-- Audit Reports -->
       <div style="margin-bottom:24px;background:#0a1e38;border:1px solid #1e3a6b;border-radius:10px;padding:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
           <h5 style="font-size:.82rem;color:#e8edf8;font-weight:700">&#128202; Audit Reports</h5>
-          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:5px 12px;font-size:.75rem;font-weight:700">
+          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:8px 16px;font-size:.8rem;font-weight:700;white-space:nowrap;flex-shrink:0">
             &#8593; Upload PDF
             <input type="file" accept=".pdf" style="display:none" onchange="handleAdminUpload(this,'reports')">
           </label>
@@ -962,9 +962,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
       <!-- Evidence Binder -->
       <div style="margin-bottom:24px;background:#0a1e38;border:1px solid #1e3a6b;border-radius:10px;padding:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
           <h5 style="font-size:.82rem;color:#e8edf8;font-weight:700">&#128218; Evidence Binder</h5>
-          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:5px 12px;font-size:.75rem;font-weight:700">
+          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:8px 16px;font-size:.8rem;font-weight:700;white-space:nowrap;flex-shrink:0">
             &#8593; Upload PDF
             <input type="file" accept=".pdf" style="display:none" onchange="handleAdminUpload(this,'evidence')">
           </label>
@@ -976,9 +976,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
       <!-- Invoices -->
       <div style="margin-bottom:24px;background:#0a1e38;border:1px solid #1e3a6b;border-radius:10px;padding:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
           <h5 style="font-size:.82rem;color:#e8edf8;font-weight:700">&#128179; Invoices</h5>
-          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:5px 12px;font-size:.75rem;font-weight:700">
+          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:8px 16px;font-size:.8rem;font-weight:700;white-space:nowrap;flex-shrink:0">
             &#8593; Upload PDF
             <input type="file" accept=".pdf" style="display:none" onchange="handleAdminUpload(this,'invoices')">
           </label>
@@ -990,9 +990,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
       <!-- Templates / Other -->
       <div style="margin-bottom:8px;background:#0a1e38;border:1px solid #1e3a6b;border-radius:10px;padding:16px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
           <h5 style="font-size:.82rem;color:#e8edf8;font-weight:700">&#128196; Templates &amp; Other</h5>
-          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:5px 12px;font-size:.75rem;font-weight:700">
+          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:8px 16px;font-size:.8rem;font-weight:700;white-space:nowrap;flex-shrink:0">
             &#8593; Upload PDF
             <input type="file" accept=".pdf" style="display:none" onchange="handleAdminUpload(this,'templates')">
           </label>
@@ -1666,26 +1666,19 @@ var _editingRow = null;
 
 // ── Client editor tabs ────────────────────────────────────
 function showClientTab(tab) {
+  // Scroll tab button into view (important on mobile)
+  var activeBtn = document.getElementById('ctab-' + tab);
+  if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   if (tab === 'files' && _editingClientId && _editingClientCode) {
     renderFileList('reports',   _editingClientCode);
     renderFileList('evidence',  _editingClientCode);
     renderFileList('invoices',  _editingClientCode);
     renderFileList('templates', _editingClientCode);
+    // Scroll modal to top so upload buttons are visible
+    var modalBox = document.querySelector('#client-detail-modal .modal-box');
+    if (modalBox) setTimeout(function(){ modalBox.scrollTop = 0; }, 50);
   }
-  if (tab === 'files' && _editingClientId && window._editingClientCode) {
-    setTimeout(function() {
-      renderFileManager('files-reports',  'reports',  window._editingClientCode);
-      renderFileManager('files-evidence', 'evidence', window._editingClientCode);
-      renderFileManager('files-invoices', 'invoices', window._editingClientCode);
-    }, 50);
-  }
-  if (tab === 'files' && _editingClientId && window._editingClientCode) {
-    setTimeout(function() {
-      renderFileManager('files-reports',  'reports',  window._editingClientCode);
-      renderFileManager('files-evidence', 'evidence', window._editingClientCode);
-      renderFileManager('files-invoices', 'invoices', window._editingClientCode);
-    }, 50);
-  }
+
   var tabs = ['info','billing','roadmap','templates','binder','access','notes','files'];
   tabs.forEach(function(t) {
     var btn   = document.getElementById('ctab-' + t);
