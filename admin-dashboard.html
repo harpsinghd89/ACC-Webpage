@@ -1917,9 +1917,22 @@ async function sendLoginInvite(email, name, clientId) {
     try { res = JSON.parse(rawText); } catch(pe) { throw new Error('HTTP ' + r.status + ': ' + rawText.substring(0,200)); }
     if (!r.ok || res.error) throw new Error('HTTP ' + r.status + ' — ' + (res.error || res.message || rawText.substring(0,200)));
 
-    showToastAdmin('✅ Invite sent to ' + email, 'success');
-
-    // Refresh client list to show auth_user_id is now linked
+    if (res.login_link) {
+      var linkModal = document.getElementById('invite-link-modal');
+      if (linkModal) {
+        var urlEl = document.getElementById('invite-link-url');
+        var emailEl = document.getElementById('invite-link-email');
+        if (urlEl) urlEl.value = res.login_link;
+        if (emailEl) emailEl.textContent = email;
+        linkModal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      } else {
+        prompt('Copy this login link for ' + email + ' (expires 24h):', res.login_link);
+      }
+      showToastAdmin('\u2705 Account created for ' + email, 'success');
+    } else {
+      showToastAdmin('\u2705 Invite sent to ' + email, 'success');
+    }
     loadClients();
 
   } catch(e) {
@@ -1936,6 +1949,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+function copyInviteLink() {
+  var el = document.getElementById('invite-link-url');
+  if (!el) return;
+  el.select();
+  try {
+    document.execCommand('copy');
+    showToastAdmin('Link copied!', 'success');
+  } catch(e) {
+    navigator.clipboard && navigator.clipboard.writeText(el.value)
+      .then(function(){ showToastAdmin('Link copied!', 'success'); })
+      .catch(function(){ showToastAdmin('Please copy manually', 'info'); });
+  }
+}
 </script>
+
+<div id="invite-link-modal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box" style="max-width:540px">
+    <button class="modal-close" onclick="closeModal('invite-link-modal')" aria-label="Close">&#10005;</button>
+    <h2 style="margin-bottom:8px">&#128279; Login Link Created</h2>
+    <p style="color:#8a9bbf;font-size:.88rem;margin-bottom:16px">Account created for <strong style="color:#e8edf8" id="invite-link-email"></strong>.<br>Copy and send this link — expires in <strong style="color:#f5a623">24 hours</strong>.</p>
+    <div style="background:#0a1e38;border:1px solid #1e3a6b;border-radius:8px;padding:12px;margin-bottom:16px">
+      <textarea id="invite-link-url" readonly rows="4"
+        style="width:100%;background:transparent;border:none;color:#38d9a9;font-size:.78rem;font-family:monospace;resize:none;outline:none;word-break:break-all;line-height:1.5"></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-sm btn-primary" onclick="copyInviteLink()" style="flex:1">&#128203; Copy Link</button>
+      <button class="btn-sm btn-ghost" onclick="closeModal('invite-link-modal')" style="flex:1">Close</button>
+    </div>
+    <p style="font-size:.75rem;color:#8a9bbf;margin-top:12px;text-align:center">Once Zoho SMTP is connected this will email automatically.</p>
+  </div>
+</div>
 </body>
 </html>
