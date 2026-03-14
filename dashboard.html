@@ -391,7 +391,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div class="panel active" id="panel-overview">
       <div class="page-header">
         <h1 style="color:#ffffff" id="hero-greeting">&#128075; Welcome</h1>
-        <p>Your website <strong>acmecorp.ca</strong> is active and monitored. Here&rsquo;s your compliance snapshot.</p>
+        <p>Your website <strong id="overview-domain">—</strong> is active and monitored. Here&rsquo;s your compliance snapshot.</p>
       </div>
       <div class="stat-grid">
         <div class="stat-card teal">
@@ -552,7 +552,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </div>
       <div class="card">
         <h2>&#128196; Your Widget Embed Code</h2>
-        <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">This code is locked to your registered domain <strong style="color:var(--text)">acmecorp.ca</strong>. It will not activate on other domains.</p>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">This code is locked to your registered domain <strong style="color:var(--text)" class="stmt-domain">—</strong>. It will not activate on other domains.</p>
         <div class="code-block">
           <button class="code-copy" onclick="copyCode('embed-code')" aria-label="Copy embed code">Copy</button>
           <pre id="embed-code">&lt;!-- ACC Accessibility Widget | acmecorp.ca --&gt;
@@ -638,7 +638,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h2>&#128270; Real-Time Monitor</h2>
         <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
           <span class="pill green">Live</span>
-          <span style="font-size:.82rem;color:var(--muted)">Last scan: 2 hours ago &mdash; acmecorp.ca</span>
+          <span style="font-size:.82rem;color:var(--muted)">Last scan: 2 hours ago &mdash; <span class="stmt-domain">—</span></span>
           <button class="btn-sm btn-ghost" style="margin-left:auto" onclick="alert('Scan initiated. Results in ~60 seconds.')">Run Scan Now</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
@@ -807,7 +807,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <!-- Annual Sign-off -->
         <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.2);border-radius:10px;padding:18px;margin-top:20px" id="scope-signoff">
           <strong style="font-size:.88rem;color:#38d9a9;display:block;margin-bottom:8px">&#9998; Annual Scope Acknowledgment — 2026</strong>
-          <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:14px">By signing below, <strong style="color:#e8edf8">Acme Corp Inc.</strong> confirms it has reviewed the Scope of Responsibility table and understands its operational duties for the 2026 AODA filing period.</p>
+          <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:14px">By signing below, <strong style="color:#e8edf8" id="signoff-company2">your organization</strong> confirms it has reviewed the Scope of Responsibility table and understands its operational duties for the 2026 AODA filing period.</p>
           <div id="signoff-unsigned">
             <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px">
               <input type="checkbox" id="scope-chk" style="margin-top:3px;accent-color:#4f8ef7;width:16px;height:16px"/>
@@ -991,8 +991,8 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h2>&#128196; Your Accessibility Statement</h2>
         <div style="background:rgba(10,22,40,.6);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:24px;margin-bottom:16px">
           <h3 style="color:#fff;font-size:1.1rem;margin-bottom:12px">Accessibility Statement</h3>
-          <p style="font-size:.88rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Acme Corp Inc.</strong> &mdash; Last reviewed: March 2026</p>
-          <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px">Acme Corp Inc. is committed to ensuring digital accessibility for people with disabilities. We continually improve the user experience for everyone and apply relevant accessibility standards.</p>
+          <p style="font-size:.88rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)" class="stmt-org-name">—</strong> &mdash; Last reviewed: March 2026</p>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><span class="stmt-org-name">Your organization</span> is committed to ensuring digital accessibility for people with disabilities. We continually improve the user experience for everyone and apply relevant accessibility standards.</p>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Conformance status:</strong> This website conforms to WCAG 2.1 Level AA.</p>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Feedback:</strong> We welcome feedback on the accessibility of this website. Please email <a href="/cdn-cgi/l/email-protection#721311111701011b101b1e1b060b32290b1d0700161d1f131b1c2f5c1113" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a>
           <a class="dl-btn" href="#" onclick="alert('PDF downloaded.')">&#8659; Download PDF</a>
@@ -1012,13 +1012,13 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <h2>&#128203; Subscription</h2>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div>
-              <strong style="font-size:1rem;color:var(--white)">Tier 1 — Essential</strong>
+              <strong style="font-size:1rem;color:var(--white)" id="acc-tier">—</strong>
               <div style="font-size:.8rem;color:var(--muted)">1–19 Employees</div>
             </div>
-            <span class="pill green">Active</span>
+            <span class="pill green" id="acc-status">Active</span>
           </div>
-          <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px">$69 <span style="font-size:.85rem;font-weight:400;color:var(--muted)">CAD / month</span></div>
-          <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Next billing: April 10, 2026</div>
+          <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px"><span id="acc-price">$69</span> <span style="font-size:.85rem;font-weight:400;color:var(--muted)">CAD / month</span></div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Next billing: <span id="acc-renewal">—</span></div>
           <div class="btn-row">
             <button class="btn-sm btn-ghost" onclick="alert('Upgrade options coming soon.')">Upgrade to Tier 2</button>
             <button class="btn-sm btn-danger" onclick="confirmCancel()">Cancel Subscription</button>
@@ -1045,15 +1045,15 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           </div>
           <div class="fgroup">
             <label for="acc-email">Email</label>
-            <input class="finput" type="email" id="acc-email" value="jane@acmecorp.ca" style="width:100%"/>
+            <input class="finput" type="email" id="acc-email" value="" style="width:100%"/>
           </div>
           <div class="fgroup">
             <label for="acc-company">Company</label>
-            <input class="finput" type="text" id="acc-company" value="Acme Corp Inc." style="width:100%"/>
+            <input class="finput" type="text" id="acc-company" value="" style="width:100%"/>
           </div>
           <div class="fgroup">
             <label for="acc-url">Website</label>
-            <input class="finput" type="url" id="acc-url" value="https://acmecorp.ca" style="width:100%"/>
+            <input class="finput" type="url" id="acc-url" value="" style="width:100%"/>
           </div>
         </div>
         <button class="btn-sm btn-primary" style="margin-top:8px" onclick="alert('Account details saved successfully.')">Save Changes</button>
@@ -1675,7 +1675,7 @@ Questions? Reply to this email.
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('edit-stmt-modal')" aria-label="Close">&#x2715;</button>
     <h2 id="edit-stmt-title">Customize Accessibility Statement</h2>
-    <div class="fgroup"><label for="stmt-co">Company Name</label><input class="finput" type="text" id="stmt-co" value="Acme Corp Inc." style="width:100%"/></div>
+    <div class="fgroup"><label for="stmt-co">Company Name</label><input class="finput" type="text" id="stmt-co" value="" style="width:100%"/></div>
     <div class="fgroup"><label for="stmt-email">Feedback Email</label><input class="finput" type="email" id="stmt-email" value="accessibility@acmecorp.ca" style="width:100%"/></div>
     <div class="fgroup"><label for="stmt-level">Conformance Level</label><select class="finput" id="stmt-level" style="width:100%"><option>WCAG 2.1 Level AA (recommended)</option><option>WCAG 2.0 Level AA</option><option>Partial conformance</option></select></div>
     <div class="btn-row" style="margin-top:8px">
@@ -2397,8 +2397,8 @@ function populateOverview(c) {
   set('client-greeting', greeting + ', ' + (c.name || 'there'));
   set('overview-domain', c.domain || '—');
   var days = daysUntil(c.renewal_date);
-  set('overview-days-left', days !== null ? days + ' days' : '—');
-  set('overview-tier', tierName(c.tier));
+  set('days-left', days !== null ? String(days) : '—');
+  // overview-tier displayed in account panel
   // Update nav
   var unEl = document.getElementById('user-name');
   if (unEl) unEl.textContent = c.name || c.email || '—';
@@ -2448,12 +2448,24 @@ function populateTraining(c) {
 }
 
 function populateAccount(c, billingRows) {
-  set('acc-name',  c.name);
-  var _an = document.getElementById('acc-name'); if (_an && _an.tagName === 'INPUT') _an.value = c.name || '';
-  set('acc-email', c.email);
-  set('acc-tier',  tierName(c.tier));
-  set('acc-price', tierPrice(c.tier));
+  // Set input values directly
+  var fields = {
+    'acc-name':    c.name    || '',
+    'acc-email':   c.email   || '',
+    'acc-company': c.name    || '',
+    'acc-url':     c.domain  ? 'https://' + c.domain.replace(/^https?:\/\//, '') : '',
+  };
+  Object.keys(fields).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = fields[id];
+    else el.textContent = fields[id] || '—';
+  });
+  // Update display spans
+  set('acc-tier',    tierName(c.tier));
+  set('acc-price',   tierPrice(c.tier));
   set('acc-renewal', fmtDateLong(c.renewal_date));
+  set('acc-status',  (c.status || 'active').charAt(0).toUpperCase() + (c.status || 'active').slice(1));
   populateBillingHistory(billingRows);
 }
 
@@ -2498,6 +2510,9 @@ function populateA11yStatement(c) {
   els.forEach(function(el){ el.textContent = c.name || ''; });
   var domEls = document.querySelectorAll('.stmt-domain');
   domEls.forEach(function(el){ el.textContent = c.domain || ''; });
+  // Update scope acknowledgment company name
+  var sc2 = document.getElementById('signoff-company2');
+  if (sc2) sc2.textContent = c.name || 'your organization';
 }
 
 function populateStandards(c) {

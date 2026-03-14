@@ -294,7 +294,14 @@ async function forgotPassword() {
   if (btn) { btn.textContent = 'Forgot password?'; btn.disabled = false; }
 
   if (r.error) {
-    err.textContent = 'Error: ' + r.error.message;
+    var errMsg = r.error.message || 'Unknown error';
+    if (errMsg.toLowerCase().includes('smtp') || errMsg.toLowerCase().includes('email') || errMsg.toLowerCase().includes('sending')) {
+      errMsg = 'Email could not be sent — SMTP is not yet verified in Supabase. Please contact partner@accessibilitycompliance.ca for a manual reset link.';
+    }
+    err.style.background = 'rgba(240,95,95,.08)';
+    err.style.border = '1px solid rgba(240,95,95,.3)';
+    err.style.color = '#f05f5f';
+    err.textContent = errMsg;
     err.style.display = 'block';
   } else {
     err.style.background = 'rgba(56,217,169,.08)';

@@ -380,7 +380,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <button class="btn-sm btn-primary" onclick="openModal('add-client-modal')">+ Add Client</button>
           <button class="btn-sm btn-ghost" onclick="exportClients()">&#8659; CSV</button>
         </div>
-        <p style="font-size:.75rem;color:#8a9bbf;margin-bottom:12px">Showing <span id="client-count">12</span> clients</p>
+        <p style="font-size:.75rem;color:#8a9bbf;margin-bottom:12px">Showing <span id="client-count">—</span> clients</p>
         <table class="data-table" id="client-table">
           <thead><tr><th>Client</th><th>Tier</th><th>Domain</th><th>Renews</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody id="client-tbody"><tr><td colspan="6" style="text-align:center;color:#8a9bbf;padding:32px">Loading clients…</td></tr></tbody>
@@ -1441,16 +1441,21 @@ function defaultMilestones(clientId, tier) {
 
 // ── Load & render clients table ──────────────────────────
 async function loadClients() {
+  var tbody = document.getElementById('client-tbody');
   try {
+    // Try with deleted_at filter first; fall back without if column doesn't exist
     var r = await _sb.from('clients').select('*').is('deleted_at', null).order('created_at', { ascending: false });
+    if (r.error && r.error.message && r.error.message.includes('deleted_at')) {
+      // deleted_at column doesn't exist yet — query without it
+      r = await _sb.from('clients').select('*').order('created_at', { ascending: false });
+    }
     if (r.error) throw r.error;
     renderClientsTable(r.data || []);
     updateOverviewStats(r.data || []);
   } catch(e) {
     console.error('loadClients error:', e);
-    var tbody = document.getElementById('client-tbody');
     if (tbody) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f05f5f;padding:32px">Error loading clients: ' + (e.message || String(e)) + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f05f5f;padding:32px">⚠ Error loading clients: ' + esc(e.message || String(e)) + '</td></tr>';
     }
   }
 }
@@ -1484,11 +1489,11 @@ function esc(s) {
 function updateOverviewStats(clients) {
   var active = clients.filter(function(c){ return (c.status||'').toLowerCase() === 'active' || (c.status||'').toLowerCase() === 'current'; }).length;
   var overdue = clients.filter(function(c){ return (c.status||'').toLowerCase() === 'overdue'; }).length;
-  // Update any stat cards that exist on overview panel
   var els = {
-    'stat-total-clients': clients.length,
+    'stat-total-clients':  clients.length,
     'stat-active-clients': active,
-    'stat-overdue-clients': overdue
+    'stat-overdue-clients': overdue,
+    'client-count':        clients.length,
   };
   Object.keys(els).forEach(function(id) {
     var el = document.getElementById(id);
