@@ -399,9 +399,10 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div class="form-section-title" style="margin-top:36px">2. Payment Details</div>
 
     <div class="fgroup">
-      <label for="f-card">Card Number <span class="req" aria-hidden="true">*</span></label>
-        </div>
-        <div class="ferr" id="err-card" role="alert" style="display:none"></div>
+      <label>Card Details <span class="req" aria-hidden="true">*</span></label>
+      <div id="stripe-card-element" style="background:#0a1e38;border:1.5px solid #1e3a6b;border-radius:8px;padding:14px 12px;min-height:48px;width:100%;box-sizing:border-box;"></div>
+      <div id="stripe-card-errors" role="alert" style="color:#f05f5f;font-size:.8rem;margin-top:6px;min-height:18px;"></div>
+      <div class="ferr" id="err-card" role="alert" style="display:none"></div>
     </div>
 
     <div class="fgroup">
@@ -802,10 +803,13 @@ document.addEventListener('DOMContentLoaded', function() {
       },
       hidePostalCode: false
     });
-    _cardElement.mount('#stripe-card-element');
+    // Small delay ensures the DOM element is rendered and visible before mount
+    setTimeout(function() {
+      _cardElement.mount('#stripe-card-element');
+    }, 100);
     _cardElement.on('change', function(e) {
       var el = document.getElementById('stripe-card-errors');
-      if (el) { el.textContent = e.error ? e.error.message : ''; el.style.display = e.error ? 'block' : 'none'; }
+      if (el) { el.textContent = e.error ? e.error.message : ''; }
     });
   } else if (attempts < 20) {
     setTimeout(function() { tryInitStripe(attempts + 1); }, 300);
