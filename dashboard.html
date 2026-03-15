@@ -2367,11 +2367,18 @@ function daysUntil(iso) {
 }
 
 function tierName(t) {
-  return t==='tier1'?'Tier 1 — Essentials':t==='tier2'?'Tier 2 — Professional':'Tier 3 — Enterprise';
+  // DB stores tier as integer (1, 2, 3) — handle both formats
+  var n = parseInt(t) || t;
+  return (n===1||t==='tier1') ? 'Tier 1 — Essential'
+       : (n===2||t==='tier2') ? 'Tier 2 — Managed'
+       : 'Tier 3 — Enterprise';
 }
 
 function tierPrice(t) {
-  return t==='tier1'?'$69/mo':t==='tier2'?'$199/mo':'Custom';
+  var n = parseInt(t) || t;
+  return (n===1||t==='tier1') ? '$69'
+       : (n===2||t==='tier2') ? '$199'
+       : 'Custom';
 }
 
 function set(id, val) {
