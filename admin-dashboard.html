@@ -687,7 +687,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </tbody>
       </table>
       <div class="btn-row" style="margin-top:12px">
-        <button class="btn-sm btn-primary" onclick="alert('Billing saved!')">&#10003; Save Billing</button>
+        <button class="btn-sm btn-primary" onclick="saveBilling()">&#10003; Save Billing</button>
         <button class="btn-sm btn-ghost" onclick="alert('Invoice sent via Stripe!')">&#128228; Send Invoice</button>
       </div>
     </div>
@@ -913,7 +913,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="fgroup"><label>Compliance Flags</label><textarea class="finput" id="ce-flags" rows="2" placeholder="e.g. Missing emergency response plan. Follow up by Apr 1."></textarea></div>
       <div class="fgroup"><label>Last Contact Date</label><input class="finput" type="date" id="ce-last-contact"></div>
       <div class="fgroup"><label>Next Follow-Up</label><input class="finput" type="date" id="ce-followup"></div>
-      <button class="btn-sm btn-primary" onclick="alert('Notes saved!')">&#10003; Save Notes</button>
+      <button class="btn-sm btn-primary" onclick="saveNotes()">&#10003; Save Notes</button>
     </div>
 
   </div>
@@ -1715,6 +1715,44 @@ window.openModal = function(id) {
   setTimeout(initDatePickers, 100);
 };
 
+async function saveBilling() {
+  if (!_editingClientId) return;
+  var btn = document.querySelector('#ctab-panel-billing .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    var cycle = document.getElementById('ce-cycle');
+    var inv   = (document.getElementById('ce-inv-notes')||{}).value||'';
+    var disc  = (document.getElementById('ce-discount')||{}).value||'';
+    var pay   = document.getElementById('ce-payment');
+    var r = await _sb.from('clients').update({
+      billing_cycle:  cycle ? cycle.options[cycle.selectedIndex].text.toLowerCase() : 'monthly',
+      billing_notes:  inv||null,
+      discount_code:  disc||null,
+      payment_method: pay ? pay.options[pay.selectedIndex].text.toLowerCase() : 'stripe',
+      updated_at: new Date().toISOString()
+    }).eq('id', _editingClientId);
+    if (r.error) throw r.error;
+    showToastAdmin('Billing saved.', 'success');
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
+  finally { if (btn) { btn.textContent = '✓ Save Billing'; btn.disabled = false; } }
+}
+async function saveNotes() {
+  if (!_editingClientId) return;
+  var btn = document.querySelector('#ctab-panel-notes .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    var r = await _sb.from('clients').update({
+      onboarding_notes: (document.getElementById('ce-onboard-notes')||{}).value||null,
+      compliance_flags: (document.getElementById('ce-flags')||{}).value||null,
+      last_contact:     (document.getElementById('ce-last-contact')||{}).value||null,
+      next_followup:    (document.getElementById('ce-followup')||{}).value||null,
+      updated_at: new Date().toISOString()
+    }).eq('id', _editingClientId);
+    if (r.error) throw r.error;
+    showToastAdmin('Notes saved.', 'success');
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
+  finally { if (btn) { btn.textContent = '✓ Save Notes'; btn.disabled = false; } }
+}
 // ── Save Templates / Binder / Access ──────────────────────
 async function saveTemplates() {
   if (!_editingClientId) return;
