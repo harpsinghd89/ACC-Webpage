@@ -1442,40 +1442,22 @@ function defaultMilestones(clientId, tier) {
 // ── Load & render clients table ──────────────────────────
 async function loadClients() {
   var tbody = document.getElementById('client-tbody');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#8a9bbf;padding:32px">Loading clients…</td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#8a9bbf;padding:32px">Querying database…</td></tr>';
   try {
-    // First try: with deleted_at filter
-    var r = await _sb.from('clients').select('*').is('deleted_at', null).order('created_at', { ascending: false });
-
-    // If deleted_at column missing, retry without it
-    if (r.error && r.error.message && (r.error.message.includes('deleted_at') || r.error.message.includes('column'))) {
-      r = await _sb.from('clients').select('*').order('created_at', { ascending: false });
-    }
-
-    if (r.error) throw r.error;
-
-    var clients = r.data || [];
-
-    if (clients.length === 0) {
-      // Could be RLS blocking or genuinely no clients yet
-      // Try a count query to distinguish
-      var countR = await _sb.from('clients').select('id', { count: 'exact', head: true });
-      var countMsg = countR.error
-        ? 'Query error: ' + countR.error.message
-        : 'Supabase returned 0 rows. If you have clients, check RLS policy — run in SQL Editor: ALTER POLICY "admins_manage_clients" ON clients USING (true);';
-      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f5a623;padding:24px;font-size:.82rem">' + esc(countMsg) + '</td></tr>';
-      updateOverviewStats([]);
+    var r = await _sb.from('clients').select('*').order('created_at', { ascending: false });
+    if (r.error) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color:#f05f5f;padding:20px">DB ERROR: ' + esc(r.error.message) + ' | code: ' + esc(r.error.code||'') + '</td></tr>';
       return;
     }
-
+    var clients = r.data || [];
+    if (clients.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color:#f5a623;padding:20px">Query OK but 0 rows returned. RLS is blocking. Check policies.</td></tr>';
+      return;
+    }
     renderClientsTable(clients);
     updateOverviewStats(clients);
-
   } catch(e) {
-    console.error('loadClients error:', e);
-    if (tbody) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f05f5f;padding:32px">⚠ Error: ' + esc(e.message || String(e)) + '</td></tr>';
-    }
+    tbody.innerHTML = '<tr><td colspan="6" style="color:#f05f5f;padding:20px">EXCEPTION: ' + esc(e.message || String(e)) + '</td></tr>';
   }
 }
 
