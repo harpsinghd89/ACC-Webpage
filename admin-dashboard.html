@@ -1016,27 +1016,24 @@ function showAccessTab(tab) {
   document.getElementById('acc-tab-tier').className = tab === 'tier' ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
   document.getElementById('acc-tab-client').className = tab === 'client' ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
   // Populate client dropdown from Supabase when switching to client tab
-  if (tab === 'client') populateOverrideClientDropdown();
+  if (tab === 'client') setTimeout(populateOverrideClientDropdown, 0);
 }
 
-async function populateOverrideClientDropdown() {
+function populateOverrideClientDropdown() {
   var sel = document.getElementById('override-client-sel');
-  if (!sel || !_sb) return;
-  // Only reload if still showing placeholder
+  if (!sel || typeof _sb === 'undefined' || !_sb) return;
   if (sel.options.length > 1) return;
-  try {
-    var r = await _sb.from('clients').select('id,client_code,name,tier')
-      .is('deleted_at', null).eq('status','active').order('name');
-    if (r.error) throw r.error;
-    (r.data || []).forEach(function(c) {
-      var opt = document.createElement('option');
-      opt.value = c.id;
-      opt.textContent = c.client_code + ' — ' + c.name + ' (Tier ' + c.tier + ')';
-      sel.appendChild(opt);
-    });
-  } catch(e) {
-    console.warn('populateOverrideClientDropdown:', e);
-  }
+  _sb.from('clients').select('id,client_code,name,tier')
+    .eq('status','active').order('name')
+    .then(function(r) {
+      if (r.error || !r.data) return;
+      r.data.forEach(function(c) {
+        var opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.client_code + ' — ' + c.name + ' (Tier ' + c.tier + ')';
+        sel.appendChild(opt);
+      });
+    }).catch(function(e) { console.warn('populateOverride:', e); });
 }
 
 var TABS = ['Dashboard Overview','Widget Settings','Embed Code','Audit Reports','Evidence Binder','3-Year Roadmap','Template Standards','Training Portal'];
