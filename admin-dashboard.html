@@ -1486,8 +1486,29 @@ async function openClientEditor(btn) {
       }
     }
 
+    // ── Billing tab ──
+    f('ce-inv-notes', c.billing_notes || '');
+    f('ce-discount',  c.discount_code || '');
+    var cycleSel = document.getElementById('ce-cycle');
+    if (cycleSel && c.billing_cycle) {
+      for (var ci=0; ci<cycleSel.options.length; ci++) {
+        if (cycleSel.options[ci].text.toLowerCase() === c.billing_cycle.toLowerCase()) {
+          cycleSel.selectedIndex = ci; break;
+        }
+      }
+    }
+    var paySel = document.getElementById('ce-payment');
+    if (paySel && c.payment_method) {
+      for (var pi=0; pi<paySel.options.length; pi++) {
+        if (paySel.options[pi].text.toLowerCase() === c.payment_method.toLowerCase()) {
+          paySel.selectedIndex = pi; break;
+        }
+      }
+    }
+
     // ── Notes tab ──
     f('ce-onboard-notes', c.onboarding_notes);
+    f('ce-flags',         c.compliance_flags || '');
     f('ce-last-contact',  c.last_contact  || '');
     f('ce-followup',      c.next_followup || '');
 
@@ -1710,21 +1731,13 @@ async function saveBilling() {
     var inv   = (document.getElementById('ce-inv-notes')||{}).value||'';
     var disc  = (document.getElementById('ce-discount')||{}).value||'';
     var pay   = document.getElementById('ce-payment');
-    var payload = {
+    var r = await _sb.from('clients').update({
       billing_cycle:  cycle ? cycle.options[cycle.selectedIndex].text.toLowerCase() : 'monthly',
       billing_notes:  inv||null, discount_code: disc||null,
       payment_method: pay ? pay.options[pay.selectedIndex].text.toLowerCase() : 'stripe',
       updated_at: new Date().toISOString()
-    };
-    console.log('saveBilling payload:', JSON.stringify(payload));
-    console.log('saveBilling client_id:', _editingClientId);
-    var r = await _sb.from('clients').update(payload).eq('id', _editingClientId).select();
-    console.log('saveBilling result:', JSON.stringify(r));
+    }).eq('id', _editingClientId);
     if (r.error) throw r.error;
-    if (!r.data || r.data.length === 0) {
-      showToastAdmin('Saved (0 rows updated — check client ID matches)', 'error');
-      return;
-    }
     showToastAdmin('Billing saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save Billing'; btn.disabled = false; } }
