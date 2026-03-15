@@ -1171,13 +1171,18 @@ function defaultMilestones(clientId, tier) {
 async function loadClients() {
   var tbody = document.getElementById('client-tbody');
   try {
-    var r = await _sb.from('clients').select('*').is('deleted_at', null).order('created_at', { ascending: false });
-    if (r.error) throw r.error;
-    renderClientsTable(r.data || []);
-    updateOverviewStats(r.data || []);
+    // No deleted_at filter — keep query simple for RLS compatibility
+    var r = await _sb.from('clients').select('*').order('name', { ascending: true });
+    if (r.error) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="color:#f05f5f;padding:20px;text-align:center">Error: ' + esc(r.error.message) + '</td></tr>';
+      return;
+    }
+    var clients = (r.data || []).filter(function(c){ return !c.deleted_at; });
+    renderClientsTable(clients);
+    updateOverviewStats(clients);
   } catch(e) {
     console.error('loadClients:', e);
-    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#f05f5f;padding:20px">Error: ' + (e.message||String(e)) + '</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="color:#f05f5f;padding:20px;text-align:center">Exception: ' + esc(e.message||String(e)) + '</td></tr>';
   }
 }
 
@@ -1388,27 +1393,7 @@ async function openClientEditor(btn) {
   }
 }
 
-function renderAdminRoadmapRows(milestones, tier) {
-  var yearGroups = {};
-  milestones.forEach(function(m) {
-    if (!yearGroups[m.year]) yearGroups[m.year] = [];
-    yearGroups[m.year].push(m);
-  });
 
-  // Render into milestones-YEAR tbodies in the roadmap tab
-  Object.keys(yearGroups).forEach(function(yr) {
-    var tbody = document.getElementById('milestones-' + yr);
-    if (!tbody) return;
-    tbody.innerHTML = yearGroups[yr].map(function(m) {
-      return '<tr data-rid="' + m.id + '">' +
-        '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="' + esc(m.milestone) + '"></td>' +
-        '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="' + esc(m.target_date||'') + '"></td>' +
-        '<td>' + renderStatusSelect(m.status) + '</td>' +
-        '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeMilestoneRow(this)">✕</button></td>' +
-        '</tr>';
-    }).join('');
-  });
-}
 
 function renderStatusSelect(current) {
   var opts = ['planned','in-progress','done','deferred'];
@@ -1512,31 +1497,7 @@ async function saveClientInfo() {
   }
 }
 
-// ── Add milestone row (roadmap editor) ───────────────────
-function addMilestoneRow(tbodyId) {
-  var tbody = document.getElementById(tbodyId);
-  if (!tbody) return;
-  var tr = document.createElement('tr');
-  tr.setAttribute('data-rid', 'new-' + Date.now());
-  tr.innerHTML =
-    '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" placeholder="Milestone description"></td>' +
-    '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" placeholder="e.g. Jun 2026"></td>' +
-    '<td>' + renderStatusSelect('planned') + '</td>' +
-    '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeMilestoneRow(this)">✕</button></td>';
-  tbody.appendChild(tr);
-}
 
-function removeMilestoneRow(btn) {
-  var row = btn.closest('tr');
-  var rid = row && row.getAttribute('data-rid');
-  if (rid && !rid.startsWith('new-')) {
-    // Mark deleted in DB (soft delete)
-    _sb.from('roadmap').update({ deleted_at: new Date().toISOString() }).eq('id', rid).then(function(r){
-      if (r.error) console.warn('roadmap soft delete:', r.error);
-    });
-  }
-  if (row) row.remove();
-}
 
 // ── Sign out ─────────────────────────────────────────────
 
