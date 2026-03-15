@@ -1710,13 +1710,21 @@ async function saveBilling() {
     var inv   = (document.getElementById('ce-inv-notes')||{}).value||'';
     var disc  = (document.getElementById('ce-discount')||{}).value||'';
     var pay   = document.getElementById('ce-payment');
-    var r = await _sb.from('clients').update({
+    var payload = {
       billing_cycle:  cycle ? cycle.options[cycle.selectedIndex].text.toLowerCase() : 'monthly',
       billing_notes:  inv||null, discount_code: disc||null,
       payment_method: pay ? pay.options[pay.selectedIndex].text.toLowerCase() : 'stripe',
       updated_at: new Date().toISOString()
-    }).eq('id', _editingClientId);
+    };
+    console.log('saveBilling payload:', JSON.stringify(payload));
+    console.log('saveBilling client_id:', _editingClientId);
+    var r = await _sb.from('clients').update(payload).eq('id', _editingClientId).select();
+    console.log('saveBilling result:', JSON.stringify(r));
     if (r.error) throw r.error;
+    if (!r.data || r.data.length === 0) {
+      showToastAdmin('Saved (0 rows updated — check client ID matches)', 'error');
+      return;
+    }
     showToastAdmin('Billing saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save Billing'; btn.disabled = false; } }
