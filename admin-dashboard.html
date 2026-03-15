@@ -1450,8 +1450,15 @@ async function loadClients() {
       r = await _sb.from('clients').select('*').order('created_at', { ascending: false });
     }
     if (r.error) throw r.error;
-    renderClientsTable(r.data || []);
-    updateOverviewStats(r.data || []);
+    var clients = r.data || [];
+    console.log('loadClients: got', clients.length, 'rows');
+    renderClientsTable(clients);
+    updateOverviewStats(clients);
+    // If 0 results, show helpful message instead of empty state
+    if (clients.length === 0) {
+      var tbody = document.getElementById('client-tbody');
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#8a9bbf;padding:32px">No clients found. Check Supabase RLS policies or add your first client.</td></tr>';
+    }
   } catch(e) {
     console.error('loadClients error:', e);
     if (tbody) {
@@ -1513,8 +1520,18 @@ async function addClient() {
   var tierEl  = document.getElementById('nc-tier');
   var tier    = tierEl ? parseInt(tierEl.value) : 1;
 
-  if (!name)  { alert('Business Name is required.'); return; }
-  if (!email) { alert('Contact Email is required.'); return; }
+  var ncErr = document.getElementById('nc-error');
+  if (ncErr) ncErr.style.display = 'none';
+  if (!name) {
+    if (ncErr) { ncErr.textContent = 'Business Name is required.'; ncErr.style.display = 'block'; }
+    document.getElementById('nc-name').focus();
+    return;
+  }
+  if (!email) {
+    if (ncErr) { ncErr.textContent = 'Contact Email is required.'; ncErr.style.display = 'block'; }
+    document.getElementById('nc-email').focus();
+    return;
+  }
 
   var btn = document.querySelector('#add-client-modal .btn-primary');
   if (btn) { btn.textContent = 'Creating…'; btn.disabled = true; }
@@ -1729,8 +1746,16 @@ async function saveClientInfo() {
     var statusEl = document.getElementById('ce-status');
     var status   = statusEl ? statusEl.options[statusEl.selectedIndex].text.toLowerCase() : 'active';
 
-    if (!name)  { alert('Business Name is required.'); return; }
-    if (!email) { alert('Contact Email is required.'); return; }
+    if (!name) {
+      showToastAdmin('Business Name is required.', 'error');
+      var ne = document.getElementById('ce-name'); if (ne) ne.focus();
+      return;
+    }
+    if (!email) {
+      showToastAdmin('Contact Email is required.', 'error');
+      var ee = document.getElementById('ce-email'); if (ee) ee.focus();
+      return;
+    }
 
     // ── UPDATE clients ──
     var update = {
