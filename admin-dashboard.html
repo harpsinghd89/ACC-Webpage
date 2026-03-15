@@ -687,7 +687,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </tbody>
       </table>
       <div class="btn-row" style="margin-top:12px">
-        <button class="btn-sm btn-primary" onclick="alert('Billing saved!')">&#10003; Save Billing</button>
+        <button class="btn-sm btn-primary" onclick="saveBilling()">&#10003; Save Billing</button>
         <button class="btn-sm btn-ghost" onclick="alert('Invoice sent via Stripe!')">&#128228; Send Invoice</button>
       </div>
     </div>
@@ -851,7 +851,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <div class="toggle-wrap"><div class="toggle-info"><strong>Accessibility Statement Template</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
       </div>
       <div class="fgroup" style="margin-top:14px"><label>Template Notes (shown to client)</label><textarea class="finput" id="ce-tmpl-notes" rows="2" placeholder="e.g. Your disruption notice template has been pre-filled with your organization details."></textarea></div>
-      <button class="btn-sm btn-primary" onclick="alert('Template access saved!')">&#10003; Save</button>
+      <button class="btn-sm btn-primary" onclick="saveTemplates()">&#10003; Save</button>
     </div>
 
     <!-- BINDER TAB -->
@@ -884,7 +884,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <input class="finput" id="binder-new-item" placeholder="Add binder item (document name)" style="flex:1">
         <button class="btn-sm btn-ghost" onclick="addBinderItem()">+ Add</button>
       </div>
-      <button class="btn-sm btn-primary" onclick="alert('Binder saved!')">&#10003; Save Binder</button>
+      <button class="btn-sm btn-primary" onclick="saveBinder()">&#10003; Save Binder</button>
     </div>
 
     <!-- ACCESS TAB -->
@@ -901,8 +901,8 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="toggle-wrap"><div class="toggle-info"><strong>Feedback Logs</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
       <div class="toggle-wrap"><div class="toggle-info"><strong>Accessibility Statement</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
       <div class="btn-row" style="margin-top:12px">
-        <button class="btn-sm btn-primary" onclick="alert('Access saved!')">&#10003; Save</button>
-        <button class="btn-sm btn-ghost" onclick="alert('Reset to tier defaults.')">&#8635; Reset to Tier Default</button>
+        <button class="btn-sm btn-primary" onclick="saveAccess()">&#10003; Save</button>
+        <button class="btn-sm btn-ghost" onclick="resetAccessToDefault()">&#8635; Reset to Tier Default</button>
       </div>
     </div>
 
@@ -913,7 +913,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="fgroup"><label>Compliance Flags</label><textarea class="finput" id="ce-flags" rows="2" placeholder="e.g. Missing emergency response plan. Follow up by Apr 1."></textarea></div>
       <div class="fgroup"><label>Last Contact Date</label><input class="finput" type="date" id="ce-last-contact"></div>
       <div class="fgroup"><label>Next Follow-Up</label><input class="finput" type="date" id="ce-followup"></div>
-      <button class="btn-sm btn-primary" onclick="alert('Notes saved!')">&#10003; Save Notes</button>
+      <button class="btn-sm btn-primary" onclick="saveNotes()">&#10003; Save Notes</button>
     </div>
 
   </div>
@@ -1699,6 +1699,115 @@ window.openModal = function(id) {
   if (_origOpenModal) _origOpenModal(id);
   setTimeout(initDatePickers, 100);
 };
+
+// ── Tab save functions ───────────────────────────────────
+async function saveBilling() {
+  if (!_editingClientId) return;
+  var btn = document.querySelector('#ctab-panel-billing .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    var cycle = document.getElementById('ce-cycle');
+    var inv   = (document.getElementById('ce-inv-notes')||{}).value||'';
+    var disc  = (document.getElementById('ce-discount')||{}).value||'';
+    var pay   = document.getElementById('ce-payment');
+    var r = await _sb.from('clients').update({
+      billing_cycle:  cycle ? cycle.options[cycle.selectedIndex].text.toLowerCase() : 'monthly',
+      billing_notes:  inv||null, discount_code: disc||null,
+      payment_method: pay ? pay.options[pay.selectedIndex].text.toLowerCase() : 'stripe',
+      updated_at: new Date().toISOString()
+    }).eq('id', _editingClientId);
+    if (r.error) throw r.error;
+    showToastAdmin('Billing saved.', 'success');
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
+  finally { if (btn) { btn.textContent = '✓ Save Billing'; btn.disabled = false; } }
+}
+
+async function saveTemplates() {
+  if (!_editingClientId) return;
+  var btn = document.querySelector('#ctab-panel-templates .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    var toggles = document.querySelectorAll('#template-access-list .toggle input[type=checkbox]');
+    var labels  = document.querySelectorAll('#template-access-list .toggle-info strong');
+    var enabled = [];
+    toggles.forEach(function(t,i){ if(t.checked && labels[i]) enabled.push(labels[i].textContent.trim()); });
+    var notes = (document.getElementById('ce-tmpl-notes')||{}).value||'';
+    var r = await _sb.from('template_access').upsert(
+      { client_id: _editingClientId, enabled_templates: enabled, notes: notes||null, updated_at: new Date().toISOString() },
+      { onConflict: 'client_id' }
+    );
+    if (r.error) throw r.error;
+    showToastAdmin('Templates saved.', 'success');
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
+  finally { if (btn) { btn.textContent = '✓ Save'; btn.disabled = false; } }
+}
+
+async function saveBinder() {
+  if (!_editingClientId) return;
+  var btn = document.querySelector('#ctab-panel-binder .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    var items = document.querySelectorAll('#binder-items-list > div');
+    var binder = [];
+    items.forEach(function(item) {
+      var t = item.querySelector('div > div:first-child');
+      var s = item.querySelector('select');
+      if (t) binder.push({ title: t.textContent.trim(), status: s ? s.value : 'Pending Review' });
+    });
+    var r = await _sb.from('clients').update(
+      { binder_items: binder, updated_at: new Date().toISOString() }
+    ).eq('id', _editingClientId);
+    if (r.error) throw r.error;
+    showToastAdmin('Binder saved.', 'success');
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
+  finally { if (btn) { btn.textContent = '✓ Save Binder'; btn.disabled = false; } }
+}
+
+async function saveAccess() {
+  if (!_editingClientId) return;
+  var btn = document.querySelector('#ctab-panel-access .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    var toggles = document.querySelectorAll('#ctab-panel-access .toggle input[type=checkbox]');
+    var labels  = document.querySelectorAll('#ctab-panel-access .toggle-info strong');
+    var access  = {};
+    toggles.forEach(function(t,i){
+      if (labels[i]) { var k = labels[i].textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g,'_'); access[k] = t.checked; }
+    });
+    var r = await _sb.from('clients').update(
+      { dashboard_access: access, updated_at: new Date().toISOString() }
+    ).eq('id', _editingClientId);
+    if (r.error) throw r.error;
+    showToastAdmin('Access saved.', 'success');
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
+  finally { if (btn) { btn.textContent = '✓ Save'; btn.disabled = false; } }
+}
+
+async function resetAccessToDefault() {
+  if (!_editingClientId) return;
+  if (!confirm('Reset to tier defaults?')) return;
+  var r = await _sb.from('clients').update({ dashboard_access: null, updated_at: new Date().toISOString() }).eq('id', _editingClientId);
+  if (r.error) { showToastAdmin('Error: ' + r.error.message, 'error'); return; }
+  showToastAdmin('Access reset to tier defaults.', 'success');
+}
+
+async function saveNotes() {
+  if (!_editingClientId) return;
+  var btn = document.querySelector('#ctab-panel-notes .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    var r = await _sb.from('clients').update({
+      onboarding_notes: (document.getElementById('ce-onboard-notes')||{}).value||null,
+      compliance_flags: (document.getElementById('ce-flags')||{}).value||null,
+      last_contact:     (document.getElementById('ce-last-contact')||{}).value||null,
+      next_followup:    (document.getElementById('ce-followup')||{}).value||null,
+      updated_at:       new Date().toISOString()
+    }).eq('id', _editingClientId);
+    if (r.error) throw r.error;
+    showToastAdmin('Notes saved.', 'success');
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
+  finally { if (btn) { btn.textContent = '✓ Save Notes'; btn.disabled = false; } }
+}
 
 function signOut() {
   if (confirm('Sign out of admin?')) {
