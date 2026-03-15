@@ -1453,7 +1453,7 @@ async function openClientEditor(btn) {
     var [cr, rr, tr] = await Promise.all([
       _sb.from('clients').select('*').eq('id', _editingClientId).single(),
       _sb.from('roadmap').select('*').eq('client_id', _editingClientId).is('deleted_at', null).order('year').order('target_date'),
-      _sb.from('template_access').select('*').eq('client_id', _editingClientId).maybeSingle()
+      _sb.from('template_access').select('*').eq('client_id', _editingClientId)
     ]);
     if (cr.error) throw cr.error;
     var c = cr.data;
@@ -1538,11 +1538,15 @@ async function openClientEditor(btn) {
     }
 
     // ── Templates tab — restore saved toggles ──
-    if (tr.data && Array.isArray(tr.data.enabled_templates)) {
+    if (tr.data && tr.data.length) {
       var tmplToggles = document.querySelectorAll('#template-access-list .toggle input[type=checkbox]');
       var tmplLabels  = document.querySelectorAll('#template-access-list .toggle-info strong');
       tmplToggles.forEach(function(t, i) {
-        if (tmplLabels[i]) t.checked = tr.data.enabled_templates.indexOf(tmplLabels[i].textContent.trim()) !== -1;
+        if (tmplLabels[i]) {
+          var key = tmplLabels[i].textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          var row = tr.data.find(function(r){ return r.template_key === key; });
+          if (row) t.checked = row.enabled !== false;
+        }
       });
     }
 
@@ -1784,14 +1788,25 @@ async function saveTemplates() {
   try {
     var toggles = document.querySelectorAll('#template-access-list .toggle input[type=checkbox]');
     var labels  = document.querySelectorAll('#template-access-list .toggle-info strong');
-    var enabled = [];
-    toggles.forEach(function(t,i){ if(t.checked && labels[i]) enabled.push(labels[i].textContent.trim()); });
-    var notes = (document.getElementById('ce-tmpl-notes')||{}).value||'';
-    var r = await _sb.from('template_access').upsert(
-      { client_id: _editingClientId, enabled_templates: enabled, notes: notes||null, updated_at: new Date().toISOString() },
-      { onConflict: 'client_id' }
-    );
-    if (r.error) throw r.error;
+    // table_access has one row per template: (client_id, template_key, enabled)
+    var rows = [];
+    toggles.forEach(function(t, i) {
+      if (labels[i]) {
+        rows.push({
+          client_id:    _editingClientId,
+          template_key: labels[i].textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          enabled:      t.checked,
+          updated_at:   new Date().toISOString()
+        });
+      }
+    });
+    if (rows.length) {
+      console.log('saveTemplates id:', _editingClientId, 'rows:', JSON.stringify(rows));
+      var r = await _sb.from('template_access').upsert(rows, { onConflict: 'client_id,template_key' });
+      console.log('saveTemplates result:', JSON.stringify({error:r.error, rows:r.data?r.data.length:0, status:r.status}));
+      if (r.error) throw r.error;
+      if (!r.data || !r.data.length) throw new Error('0 rows updated — schema mismatch or RLS blocking');
+    }
     showToastAdmin('Templates saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save'; btn.disabled = false; } }
@@ -1811,8 +1826,11 @@ async function saveBinder() {
     });
     var r = await _sb.from('clients').update(
       { binder_items: binder, updated_at: new Date().toISOString() }
-    ).eq('id', _editingClientId);
+    ).eq('id', _editingClientId).select();
+    console.log('saveBinder id:', _editingClientId, 'binder:', JSON.stringify(binder));
+    console.log('saveBinder result:', JSON.stringify({error:r.error, rows:r.data?r.data.length:0, status:r.status}));
     if (r.error) throw r.error;
+    if (!r.data || !r.data.length) throw new Error('0 rows updated — ID mismatch or RLS blocking');
     showToastAdmin('Binder saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save Binder'; btn.disabled = false; } }
@@ -1831,8 +1849,11 @@ async function saveAccess() {
     });
     var r = await _sb.from('clients').update(
       { dashboard_access: access, updated_at: new Date().toISOString() }
-    ).eq('id', _editingClientId);
+    ).eq('id', _editingClientId).select();
+    console.log('saveAccess id:', _editingClientId, 'access:', JSON.stringify(access));
+    console.log('saveAccess result:', JSON.stringify({error:r.error, rows:r.data?r.data.length:0, status:r.status}));
     if (r.error) throw r.error;
+    if (!r.data || !r.data.length) throw new Error('0 rows updated — ID mismatch or RLS blocking');
     showToastAdmin('Access saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save'; btn.disabled = false; } }
