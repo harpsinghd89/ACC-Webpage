@@ -172,6 +172,11 @@ select.finput{appearance:none;cursor:pointer;
   color:#8a9bbf;font-size:.9rem;display:flex;align-items:center;justify-content:center}
 .modal-close:hover{background:rgba(255,255,255,.12)}
 .modal-box h2{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:16px}
+.ctab-btn{background:none;border:none;border-bottom:3px solid transparent;color:#8a9bbf;cursor:pointer;font-family:inherit;font-size:.7rem;font-weight:600;padding:8px 10px;white-space:nowrap;transition:all .18s;min-width:52px;text-align:center}
+.ctab-btn.active-tab{color:#4f8ef7;border-bottom-color:#4f8ef7;font-weight:700}
+.ctab-btn:hover{color:#c8d8f8}
+@media(max-width:768px){#client-detail-modal .modal-box{display:flex;flex-direction:column}
+#ctab-panel-files,#ctab-panel-info,#ctab-panel-billing,#ctab-panel-roadmap,#ctab-panel-templates,#ctab-panel-binder,#ctab-panel-access,#ctab-panel-notes{flex:1;overflow-y:auto;min-height:260px}}
 .fgroup{margin-bottom:16px}
 .fgroup label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.06em;
   text-transform:uppercase;color:#8a9bbf;margin-bottom:6px}
@@ -622,15 +627,15 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <button class="modal-close" onclick="closeModal('client-detail-modal')" aria-label="Close">&#10005;</button>
     <h2 id="client-modal-title">&#128100; Edit Client</h2>
     <!-- Tab bar -->
-    <div style="display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;border-bottom:1px solid rgba(30,58,107,.5);padding-bottom:10px;margin-bottom:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none">
-      <button class="btn-sm btn-primary" id="ctab-info"    onclick="showClientTab('info')"    style="font-size:.72rem">&#128100; Info</button>
-      <button class="btn-sm btn-ghost"   id="ctab-billing" onclick="showClientTab('billing')" style="font-size:.72rem">&#128180; Billing</button>
-      <button class="btn-sm btn-ghost"   id="ctab-roadmap" onclick="showClientTab('roadmap')" style="font-size:.72rem">&#128204; Roadmap</button>
-      <button class="btn-sm btn-ghost"   id="ctab-templates" onclick="showClientTab('templates')" style="font-size:.72rem">&#128196; Templates</button>
-      <button class="btn-sm btn-ghost"   id="ctab-binder"  onclick="showClientTab('binder')"  style="font-size:.72rem">&#128193; Binder</button>
-      <button class="btn-sm btn-ghost"   id="ctab-access"  onclick="showClientTab('access')"  style="font-size:.72rem">&#128274; Access</button>
-      <button class="btn-sm btn-ghost"   id="ctab-notes"   onclick="showClientTab('notes')"   style="font-size:.72rem">&#128221; Notes</button>
-      <button class="btn-sm btn-ghost" id="ctab-files" onclick="showClientTab('files')" style="font-size:.72rem">&#128196; Files</button>
+    <div style="display:flex;gap:0;flex-wrap:nowrap;overflow-x:auto;border-bottom:2px solid rgba(30,58,107,.5);padding-bottom:0;margin-bottom:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none">
+      <button class="ctab-btn active-tab" id="ctab-info"      onclick="showClientTab('info')">👤<br>Info</button>
+      <button class="ctab-btn"            id="ctab-billing"   onclick="showClientTab('billing')">💰<br>Billing</button>
+      <button class="ctab-btn"            id="ctab-roadmap"   onclick="showClientTab('roadmap')">📌<br>Roadmap</button>
+      <button class="ctab-btn"            id="ctab-templates" onclick="showClientTab('templates')">📄<br>Templ.</button>
+      <button class="ctab-btn"            id="ctab-binder"    onclick="showClientTab('binder')">📁<br>Binder</button>
+      <button class="ctab-btn"            id="ctab-access"    onclick="showClientTab('access')">🔒<br>Access</button>
+      <button class="ctab-btn"            id="ctab-notes"     onclick="showClientTab('notes')">📝<br>Notes</button>
+      <button class="ctab-btn"            id="ctab-files"     onclick="showClientTab('files')">🗂<br>Files</button>
     </div>
 
     <!-- INFO TAB -->
@@ -694,146 +699,22 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
     <!-- ROADMAP TAB -->
     <div id="ctab-panel-roadmap" style="display:none">
-      <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:12px">Edit milestones exactly as they appear on the client's dashboard. Each row maps 1:1 to what the client sees.</p>
+      <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:12px">Edit milestones exactly as they appear on the client&rsquo;s dashboard.</p>
 
-      <!-- Phase + notes -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-        <div class="fgroup" style="margin:0"><label>Current Phase</label>
-          <select class="finput" id="ce-phase">
-            <option selected>Phase 1 — Onboarding</option>
-            <option>Phase 2 — Implementation</option>
-            <option>Phase 3 — Compliance</option>
-            <option>Phase 4 — Maintenance</option>
-          </select>
-        </div>
-        <div class="fgroup" style="margin:0"><label>Internal Notes</label>
-          <input class="finput" id="ce-roadmap-notes" placeholder="Notes (admin only, not shown to client)">
-        </div>
+      <!-- Dynamic year sections rendered by renderAdminRoadmapRows() -->
+      <div id="roadmap-year-sections" style="margin-bottom:12px">
+        <p style="color:#8a9bbf;font-size:.82rem;padding:16px 0;text-align:center">Loading milestones…</p>
       </div>
 
-      <!-- ── 2026 Milestones ── -->
-      <div style="background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:14px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <strong style="color:#e8edf8;font-size:.88rem">&#128197; 2026 — Foundation Year</strong>
-          <button class="btn-sm btn-ghost" style="padding:3px 10px;font-size:.72rem" onclick="addMilestoneRow('milestones-2026')">+ Add Row</button>
-        </div>
-        <table class="data-table" style="font-size:.78rem" id="milestones-2026">
-          <thead><tr><th style="width:45%">Milestone</th><th style="width:22%">Target Date</th><th style="width:20%">Status</th><th style="width:13%"></th></tr></thead>
-          <tbody>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="ACC Widget deployed"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Jan 2026"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Initial WCAG audit"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Jan 2026"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Accessibility Statement published"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Feb 2026"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Staff accessibility training (all)"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Mar 2026"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option selected>In Progress</option><option>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="WCAG 2.1 AA full conformance"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Jun 2026"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Annual Evidence Binder"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Dec 1, 2026"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="AODA filing deadline"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Dec 31, 2026"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-          </tbody>
-        </table>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+        <label style="font-size:.78rem;color:#8a9bbf">+ Add year:</label>
+        <select class="finput" id="new-milestone-year" style="width:100px;padding:4px 8px;font-size:.78rem">
+          <option>2026</option><option>2027</option><option>2028</option><option>2029</option><option>2030</option>
+        </select>
+        <button class="btn-sm btn-ghost" style="padding:4px 12px;font-size:.75rem" onclick="addMilestoneYear()">+ Add Section</button>
       </div>
 
-      <!-- ── 2027 Milestones ── -->
-      <div style="background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:14px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <strong style="color:#e8edf8;font-size:.88rem">&#128197; 2027 — Optimization Year</strong>
-          <button class="btn-sm btn-ghost" style="padding:3px 10px;font-size:.72rem" onclick="addMilestoneRow('milestones-2027')">+ Add Row</button>
-        </div>
-        <table class="data-table" style="font-size:.78rem" id="milestones-2027">
-          <thead><tr><th style="width:45%">Milestone</th><th style="width:22%">Target Date</th><th style="width:20%">Status</th><th style="width:13%"></th></tr></thead>
-          <tbody>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="WCAG 2.2 gap analysis"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Q1 2027"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="User testing with assistive tech users"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Q2 2027"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Advanced staff training refresh"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Q3 2027"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Annual Evidence Binder 2027"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Dec 1, 2027"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- ── 2028 Milestones ── -->
-      <div style="background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:14px;margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <strong style="color:#e8edf8;font-size:.88rem">&#128197; 2028 — Leadership Year</strong>
-          <button class="btn-sm btn-ghost" style="padding:3px 10px;font-size:.72rem" onclick="addMilestoneRow('milestones-2028')">+ Add Row</button>
-        </div>
-        <table class="data-table" style="font-size:.78rem" id="milestones-2028">
-          <thead><tr><th style="width:45%">Milestone</th><th style="width:22%">Target Date</th><th style="width:20%">Status</th><th style="width:13%"></th></tr></thead>
-          <tbody>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="WCAG 2.2 full conformance"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Q1 2028"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Internal accessibility champion program"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Q2 2028"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-            <tr>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Annual Evidence Binder 2028"></td>
-              <td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="Dec 1, 2028"></td>
-              <td><select class="finput" style="padding:4px 6px;font-size:.78rem"><option>Done</option><option>In Progress</option><option selected>Planned</option><option>Blocked</option></select></td>
-              <td><button class="btn-sm btn-danger" style="padding:3px 7px;font-size:.72rem" onclick="this.closest('tr').remove()">✕</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
+      <div style="margin-top:4px">
       <button class="btn-sm btn-primary" onclick="saveRoadmap()">&#10003; Save Roadmap</button>
     </div>
 
@@ -1150,8 +1031,48 @@ function loadClientOverride(clientId) {
 
 
 
-function saveRoadmap() {
-  showAdminToast('Roadmap saved — client dashboard will reflect updates on next login.');
+async function saveRoadmap() {
+  if (!_editingClientId) return;
+  var btn = document.querySelector('#ctab-panel-roadmap .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    var rows = document.querySelectorAll('#roadmap-year-sections tr[data-rid]');
+    var inserts = [], updates = [];
+    rows.forEach(function(row) {
+      var rid    = row.getAttribute('data-rid');
+      var yr     = row.getAttribute('data-year') || '2026';
+      var inputs = row.querySelectorAll('input');
+      var sel    = row.querySelector('select');
+      var title  = inputs[0] ? inputs[0].value.trim() : '';
+      var tdate  = inputs[1] ? (inputs[1].value || null) : null;
+      var status = sel ? sel.value : 'planned';
+      if (!title) return;
+      if (rid && rid.startsWith('new-')) {
+        inserts.push({ client_id: _editingClientId, title: title, milestone: title,
+          target_date: tdate, status: status, year: parseInt(yr)||new Date().getFullYear() });
+      } else if (rid) {
+        updates.push(_sb.from('roadmap').update({ title: title, milestone: title,
+          target_date: tdate, status: status, year: parseInt(yr)||new Date().getFullYear(),
+          updated_at: new Date().toISOString()
+        }).eq('id', rid).eq('client_id', _editingClientId));
+      }
+    });
+    var ops = [];
+    if (inserts.length) ops.push(_sb.from('roadmap').insert(inserts));
+    updates.forEach(function(u){ ops.push(u); });
+    var results = await Promise.all(ops);
+    var errs = results.filter(function(r){ return r.error; });
+    if (errs.length) throw errs[0].error;
+    // Reload from DB to get fresh IDs for new rows
+    var rr = await _sb.from('roadmap').select('*').eq('client_id', _editingClientId)
+      .is('deleted_at', null).order('year').order('target_date');
+    if (!rr.error) renderAdminRoadmapRows(rr.data || []);
+    showToastAdmin('Roadmap saved — live on client dashboard.', 'success');
+  } catch(e) {
+    showToastAdmin('Error saving roadmap: ' + (e.message||e), 'error');
+  } finally {
+    if (btn) { btn.textContent = '✓ Save Roadmap'; btn.disabled = false; }
+  }
 }
 
 function showAdminToast(msg) {
@@ -1513,7 +1434,7 @@ async function openClientEditor(btn) {
     f('ce-followup',      c.next_followup || '');
 
     // ── Roadmap tab — render milestone rows ──
-    renderAdminRoadmapRows(rr.data || [], c.tier);
+    renderAdminRoadmapRows(rr.data || []);
 
     setTimeout(function(){ var el = document.getElementById('ce-name'); if(el) el.focus(); }, 50);
 
@@ -1523,26 +1444,42 @@ async function openClientEditor(btn) {
   }
 }
 
-function renderAdminRoadmapRows(milestones, tier) {
+function renderAdminRoadmapRows(milestones) {
+  var container = document.getElementById('roadmap-year-sections');
+  if (!container) return;
   var yearGroups = {};
-  milestones.forEach(function(m) {
-    if (!yearGroups[m.year]) yearGroups[m.year] = [];
-    yearGroups[m.year].push(m);
+  (milestones || []).forEach(function(m) {
+    var yr = String(m.year || (m.target_date ? m.target_date.substring(0,4) : '2026'));
+    if (!yearGroups[yr]) yearGroups[yr] = [];
+    yearGroups[yr].push(m);
   });
-
-  // Render into milestones-YEAR tbodies in the roadmap tab
-  Object.keys(yearGroups).forEach(function(yr) {
-    var tbody = document.getElementById('milestones-' + yr);
-    if (!tbody) return;
-    tbody.innerHTML = yearGroups[yr].map(function(m) {
-      return '<tr data-rid="' + m.id + '">' +
-        '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="' + esc(m.milestone) + '"></td>' +
-        '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="' + esc(m.target_date||'') + '"></td>' +
-        '<td>' + renderStatusSelect(m.status) + '</td>' +
-        '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeMilestoneRow(this)">✕</button></td>' +
+  var allYears = Object.keys(yearGroups).sort();
+  if (!allYears.length) {
+    container.innerHTML = '<p style="color:#8a9bbf;font-size:.82rem;padding:16px 0">No milestones yet. Click &ldquo;+ Add Section&rdquo; to get started.</p>';
+    return;
+  }
+  container.innerHTML = allYears.map(function(yr) {
+    var opts = ['planned','in-progress','done','deferred'];
+    var rows = (yearGroups[yr] || []).map(function(m) {
+      var selOpts = opts.map(function(o){
+        return '<option value="'+o+'"'+(o===(m.status||'planned')?' selected':'')+'>'+o.charAt(0).toUpperCase()+o.slice(1)+'</option>';
+      }).join('');
+      return '<tr data-rid="'+m.id+'" data-year="'+yr+'">' +
+        '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" value="'+esc(m.title||m.milestone||'')+'" aria-label="Milestone title"></td>' +
+        '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.78rem" value="'+esc(m.target_date||'')+'" aria-label="Target date"></td>' +
+        '<td><select class="finput" style="padding:4px 6px;font-size:.78rem">'+selOpts+'</select></td>' +
+        '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="deleteMilestoneRow(this)" aria-label="Delete">✕</button></td>' +
         '</tr>';
     }).join('');
-  });
+    return '<div style="background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:14px;margin-bottom:10px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+      '<strong style="font-size:.85rem;color:#e8edf8">📅 '+yr+'</strong>' +
+      '<button class="btn-sm btn-ghost" style="padding:3px 10px;font-size:.72rem" onclick="addMilestoneRow(''+yr+'')">+ Add Row</button>' +
+      '</div>' +
+      '<table class="data-table" style="font-size:.78rem" id="milestones-'+yr+'">' +
+      '<thead><tr><th style="width:44%">Milestone</th><th style="width:22%">Target</th><th style="width:22%">Status</th><th style="width:12%"></th></tr></thead>' +
+      '<tbody>'+rows+'</tbody></table></div>';
+  }).join('');
 }
 
 function renderStatusSelect(current) {
@@ -1648,17 +1585,54 @@ async function saveClientInfo() {
 }
 
 // ── Add milestone row (roadmap editor) ───────────────────
-function addMilestoneRow(tbodyId) {
-  var tbody = document.getElementById(tbodyId);
+function addMilestoneRow(yr) {
+  var tbody = document.querySelector('#milestones-' + yr + ' tbody');
   if (!tbody) return;
   var tr = document.createElement('tr');
   tr.setAttribute('data-rid', 'new-' + Date.now());
+  tr.setAttribute('data-year', yr);
+  var opts = ['planned','in-progress','done','deferred'].map(function(o){
+    return '<option value="'+o+'"'+(o==='planned'?' selected':'')+'>'+o.charAt(0).toUpperCase()+o.slice(1)+'</option>';
+  }).join('');
   tr.innerHTML =
-    '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" placeholder="Milestone description"></td>' +
-    '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" placeholder="e.g. Jun 2026"></td>' +
-    '<td>' + renderStatusSelect('planned') + '</td>' +
-    '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeMilestoneRow(this)">✕</button></td>';
+    '<td><input class="finput" style="padding:4px 6px;font-size:.78rem" placeholder="Milestone title" aria-label="Milestone title"></td>' +
+    '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.78rem" aria-label="Target date"></td>' +
+    '<td><select class="finput" style="padding:4px 6px;font-size:.78rem">'+opts+'</select></td>' +
+    '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="deleteMilestoneRow(this)" aria-label="Delete">✕</button></td>';
   tbody.appendChild(tr);
+}
+
+function deleteMilestoneRow(btn) {
+  var row = btn.closest('tr');
+  var rid = row && row.getAttribute('data-rid');
+  if (rid && !rid.startsWith('new-') && _editingClientId) {
+    _sb.from('roadmap').update({ deleted_at: new Date().toISOString() })
+      .eq('id', rid).eq('client_id', _editingClientId)
+      .then(function(r){ if(r.error) console.warn('roadmap delete:', r.error); });
+  }
+  if (row) row.remove();
+}
+
+function addMilestoneYear() {
+  var sel = document.getElementById('new-milestone-year');
+  var yr = sel ? sel.value : '2026';
+  if (document.getElementById('milestones-' + yr)) {
+    showToastAdmin('Year ' + yr + ' section already exists.', 'error'); return;
+  }
+  var container = document.getElementById('roadmap-year-sections');
+  if (!container) return;
+  var div = document.createElement('div');
+  div.style.cssText = 'background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:14px;margin-bottom:10px';
+  div.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+    '<strong style="font-size:.85rem;color:#e8edf8">📅 ' + yr + '</strong>' +
+    '<button class="btn-sm btn-ghost" style="padding:3px 10px;font-size:.72rem" onclick="addMilestoneRow('' + yr + '')">+ Add Row</button>' +
+    '</div>' +
+    '<table class="data-table" style="font-size:.78rem" id="milestones-' + yr + '">' +
+    '<thead><tr><th style="width:44%">Milestone</th><th style="width:22%">Target</th><th style="width:22%">Status</th><th style="width:12%"></th></tr></thead>' +
+    '<tbody></tbody></table>';
+  container.appendChild(div);
+  addMilestoneRow(yr);
 }
 
 function removeMilestoneRow(btn) {
@@ -1694,7 +1668,7 @@ function showClientTab(tab) {
     var btn   = document.getElementById('ctab-' + t);
     var panel = document.getElementById('ctab-panel-' + t);
     var active = t === tab;
-    if (btn)   { btn.className   = active ? 'btn-sm btn-primary' : 'btn-sm btn-ghost'; btn.style.fontSize = '.72rem'; }
+    if (btn)   { btn.className = active ? 'ctab-btn active-tab' : 'ctab-btn'; }
     if (panel) panel.style.display = active ? 'block' : 'none';
   });
 }
