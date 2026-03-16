@@ -219,12 +219,20 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     border-radius:16px;
     padding:20px 16px;
     margin-top:8px;
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
   }
   #client-detail-modal .modal-box .btn-sm{
     font-size:.65rem !important;
     padding:5px 6px !important;
   }
 }
+
+/* Files panel needs min height so content is visible */
+#ctab-panel-files{min-height:200px}
+#ctab-panel-files .modal-box,
+#client-detail-modal .modal-box{overflow-y:auto}
 
 
 /* ── Client editor tab bar ─────────────────────────── */
@@ -923,10 +931,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <button class="btn-sm btn-primary" onclick="saveNotes()">&#10003; Save Notes</button>
     </div>
 
-  </div>
-</div>
-
-<div id="ctab-panel-files" style="display:none">
+    <div id="ctab-panel-files" style="display:none">
       <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:16px">Upload and manage PDF files for this client. Files are stored privately in Supabase Storage.</p>
 
       <!-- Audit Reports -->
@@ -985,6 +990,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </div>
       </div>
     </div>
+
+  </div>
+</div>
 
 <!-- Roadmap Editor -->
 >
