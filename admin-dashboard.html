@@ -1514,6 +1514,18 @@ async function openClientEditor(btn) {
     // ── Binder tab — render from DB ──
     renderBinderItems(c.binder_items || []);
 
+    // ── Access tab — restore from DB ──
+    if (c.dashboard_access && typeof c.dashboard_access === 'object') {
+      var accToggles = document.querySelectorAll('#ctab-panel-access .toggle input[type=checkbox]');
+      var accLabels  = document.querySelectorAll('#ctab-panel-access .toggle-info strong');
+      accToggles.forEach(function(t, i) {
+        if (accLabels[i]) {
+          var k = accLabels[i].textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g,'_');
+          if (k in c.dashboard_access) t.checked = c.dashboard_access[k];
+        }
+      });
+    }
+
     // ── Templates tab — restore from DB ──
     if (tr.data && tr.data.length) {
       var tmplToggles = document.querySelectorAll('#template-access-list .toggle input[type=checkbox]');
