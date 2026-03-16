@@ -717,6 +717,13 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <p>All 11 AODA filing requirements. Each template is branded with the ACC logo and WCAG 2.1 AA footer. Your Compliance Readiness Letter and signed Scope Acknowledgment are retained by ACC as legal records &mdash; they are <strong style="color:#38d9a9">not included in your Evidence Binder</strong> (they are ACC&rsquo;s documentation, not yours). The Binder contains all deliverables ACC provided <em>to you</em>.</p>
       </div>
       <div class="card">
+        <h2>&#128196; Your Template Files</h2>
+        <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:12px">PDF templates uploaded by your ACC admin.</p>
+        <div id="client-templates-list">
+          <div style="color:#8a9bbf;font-size:.82rem;padding:8px 0">Loading…</div>
+        </div>
+      </div>
+      <div class="card">
         <h2>&#128196; AODA Templates — All 11 Requirements + Extras</h2>
         <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:16px">
           <strong style="color:#e8edf8">&#9989; ACC delivers</strong> each document below.
@@ -2419,19 +2426,20 @@ function applyDashboardAccess(access) {
 // ── Client file lists from Supabase Storage ──────────────
 async function populateClientFiles(clientCode) {
   var buckets = [
-    { bucket: 'reports',  containerId: 'client-reports-list',  label: 'audit report' },
-    { bucket: 'evidence', containerId: 'client-evidence-list', label: 'evidence binder' },
-    { bucket: 'invoices', containerId: 'client-invoices-list', label: 'invoice' },
+    { bucket: 'reports',  containerId: 'client-reports-list',  label: 'audit report',    path: clientCode },
+    { bucket: 'evidence', containerId: 'client-evidence-list', label: 'evidence binder', path: clientCode },
+    { bucket: 'invoices', containerId: 'client-invoices-list', label: 'invoice',          path: clientCode },
+    { bucket: 'templates', containerId: 'client-templates-list', label: 'template',         path: 'shared' },
   ];
 
   buckets.forEach(function(b) {
     var el = document.getElementById(b.containerId);
-    if (el) el.innerHTML = '<div style="color:#8a9bbf;font-size:.82rem;padding:8px 0">Loading…</div>';
+    if (el) el.innerHTML = '<div style="color:#8a9bbf;font-size:.82rem;padding:8px 0">Loading\u2026</div>';
   });
 
   for (var i = 0; i < buckets.length; i++) {
     (function(b) {
-      _sb_client.storage.from(b.bucket).list(clientCode, {
+      _sb_client.storage.from(b.bucket).list(b.path, {
         limit: 100, sortBy: { column: 'created_at', order: 'desc' }
       }).then(function(r) {
         var container = document.getElementById(b.containerId);
@@ -2446,15 +2454,15 @@ async function populateClientFiles(clientCode) {
           return;
         }
         container.innerHTML = files.map(function(f) {
-          var filePath = clientCode + '/' + f.name;
-          var fname = f.name.replace(/^\d+_/, '').replace(/_/g, ' '); // clean filename
+          var filePath = b.path + '/' + f.name;
+          var fname = f.name.replace(/^\d+_/, '').replace(/_/g, ' ');
           var kb = f.metadata && f.metadata.size ? Math.round(f.metadata.size / 1024) + ' KB' : '';
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(30,58,107,.4)">' +
             '<div>' +
               '<div style="font-size:.85rem;font-weight:600;color:#e8edf8">&#128196; ' + fname + '</div>' +
               (kb ? '<div style="font-size:.73rem;color:#8a9bbf">' + kb + '</div>' : '') +
             '</div>' +
-            '<a class="dl-btn" href="#" onclick="clientDownloadFile('' + b.bucket + '','' + filePath + '');return false">&#8659; Download</a>' +
+            '<a class="dl-btn" href="#" onclick="clientDownloadFile(\'' + b.bucket + '\',\'' + filePath + '\');return false">&#8659; Download</a>' +
           '</div>';
         }).join('');
       });
