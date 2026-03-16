@@ -1175,6 +1175,7 @@ function addBinderItem() {
   if (!val) return;
   var list = document.getElementById('binder-items-list');
   var div = document.createElement('div');
+  div.className = 'binder-item';
   div.style.cssText = 'background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px';
   var sel = document.createElement('select');
   sel.className = 'finput';
@@ -1184,7 +1185,7 @@ function addBinderItem() {
   del.className = 'btn-sm btn-danger';
   del.style.padding = '4px 8px';
   del.textContent = '✕';
-  del.onclick = function(){ this.closest('div').remove(); saveBinder(); };
+  del.onclick = function(){ deleteBinderItem(this); };
   var info = document.createElement('div');
   info.innerHTML = '<div data-binder-title style="font-size:.85rem;font-weight:600">' + val + '</div>';
   var ctrl = document.createElement('div');
@@ -1813,7 +1814,7 @@ async function saveBinder() {
   var btn = document.querySelector('#ctab-panel-binder .btn-primary');
   if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
   try {
-    var items = document.querySelectorAll('#binder-items-list > div');
+    var items = document.querySelectorAll('#binder-items-list .binder-item');
     var binder = [];
     items.forEach(function(item) {
       var titleEl = item.querySelector('[data-binder-title]');
@@ -1842,13 +1843,19 @@ function renderBinderItems(items) {
     var opts = statuses.map(function(s){
       return '<option value="'+s+'"'+(s===item.status?' selected':'')+'>'+s+'</option>';
     }).join('');
-    return '<div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">' +
+    return '<div class="binder-item" style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">' +
       '<div><div data-binder-title style="font-size:.85rem;font-weight:600">'+esc(item.title)+'</div></div>' +
       '<div style="display:flex;gap:6px;flex-shrink:0">' +
       '<select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px">'+opts+'</select>' +
-      '<button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest(\'div[style]\').remove();saveBinder()" aria-label="Delete binder item">&#10005;</button>' +
+      '<button class="btn-sm btn-danger" style="padding:4px 8px" onclick="deleteBinderItem(this)" aria-label="Delete binder item">&#10005;</button>' +
       '</div></div>';
   }).join('');
+}
+
+function deleteBinderItem(btn) {
+  var item = btn.closest('.binder-item');
+  if (item) item.remove();
+  saveBinder();
 }
 
 async function saveAccess() {
