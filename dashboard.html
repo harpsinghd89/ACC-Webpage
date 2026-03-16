@@ -2665,7 +2665,20 @@ async function callEdgeFunction(fnName, body) {
     body: body,
     headers: { 'Authorization': 'Bearer ' + session.access_token },
   });
-  if (error) throw new Error(error.message || String(error));
+
+  if (error) {
+    // FunctionsHttpError carries the actual response body in error.context
+    // Read it to surface the real error message from inside the edge function
+    var detail = error.message;
+    try {
+      if (error.context && typeof error.context.json === 'function') {
+        var errBody = await error.context.json();
+        detail = errBody.error || errBody.message || detail;
+      }
+    } catch(_) {}
+    console.error('callEdgeFunction [' + fnName + ']:', detail, error);
+    throw new Error(detail);
+  }
   return data;
 }
 
