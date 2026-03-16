@@ -2083,46 +2083,48 @@ async function renderFileList(bucket, clientCode) {
   container.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem">Loading…</div>';
 
   try {
-    var { data, error } = await _sb.storage.from(bucket).list(clientCode, {
+    var r = await _sb.storage.from(bucket).list(clientCode, {
       limit: 100, offset: 0, sortBy: { column: 'created_at', order: 'desc' }
     });
 
-    if (error) throw error;
-    if (!data || data.length === 0) {
+    if (r.error) throw r.error;
+    var data = r.data || [];
+
+    // Filter out placeholder/empty entries
+    data = data.filter(function(f){ return f.name && f.name !== '.emptyFolderPlaceholder'; });
+
+    if (!data.length) {
       container.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem">No files yet.</div>';
       return;
     }
 
     container.innerHTML = data.map(function(f) {
       var filePath = clientCode + '/' + f.name;
-      var sizeMB   = f.metadata && f.metadata.size ? (f.metadata.size / 1024 / 1024).toFixed(2) + ' MB' : '';
-      return '<div style="display:flex;align-items:center;justify-content:space-between;' +
-             'padding:8px 0;border-bottom:1px solid rgba(30,58,107,.4);font-size:.8rem">' +
+      var sizeMB = f.metadata && f.metadata.size ? (f.metadata.size / 1024 / 1024).toFixed(2) + ' MB' : '';
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(30,58,107,.4);font-size:.8rem">' +
         '<div>' +
           '<div style="color:#e8edf8;font-weight:600">&#128196; ' + f.name + '</div>' +
           (sizeMB ? '<div style="color:#8a9bbf;font-size:.73rem">' + sizeMB + '</div>' : '') +
         '</div>' +
         '<div style="display:flex;gap:8px">' +
           '<button onclick="downloadAdminFile(\'' + bucket + '\',\'' + filePath + '\')" ' +
-            'style="background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;' +
-            'padding:4px 10px;font-size:.72rem;cursor:pointer">&#8595; Download</button>' +
+            'style="background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer">&#8595; Download</button>' +
           '<button onclick="deleteAdminFile(\'' + bucket + '\',\'' + filePath + '\',\'' + bucket + '\',\'' + clientCode + '\')" ' +
-            'style="background:rgba(240,95,95,.1);color:#f05f5f;border:1px solid #f05f5f;border-radius:6px;' +
-            'padding:4px 10px;font-size:.72rem;cursor:pointer">&#128465;</button>' +
+            'style="background:rgba(240,95,95,.1);color:#f05f5f;border:1px solid #f05f5f;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer">&#128465;</button>' +
         '</div>' +
       '</div>';
     }).join('');
 
   } catch(e) {
-    container.innerHTML = '<div style="color:#f05f5f;font-size:.8rem">Error loading files: ' + (e.message || e) + '</div>';
+    container.innerHTML = '<div style="color:#f05f5f;font-size:.8rem">Error: ' + (e.message || String(e)) + '</div>';
   }
 }
 
 async function downloadAdminFile(bucket, path) {
   try {
-    var { data, error } = await _sb.storage.from(bucket).createSignedUrl(path, 60);
-    if (error) throw error;
-    window.open(data.signedUrl, '_blank');
+    var r = await _sb.storage.from(bucket).createSignedUrl(path, 60);
+    if (r.error) throw r.error;
+    window.open(r.data.signedUrl, '_blank');
   } catch(e) {
     showToastAdmin('Download failed: ' + (e.message || e), 'error');
   }
@@ -2131,9 +2133,9 @@ async function downloadAdminFile(bucket, path) {
 async function deleteAdminFile(bucket, path, bucketForRefresh, clientCode) {
   if (!confirm('Delete this file? This cannot be undone.')) return;
   try {
-    var { error } = await _sb.storage.from(bucket).remove([path]);
-    if (error) throw error;
-    showToastAdmin('File deleted', 'success');
+    var r = await _sb.storage.from(bucket).remove([path]);
+    if (r.error) throw r.error;
+    showToastAdmin('File deleted.', 'success');
     renderFileList(bucketForRefresh, clientCode);
   } catch(e) {
     showToastAdmin('Delete failed: ' + (e.message || e), 'error');
