@@ -680,20 +680,10 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           </div>
           <div class="progress-bar" style="height:10px"><div class="progress-fill" style="width:25%"></div></div>
         </div>
-        <h3>Contents</h3>
-        <table class="data-table" aria-label="Evidence binder contents">
-          <thead><tr><th>Component</th><th>Status</th><th>Count</th></tr></thead>
-          <tbody>
-            <tr><td>Monthly Audit Reports</td><td><span class="pill green">3 compiled</span></td><td>3 / 12</td></tr>
-            <tr><td>Staff Training Records</td><td><span class="pill green">Current</span></td><td>3 completions</td></tr>
-            <tr><td>Feedback Logs</td><td><span class="pill green">Current</span></td><td>7 entries</td></tr>
-            <tr><td>Accessibility Statement</td><td><span class="pill green">Published</span></td><td>1</td></tr>
-            <tr><td>3-Year Compliance Roadmap</td><td><span class="pill green">Current</span></td><td>2026–2028</td></tr>
-            <tr><td>Widget Health Logs</td><td><span class="pill green">Active</span></td><td>Daily</td></tr>
-            <tr><td>Remediation Records</td><td><span class="pill green">Current</span></td><td>2 entries</td></tr>
-            <tr><td>Template Standards Used</td><td><span class="pill green">Current</span></td><td>6 templates</td></tr>
-          </tbody>
-        </table>
+        <h3>Document Checklist</h3>
+        <div id="evidence-binder-list" style="display:grid;gap:6px;margin-bottom:12px">
+          <p style="color:#8a9bbf;font-size:.82rem">No binder items configured yet. Your ACC admin will set these up.</p>
+        </div>
       </div>
       <div class="card">
         <h2>&#128218; Previous Binders</h2>
@@ -787,16 +777,16 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             </thead>
             <tbody>
               <tr><td>1</td><td><strong>Accessibility Policy + Statement of Commitment</strong></td><td>Draft policy aligned to AODA</td><td>Approve &amp; adopt as company bylaw</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessibility-policy')">&#8659;</a></td></tr>
-              <tr><td>2</td><td><strong>Multi-Year Accessibility Plan</strong></td><td>Create 3-year roadmap</td><td>Review annually with leadership</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-myap')">&#8659;</a></td></tr>
-              <tr><td>3</td><td><strong>Staff Training Registry</strong></td><td>Provide modules, maintain registry</td><td>Ensure all employees complete training</td><td>XLSX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-training-registry')">&#8659;</a></td></tr>
-              <tr><td>4</td><td><strong>Accessible Feedback Process</strong></td><td>Build WCAG-compliant feedback form</td><td>Respond to accessibility inquiries</td><td>DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-feedback-process')">&#8659;</a></td></tr>
-              <tr><td>5</td><td><strong>Accessible Formats Request Procedure</strong></td><td>Available as an additional service from ACC — contact us for pricing</td><td>Notify ACC when print materials need conversion</td><td>DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessible-formats')">&#8659;</a></td></tr>
-              <tr><td>6</td><td><strong>Accessibility Statement (Web)</strong></td><td>Full AI remediation + monthly audits</td><td>Notify ACC before major site changes</td><td>HTML / DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-a11y-statement')">&#8659;</a></td></tr>
+              <tr data-template-key="multi-year-accessibility-plan"><td>2</td><td><strong>Multi-Year Accessibility Plan</strong></td><td>Create 3-year roadmap</td><td>Review annually with leadership</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-myap')">&#8659;</a></td></tr>
+              <tr data-template-key="staff-training-registry-template"><td>3</td><td><strong>Staff Training Registry</strong></td><td>Provide modules, maintain registry</td><td>Ensure all employees complete training</td><td>XLSX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-training-registry')">&#8659;</a></td></tr>
+              <tr data-template-key="customer-feedback-form"><td>4</td><td><strong>Accessible Feedback Process</strong></td><td>Build WCAG-compliant feedback form</td><td>Respond to accessibility inquiries</td><td>DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-feedback-process')">&#8659;</a></td></tr>
+              <tr data-template-key="accessible-formats-request-procedure"><td>5</td><td><strong>Accessible Formats Request Procedure</strong></td><td>Available as an additional service from ACC — contact us for pricing</td><td>Notify ACC when print materials need conversion</td><td>DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessible-formats')">&#8659;</a></td></tr>
+              <tr data-template-key="accessibility-statement-template"><td>6</td><td><strong>Accessibility Statement (Web)</strong></td><td>Full AI remediation + monthly audits</td><td>Notify ACC before major site changes</td><td>HTML / DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-a11y-statement')">&#8659;</a></td></tr>
               <tr><td>7</td><td><strong>Accommodation Clause — Job Postings</strong></td><td>Provide mandatory legal clause text</td><td>Paste into all job advertisements</td><td>DOCX / TXT</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-job')">&#8659;</a></td></tr>
               <tr><td>8</td><td><strong>Accessibility Clause — Offer Letters</strong></td><td>Provide clause for offer letters</td><td>Include in all new employment contracts</td><td>DOCX / TXT</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-offer')">&#8659;</a></td></tr>
-              <tr><td>9</td><td><strong>Employee Emergency Response Plan</strong></td><td>Provide template &amp; guide</td><td>Complete for each employee with a disability</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-emergency-response.html')">&#8659;</a></td></tr>
-              <tr><td>10</td><td><strong>Service Animal &amp; Support Person Policy</strong></td><td>Include protocols in training manual</td><td>Ensure staff do not bar entry</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-service-animal.html')">&#8659;</a></td></tr>
-              <tr><td>11</td><td><strong>Notice of Temporary Disruption</strong></td><td>Provide digital &amp; printable signage</td><td>Post when lift or power-door fails</td><td>PDF / PNG</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-disruption.html')">&#8659;</a></td></tr>
+              <tr data-template-key="emergency-response-plan"><td>9</td><td><strong>Employee Emergency Response Plan</strong></td><td>Provide template &amp; guide</td><td>Complete for each employee with a disability</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-emergency-response.html')">&#8659;</a></td></tr>
+              <tr data-template-key="service-animal-and-support-person-policy"><td>10</td><td><strong>Service Animal &amp; Support Person Policy</strong></td><td>Include protocols in training manual</td><td>Ensure staff do not bar entry</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-service-animal.html')">&#8659;</a></td></tr>
+              <tr data-template-key="disruption-of-services-notice"><td>11</td><td><strong>Notice of Temporary Disruption</strong></td><td>Provide digital &amp; printable signage</td><td>Post when lift or power-door fails</td><td>PDF / PNG</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-disruption.html')">&#8659;</a></td></tr>
               <tr style="border-top:2px solid rgba(79,142,247,.2)"><td>+</td><td><strong>AODA Filing Checklist</strong><div style="font-size:.72rem;color:#8a9bbf">All 11 questions pre-submission</div></td><td>Provide pre-filled checklist</td><td>Submit via Ontario government portal by Dec 31</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-aoda-checklist')">&#8659;</a></td></tr>
               <tr><td>+</td><td><strong>Compliance Readiness Letter</strong><div style="font-size:.72rem;color:#8a9bbf">Auto-generated Dec 1 — covers your service period</div></td><td>Issue letter confirming ACC services delivered</td><td>Include in filing binder</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="generateReadinessLetter()">&#8659; Generate</a></td></tr>
               <tr><td>+</td><td><strong>Scope of Responsibility Acknowledgment</strong><div style="font-size:.72rem;color:#8a9bbf">Sign annually — protects both parties legally</div></td><td>Prepare acknowledgment document</td><td>&#9989; Sign below to confirm your duties</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-scope-acknowledgment.html')">&#8659;</a></td></tr>
@@ -2539,19 +2529,47 @@ function populateA11yStatement(c) {
   if (sc2) sc2.textContent = c.name || 'your organization';
 }
 
-function populateStandards(c) {
+function populateStandards(c, templateAccess) {
   // Tier-gate template visibility
-  var tier2plus = c.tier === 'tier2' || c.tier === 'tier3';
-  var tier3only = c.tier === 'tier3';
+  var tier = parseInt(c.tier) || 1;
+  var tier2plus = tier >= 2;
+  var tier3only = tier >= 3;
   document.querySelectorAll('.tier2-template').forEach(function(el){
     el.style.display = tier2plus ? '' : 'none';
   });
   document.querySelectorAll('.tier3-template').forEach(function(el){
     el.style.display = tier3only ? '' : 'none';
   });
+
+  // Apply admin access overrides — hide rows toggled off
+  if (templateAccess && templateAccess.length) {
+    // Build a map: template_key -> enabled
+    var accessMap = {};
+    templateAccess.forEach(function(row){ accessMap[row.template_key] = row.enabled; });
+    document.querySelectorAll('#panel-standards [data-template-key]').forEach(function(tr) {
+      var key = tr.getAttribute('data-template-key');
+      if (key in accessMap) {
+        tr.style.display = accessMap[key] === false ? 'none' : '';
+      }
+    });
+  }
 }
 
 function populateEvidence(c, milestones) {
+  // Show binder items from DB if available
+  if (c.binder_items && Array.isArray(c.binder_items) && c.binder_items.length) {
+    var evList = document.getElementById('evidence-binder-list');
+    if (evList) {
+      var statColors = { 'Verified':'#38d9a9','On File':'#4f8ef7','Pending Review':'#f5a623','Missing':'#f05f5f' };
+      evList.innerHTML = c.binder_items.map(function(item) {
+        var col = statColors[item.status] || '#8a9bbf';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.4);border-radius:8px;margin-bottom:6px">' +
+          '<span style="font-size:.85rem">' + item.title + '</span>' +
+          '<span class="pill" style="background:'+col+'22;color:'+col+';border:1px solid '+col+'44;font-size:.72rem">' + item.status + '</span>' +
+          '</div>';
+      }).join('');
+    }
+  }
   var done = (milestones||[]).filter(function(m){ return m.status==='complete'; }).length;
   set('evidence-done-count', done + ' milestones complete');
   var pct = milestones && milestones.length ? Math.round(done/milestones.length*100) : 0;
@@ -2671,10 +2689,11 @@ async function downloadInvoice(yearMonth) {
     _clientData = cr.data;
     window._clientData = cr.data;
 
-    var [rr, br, fr] = await Promise.all([
+    var [rr, br, fr, tar] = await Promise.all([
       _sb_client.from('roadmap').select('*').eq('client_id', _clientData.id).is('deleted_at', null).order('year').order('target_date'),
       _sb_client.from('billing').select('*').eq('client_id', _clientData.id).order('created_at', { ascending: false }).limit(12),
-      _sb_client.from('feedback').select('*').eq('client_id', _clientData.id).order('created_at', { ascending: false }).limit(50)
+      _sb_client.from('feedback').select('*').eq('client_id', _clientData.id).order('created_at', { ascending: false }).limit(50),
+      _sb_client.from('template_access').select('*').eq('client_id', _clientData.id)
     ]);
 
     populateOverview(_clientData);
@@ -2685,7 +2704,7 @@ async function downloadInvoice(yearMonth) {
     applyDashboardAccess(_clientData.dashboard_access);
     populateFeedback(fr.data || []);
     populateA11yStatement(_clientData);
-    populateStandards(_clientData);
+    populateStandards(_clientData, tar.data || []);
     
     populateEvidence(_clientData, rr.data || []);
     populateReports(_clientData);

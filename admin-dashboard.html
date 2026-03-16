@@ -850,7 +850,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <div class="toggle-wrap"><div class="toggle-info"><strong>Customer Feedback Form</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
         <div class="toggle-wrap"><div class="toggle-info"><strong>Accessibility Statement Template</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
       </div>
-      <div class="fgroup" style="margin-top:14px"><label>Template Notes (shown to client)</label><textarea class="finput" id="ce-tmpl-notes" rows="2" placeholder="e.g. Your disruption notice template has been pre-filled with your organization details."></textarea></div>
+      
       <button class="btn-sm btn-primary" onclick="saveTemplates()">&#10003; Save</button>
     </div>
 
@@ -1513,17 +1513,8 @@ async function openClientEditor(btn) {
     f('ce-last-contact',  c.last_contact  || '');
     f('ce-followup',      c.next_followup || '');
 
-    // ── Binder tab — restore saved statuses ──
-    if (c.binder_items && Array.isArray(c.binder_items)) {
-      var binderDivs = document.querySelectorAll('#binder-items-list > div');
-      binderDivs.forEach(function(div, i) {
-        var saved = c.binder_items[i];
-        if (saved) {
-          var sel = div.querySelector('select');
-          if (sel) sel.value = saved.status || 'Pending Review';
-        }
-      });
-    }
+    // ── Binder tab — render from DB ──
+    renderBinderItems(c.binder_items || []);
 
     // ── Access tab — restore saved toggles ──
     if (c.dashboard_access && typeof c.dashboard_access === 'object') {
@@ -1817,9 +1808,12 @@ async function saveBinder() {
     var items = document.querySelectorAll('#binder-items-list > div');
     var binder = [];
     items.forEach(function(item) {
-      var t = item.querySelector('div > div:first-child');
+      // Title is in the first div > div (both static and dynamic items)
+      var titleDivs = item.querySelectorAll('div div');
+      var t = titleDivs.length ? titleDivs[0] : null;
       var s = item.querySelector('select');
-      if (t) binder.push({ title: t.textContent.trim(), status: s ? s.value : 'Pending Review' });
+      var title = t ? t.textContent.trim() : '';
+      if (title) binder.push({ title: title, status: s ? s.value : 'Pending Review' });
     });
     var r = await _sb.from('clients').update(
       { binder_items: binder, updated_at: new Date().toISOString() }
@@ -1874,6 +1868,30 @@ async function saveNotes() {
     showToastAdmin('Notes saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save Notes'; btn.disabled = false; } }
+}
+
+// ── Render binder items from saved data ──────────────────
+function renderBinderItems(items) {
+  var list = document.getElementById('binder-items-list');
+  if (!list) return;
+  if (!items || !items.length) {
+    list.innerHTML = '<p style="color:#8a9bbf;font-size:.82rem">No binder items yet. Add one below.</p>';
+    return;
+  }
+  var statuses = ['Verified','On File','Pending Review','Missing'];
+  list.innerHTML = items.map(function(item) {
+    var opts = statuses.map(function(s){
+      return '<option value="'+s+'"'+(s===item.status?' selected':'')+'>'+s+'</option>';
+    }).join('');
+    var color = item.status==='Verified'?'rgba(56,217,169,.06)':item.status==='Missing'?'rgba(245,166,35,.06)':'rgba(79,142,247,.06)';
+    var border = item.status==='Verified'?'rgba(56,217,169,.15)':item.status==='Missing'?'rgba(245,166,35,.15)':'rgba(79,142,247,.15)';
+    return '<div style="background:'+color+';border:1px solid '+border+';border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">' +
+      '<div><div style="font-size:.85rem;font-weight:600">'+esc(item.title)+'</div></div>' +
+      '<div style="display:flex;gap:6px;flex-shrink:0">' +
+      '<select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px">'+opts+'</select>' +
+      '<button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest('div[style]').remove()">&#10005;</button>' +
+      '</div></div>';
+  }).join('');
 }
 
 function signOut() {
