@@ -305,41 +305,41 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div id="client-nav">
       <div class="sidebar-section">
         <span class="sidebar-label">Overview</span>
-        <button class="nav-item active" onclick="showPanel('overview')" aria-current="page">
+        <button class="nav-item active" data-access="dashboard_overview" onclick="showPanel('overview')" aria-current="page">
           <span class="nav-icon" aria-hidden="true">&#9962;</span> Dashboard
         </button>
-        <button class="nav-item" onclick="showPanel('widget')">
+        <button class="nav-item" data-access="widget_settings" onclick="showPanel('widget')">
           <span class="nav-icon" aria-hidden="true">&#9965;</span> Widget Settings
         </button>
-        <button class="nav-item" onclick="showPanel('embed')">
+        <button class="nav-item" data-access="embed_code" onclick="showPanel('embed')">
           <span class="nav-icon" aria-hidden="true">&#128250;</span> Embed Code
         </button>
       </div>
       <div class="sidebar-section">
         <span class="sidebar-label">Compliance</span>
-        <button class="nav-item" onclick="showPanel('reports')">
+        <button class="nav-item" data-access="audit_reports" onclick="showPanel('reports')">
           <span class="nav-icon" aria-hidden="true">&#128202;</span> Audit Reports
           <span class="nav-badge">3</span>
         </button>
-        <button class="nav-item" onclick="showPanel('evidence')">
+        <button class="nav-item" data-access="evidence_binder" onclick="showPanel('evidence')">
           <span class="nav-icon" aria-hidden="true">&#128218;</span> Evidence Binder
         </button>
-        <button class="nav-item" onclick="showPanel('roadmap')">
+        <button class="nav-item" data-access="3_year_roadmap" onclick="showPanel('roadmap')">
           <span class="nav-icon" aria-hidden="true">&#128506;</span> 3-Year Roadmap
         </button>
-        <button class="nav-item" onclick="showPanel('standards')">
+        <button class="nav-item" data-access="template_standards" onclick="showPanel('standards')">
           <span class="nav-icon" aria-hidden="true">&#128203;</span> Template Standards
         </button>
       </div>
       <div class="sidebar-section">
         <span class="sidebar-label">Training & Feedback</span>
-        <button class="nav-item" onclick="showPanel('training')">
+        <button class="nav-item" data-access="training_portal" onclick="showPanel('training')">
           <span class="nav-icon" aria-hidden="true">&#127891;</span> Training Logs
         </button>
-        <button class="nav-item" onclick="showPanel('feedback')">
+        <button class="nav-item" data-access="feedback_logs" onclick="showPanel('feedback')">
           <span class="nav-icon" aria-hidden="true">&#128172;</span> Feedback Logs
         </button>
-        <button class="nav-item" onclick="showPanel('a11y-stmt')">
+        <button class="nav-item" data-access="accessibility_statement" onclick="showPanel('a11y-stmt')">
           <span class="nav-icon" aria-hidden="true">&#9855;</span> Accessibility Stmt
         </button>
       </div>
@@ -2454,6 +2454,23 @@ function populateTraining(c) {
   if (link) link.href = 'https://training.accessibilitycompliance.ca/?org=' + encodeURIComponent(c.client_code||'') + '&token=' + encodeURIComponent(c.client_code||'');
 }
 
+function applyDashboardAccess(access) {
+  // If no overrides set, show everything (tier defaults)
+  if (!access || typeof access !== 'object') return;
+  var navBtns = document.querySelectorAll('#client-nav [data-access]');
+  navBtns.forEach(function(btn) {
+    var key = btn.getAttribute('data-access');
+    if (key in access) {
+      var visible = access[key] !== false;
+      btn.style.display = visible ? '' : 'none';
+      // If current active panel is hidden, redirect to overview
+      if (!visible && btn.classList.contains('active')) {
+        showPanel('overview');
+      }
+    }
+  });
+}
+
 function populateAccount(c, billingRows) {
   // Set input values directly
   var fields = {
@@ -2665,6 +2682,7 @@ async function downloadInvoice(yearMonth) {
     populateRoadmap(rr.data || []);
     populateTraining(_clientData);
     populateAccount(_clientData, br.data || []);
+    applyDashboardAccess(_clientData.dashboard_access);
     populateFeedback(fr.data || []);
     populateA11yStatement(_clientData);
     populateStandards(_clientData);
