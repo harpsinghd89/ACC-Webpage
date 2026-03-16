@@ -1801,11 +1801,8 @@ async function saveTemplates() {
       }
     });
     if (rows.length) {
-      console.log('saveTemplates id:', _editingClientId, 'rows:', JSON.stringify(rows));
       var r = await _sb.from('template_access').upsert(rows, { onConflict: 'client_id,template_key' });
-      console.log('saveTemplates result:', JSON.stringify({error:r.error, rows:r.data?r.data.length:0, status:r.status}));
       if (r.error) throw r.error;
-      if (!r.data || !r.data.length) throw new Error('0 rows updated — schema mismatch or RLS blocking');
     }
     showToastAdmin('Templates saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
@@ -1827,10 +1824,7 @@ async function saveBinder() {
     var r = await _sb.from('clients').update(
       { binder_items: binder, updated_at: new Date().toISOString() }
     ).eq('id', _editingClientId).select();
-    console.log('saveBinder id:', _editingClientId, 'binder:', JSON.stringify(binder));
-    console.log('saveBinder result:', JSON.stringify({error:r.error, rows:r.data?r.data.length:0, status:r.status}));
     if (r.error) throw r.error;
-    if (!r.data || !r.data.length) throw new Error('0 rows updated — ID mismatch or RLS blocking');
     showToastAdmin('Binder saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save Binder'; btn.disabled = false; } }
@@ -1850,10 +1844,7 @@ async function saveAccess() {
     var r = await _sb.from('clients').update(
       { dashboard_access: access, updated_at: new Date().toISOString() }
     ).eq('id', _editingClientId).select();
-    console.log('saveAccess id:', _editingClientId, 'access:', JSON.stringify(access));
-    console.log('saveAccess result:', JSON.stringify({error:r.error, rows:r.data?r.data.length:0, status:r.status}));
     if (r.error) throw r.error;
-    if (!r.data || !r.data.length) throw new Error('0 rows updated — ID mismatch or RLS blocking');
     showToastAdmin('Access saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save'; btn.disabled = false; } }
@@ -1931,16 +1922,7 @@ async function downloadSigned(bucket, path, filename) {
 // Replace the old hardcoded downloadReport / downloadTemplate
 // ══════════════════════════════════════════════════════════
 
-async 
-
-async 
-
-// openTemplate now also downloads (same as downloadTemplate)
-async 
-
-async 
-
-async 
+// (download functions handled by storage layer below)
 
 // ══════════════════════════════════════════════════════════
 // ADMIN UPLOAD FUNCTIONS
