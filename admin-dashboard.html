@@ -1739,6 +1739,7 @@ function showClientTab(tab) {
     var code = window._editingClientCode || _editingClientId;
     if (code) {
       ['reports','evidence','invoices'].forEach(function(b){ renderFileList(b, code); });
+      renderFileList('templates', 'shared');
     }
   }
 
@@ -2062,7 +2063,9 @@ async function handleAdminUpload(input, bucket) {
   if (!_editingClientId) { showToastAdmin('No client selected.', 'error'); return; }
 
   var clientCode = window._editingClientCode || _editingClientId;
-  var path = clientCode + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  var path = bucket === 'templates'
+    ? 'shared/' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    : clientCode + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
 
   var label = input.closest('label');
   if (label) label.style.opacity = '0.5';
@@ -2074,7 +2077,8 @@ async function handleAdminUpload(input, bucket) {
     });
     if (r.error) throw r.error;
     showToastAdmin('\u2705 ' + file.name + ' uploaded.', 'success');
-    renderFileList(bucket, clientCode);
+    var listPath = bucket === 'templates' ? 'shared' : clientCode;
+    renderFileList(bucket, listPath);
   } catch(e) {
     showToastAdmin('Upload failed: ' + (e.message || String(e)), 'error');
   } finally {
