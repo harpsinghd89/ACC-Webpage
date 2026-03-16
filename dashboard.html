@@ -951,7 +951,10 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           </div>
         </div>
         <div class="card">
-          <h2>&#128179; Invoices & Receipts</h2>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <h2 style="margin:0">&#128179; Invoices &amp; Receipts</h2>
+            <button class="btn-sm btn-primary" onclick="generateAndDownloadInvoice()">&#128196; Generate This Month's Invoice</button>
+          </div>
           <div id="client-invoices-list">
             <div style="color:#8a9bbf;font-size:.82rem;padding:12px 0">Loading invoices…</div>
           </div>
