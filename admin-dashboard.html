@@ -1727,6 +1727,11 @@ function showClientTab(tab) {
     // Scroll modal to top so upload buttons are immediately visible
     var modalBox = document.querySelector('#client-detail-modal .modal-box');
     if (modalBox) setTimeout(function(){ modalBox.scrollTop = 0; }, 30);
+    // Load file lists for all buckets
+    var code = window._editingClientCode || _editingClientId;
+    if (code) {
+      ['reports','evidence','invoices'].forEach(function(b){ renderFileList(b, code); });
+    }
   }
 
   var tabs = ['info','billing','roadmap','templates','binder','access','notes','files'];
@@ -2046,34 +2051,27 @@ async function renderFileManager(containerId, bucket, clientCode, labelPrefix) {
 async function handleAdminUpload(input, bucket) {
   var file = input.files[0];
   if (!file) return;
-  if (!_editingClientId) { showToastAdmin('No client selected', 'error'); return; }
+  if (!_editingClientId) { showToastAdmin('No client selected.', 'error'); return; }
 
-  var clientCode = _editingClientCode || _editingClientId;
+  var clientCode = window._editingClientCode || _editingClientId;
   var path = clientCode + '/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
 
-  // Show uploading state
-  var label = input.parentElement;
-  var origText = label ? label.childNodes[0].textContent.trim() : '';
+  var label = input.closest('label');
   if (label) label.style.opacity = '0.5';
-  showToastAdmin('Uploading ' + file.name + '…', 'info');
+  showToastAdmin('Uploading ' + file.name + '…', 'success');
 
   try {
-    var { error } = await _sb.storage.from(bucket).upload(path, file, {
-      cacheControl: '3600',
-      upsert: false,
-      contentType: 'application/pdf'
+    var r = await _sb.storage.from(bucket).upload(path, file, {
+      cacheControl: '3600', upsert: false, contentType: 'application/pdf'
     });
-    if (error) throw error;
-
-    showToastAdmin('\u2705 ' + file.name + ' uploaded', 'success');
-    // Refresh the file list for this bucket
+    if (r.error) throw r.error;
+    showToastAdmin('\u2705 ' + file.name + ' uploaded.', 'success');
     renderFileList(bucket, clientCode);
   } catch(e) {
-    console.error('upload error:', e);
     showToastAdmin('Upload failed: ' + (e.message || String(e)), 'error');
   } finally {
     if (label) label.style.opacity = '1';
-    input.value = ''; // reset so same file can be re-uploaded
+    input.value = '';
   }
 }
 
@@ -2085,7 +2083,7 @@ async function renderFileList(bucket, clientCode) {
   container.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem">Loading…</div>';
 
   try {
-    var { data, error } = await _sb.storage.from(bucket).list(clientCode + '/', {
+    var { data, error } = await _sb.storage.from(bucket).list(clientCode, {
       limit: 100, offset: 0, sortBy: { column: 'created_at', order: 'desc' }
     });
 
