@@ -668,46 +668,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h1>&#128506; 3-Year Compliance Roadmap</h1>
         <p>Your personalized AODA compliance roadmap covering 2026–2028 milestones.</p>
       </div>
-      <div class="card">
-        <h2>&#128197; 2026 — Foundation Year</h2>
-        <span class="pill yellow" style="margin-bottom:16px;display:inline-flex">Dec 31, 2026 AODA Deadline</span>
-        <table class="data-table" aria-label="2026 roadmap milestones">
-          <thead><tr><th>Milestone</th><th>Target</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>ACC Widget deployed</td><td>Jan 2026</td><td><span class="pill green">Done</span></td></tr>
-            <tr><td>Initial WCAG audit</td><td>Jan 2026</td><td><span class="pill green">Done</span></td></tr>
-            <tr><td>Accessibility Statement published</td><td>Feb 2026</td><td><span class="pill green">Done</span></td></tr>
-            <tr><td>Staff accessibility training (all)</td><td>Mar 2026</td><td><span class="pill yellow">In Progress</span></td></tr>
-            <tr><td>WCAG 2.1 AA full conformance</td><td>Jun 2026</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>Annual Evidence Binder</td><td>Dec 1, 2026</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>AODA filing deadline</td><td>Dec 31, 2026</td><td><span class="pill blue">Planned</span></td></tr>
-          </tbody>
-        </table>
+      <div id="roadmap-year-cards">
+        <div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">Loading roadmap…</div>
       </div>
-      <div class="card">
-        <h2>&#128197; 2027 — Optimization Year</h2>
-        <table class="data-table" aria-label="2027 roadmap milestones">
-          <thead><tr><th>Milestone</th><th>Target</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>WCAG 2.2 gap analysis</td><td>Q1 2027</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>User testing with assistive tech users</td><td>Q2 2027</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>Advanced staff training refresh</td><td>Q3 2027</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>Annual Evidence Binder 2027</td><td>Dec 1, 2027</td><td><span class="pill blue">Planned</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card">
-        <h2>&#128197; 2028 — Leadership Year</h2>
-        <table class="data-table" aria-label="2028 roadmap milestones">
-          <thead><tr><th>Milestone</th><th>Target</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>WCAG 2.2 full conformance</td><td>Q1 2028</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>Internal accessibility champion program</td><td>Q2 2028</td><td><span class="pill blue">Planned</span></td></tr>
-            <tr><td>Annual Evidence Binder 2028</td><td>Dec 1, 2028</td><td><span class="pill blue">Planned</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <a class="dl-btn" href="#" onclick="alert('Roadmap PDF downloaded.')">&#8659; Download Roadmap PDF</a>
     </div>
 
     <!-- TEMPLATE STANDARDS -->
@@ -2380,25 +2343,48 @@ function populateEmbed(c) {
 }
 
 function populateRoadmap(milestones) {
+  var container = document.getElementById('roadmap-year-cards');
+  if (!container) return;
+
+  if (!milestones || !milestones.length) {
+    container.innerHTML = '<div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">No roadmap milestones yet. Your ACC admin will configure these.</div>';
+    return;
+  }
+
+  // Group by year
   var years = {};
-  (milestones||[]).forEach(function(m) {
-    var yr = m.year || new Date(m.target_date||'').getFullYear() || 2026;
+  milestones.forEach(function(m) {
+    var yr = m.year || (m.target_date ? m.target_date.substring(0,4) : '2026');
     if (!years[yr]) years[yr] = [];
     years[yr].push(m);
   });
-  Object.keys(years).sort().forEach(function(yr) {
-    var tbody = document.getElementById('roadmap-tbody-' + yr);
-    if (!tbody) return;
-    tbody.innerHTML = years[yr].map(function(m) {
-      var done = m.status === 'complete';
-      var color = done ? '#38d9a9' : m.status==='in-progress' ? '#f5a623' : '#8a9bbf';
+
+  var statusPill = {
+    'done':        '<span class="pill green">Done</span>',
+    'complete':    '<span class="pill green">Done</span>',
+    'in-progress': '<span class="pill yellow">In Progress</span>',
+    'planned':     '<span class="pill blue">Planned</span>',
+    'deferred':    '<span class="pill" style="background:rgba(138,155,191,.15);color:#8a9bbf">Deferred</span>',
+  };
+
+  container.innerHTML = Object.keys(years).sort().map(function(yr) {
+    var rows = years[yr].map(function(m) {
+      var title = m.title || m.milestone || '';
+      var pill  = statusPill[m.status] || statusPill['planned'];
+      var date  = m.target_date ? fmtDate(m.target_date) : (m.target_date || '');
       return '<tr>' +
-        '<td>' + esc(m.title) + '</td>' +
-        '<td>' + fmtDate(m.target_date) + '</td>' +
-        '<td><span style="color:' + color + '">' + esc(m.status||'pending') + '</span></td>' +
+        '<td>' + esc(title) + '</td>' +
+        '<td style="white-space:nowrap">' + date + '</td>' +
+        '<td>' + pill + '</td>' +
         '</tr>';
     }).join('');
-  });
+    return '<div class="card">' +
+      '<h2>&#128197; ' + yr + '</h2>' +
+      '<table class="data-table" aria-label="' + yr + ' roadmap milestones">' +
+      '<thead><tr><th>Milestone</th><th>Target</th><th>Status</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>' +
+      '</div>';
+  }).join('');
 }
 
 function populateTraining(c) {
