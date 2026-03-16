@@ -226,6 +226,13 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
   }
 }
 
+
+/* ── Client editor tab bar ─────────────────────────── */
+.ctab-btn{background:none;border:none;border-bottom:3px solid transparent;color:#8a9bbf;cursor:pointer;font-family:inherit;font-size:.72rem;font-weight:600;padding:8px 10px;white-space:nowrap;transition:color .15s,border-color .15s;flex-shrink:0}
+.ctab-btn.active-tab{color:#4f8ef7;border-bottom-color:#4f8ef7}
+.ctab-btn:hover:not(.active-tab){color:#c8d8f8}
+.ctab-bar{display:flex;overflow-x:auto;border-bottom:2px solid rgba(30,58,107,.5);margin-bottom:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0}
+.ctab-bar::-webkit-scrollbar{display:none}
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -622,15 +629,15 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <button class="modal-close" onclick="closeModal('client-detail-modal')" aria-label="Close">&#10005;</button>
     <h2 id="client-modal-title">&#128100; Edit Client</h2>
     <!-- Tab bar -->
-    <div style="display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;border-bottom:1px solid rgba(30,58,107,.5);padding-bottom:10px;margin-bottom:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none">
-      <button class="btn-sm btn-primary" id="ctab-info"    onclick="showClientTab('info')"    style="font-size:.72rem">&#128100; Info</button>
-      <button class="btn-sm btn-ghost"   id="ctab-billing" onclick="showClientTab('billing')" style="font-size:.72rem">&#128180; Billing</button>
-      <button class="btn-sm btn-ghost"   id="ctab-roadmap" onclick="showClientTab('roadmap')" style="font-size:.72rem">&#128204; Roadmap</button>
-      <button class="btn-sm btn-ghost"   id="ctab-templates" onclick="showClientTab('templates')" style="font-size:.72rem">&#128196; Templates</button>
-      <button class="btn-sm btn-ghost"   id="ctab-binder"  onclick="showClientTab('binder')"  style="font-size:.72rem">&#128193; Binder</button>
-      <button class="btn-sm btn-ghost"   id="ctab-access"  onclick="showClientTab('access')"  style="font-size:.72rem">&#128274; Access</button>
-      <button class="btn-sm btn-ghost"   id="ctab-notes"   onclick="showClientTab('notes')"   style="font-size:.72rem">&#128221; Notes</button>
-      <button class="btn-sm btn-ghost" id="ctab-files" onclick="showClientTab('files')" style="font-size:.72rem">&#128196; Files</button>
+    <div class="ctab-bar" role="tablist" aria-label="Client editor tabs">
+      <button class="ctab-btn active-tab" id="ctab-info"      role="tab" aria-selected="true"  onclick="showClientTab('info')">&#128100; Info</button>
+      <button class="ctab-btn"            id="ctab-billing"   role="tab" aria-selected="false" onclick="showClientTab('billing')">&#128180; Billing</button>
+      <button class="ctab-btn"            id="ctab-roadmap"   role="tab" aria-selected="false" onclick="showClientTab('roadmap')">&#128204; Roadmap</button>
+      <button class="ctab-btn"            id="ctab-templates" role="tab" aria-selected="false" onclick="showClientTab('templates')">&#128196; Templates</button>
+      <button class="ctab-btn"            id="ctab-binder"    role="tab" aria-selected="false" onclick="showClientTab('binder')">&#128193; Binder</button>
+      <button class="ctab-btn"            id="ctab-access"    role="tab" aria-selected="false" onclick="showClientTab('access')">&#128274; Access</button>
+      <button class="ctab-btn"            id="ctab-notes"     role="tab" aria-selected="false" onclick="showClientTab('notes')">&#128221; Notes</button>
+      <button class="ctab-btn"            id="ctab-files"     role="tab" aria-selected="false" onclick="showClientTab('files')">&#128196; Files</button>
     </div>
 
     <!-- INFO TAB -->
@@ -1726,7 +1733,7 @@ function showClientTab(tab) {
     var btn   = document.getElementById('ctab-' + t);
     var panel = document.getElementById('ctab-panel-' + t);
     var active = t === tab;
-    if (btn)   { btn.className   = active ? 'btn-sm btn-primary' : 'btn-sm btn-ghost'; btn.style.fontSize = '.72rem'; }
+    if (btn)   { btn.className = active ? 'ctab-btn active-tab' : 'ctab-btn'; btn.setAttribute('aria-selected', active ? 'true' : 'false'); }
     if (panel) panel.style.display = active ? 'block' : 'none';
   });
 }
