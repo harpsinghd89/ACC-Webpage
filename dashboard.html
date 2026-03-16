@@ -599,40 +599,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </div>
       <div class="card">
         <h2>&#128202; Monthly Reports</h2>
-        <table class="data-table" aria-label="Monthly audit reports">
-          <thead>
-            <tr>
-              <th scope="col">Report Period</th>
-              <th scope="col">Score</th>
-              <th scope="col">Issues</th>
-              <th scope="col">Status</th>
-              <th scope="col">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>March 2026</strong><div style="font-size:.72rem;color:var(--muted)">Generated Mar 1, 2026</div></td>
-              <td><span style="font-family:var(--mono);color:var(--teal)">93/100</span></td>
-              <td>1 warning, 0 critical</td>
-              <td><span class="pill green">Current</span></td>
-              <td><div class="btn-row"><a class="dl-btn" href="#" onclick="downloadReport('march-2026')">&#8659; PDF</a></div></td>
-            </tr>
-            <tr>
-              <td><strong>February 2026</strong><div style="font-size:.72rem;color:var(--muted)">Generated Feb 1, 2026</div></td>
-              <td><span style="font-family:var(--mono);color:var(--teal)">91/100</span></td>
-              <td>2 warnings, 0 critical</td>
-              <td><span class="pill blue">Archived</span></td>
-              <td><div class="btn-row"><a class="dl-btn" href="#" onclick="downloadReport('feb-2026')">&#8659; PDF</a></div></td>
-            </tr>
-            <tr>
-              <td><strong>January 2026</strong><div style="font-size:.72rem;color:var(--muted)">Generated Jan 1, 2026</div></td>
-              <td><span style="font-family:var(--mono);color:var(--warn)">88/100</span></td>
-              <td>4 warnings, 0 critical</td>
-              <td><span class="pill blue">Archived</span></td>
-              <td><div class="btn-row"><a class="dl-btn" href="#" onclick="downloadReport('jan-2026')">&#8659; PDF</a></div></td>
-            </tr>
-          </tbody>
-        </table>
+        <div id="client-reports-list">
+          <div style="color:#8a9bbf;font-size:.82rem;padding:12px 0">Loading reports…</div>
+        </div>
       </div>
       <div class="card">
         <h2>&#128270; Real-Time Monitor</h2>
@@ -686,18 +655,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </div>
       </div>
       <div class="card">
-        <h2>&#128218; Previous Binders</h2>
-        <p style="font-size:.85rem;color:var(--muted)">No previous binders yet. Your first will be generated December 1, 2026.</p>
-      </div>
-      <div class="card">
-        <h2>&#128196; Binder Preview &amp; Downloads</h2>
-        <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px">Preview the current year binder components individually or download the full compiled binder when complete on Dec 1, 2026.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:10px">
-          <a class="dl-btn" href="#" onclick="alert('Downloading partial binder (Jan–Mar 2026)...')">&#8659; Partial Binder (Jan–Mar)</a>
-          <a class="dl-btn" href="#" onclick="alert('Downloading audit reports bundle...')">&#8659; Audit Reports Bundle</a>
-          <a class="dl-btn" href="#" onclick="alert('Downloading 3-Year Roadmap PDF...')">&#8659; 3-Year Roadmap</a>
-          <a class="dl-btn" href="#" onclick="alert('Downloading training records...')">&#8659; Training Records</a>
-          <a class="dl-btn" href="#" onclick="alert('Downloading feedback log...')">&#8659; Feedback Log</a>
+        <h2>&#128218; Evidence Binder Files</h2>
+        <div id="client-evidence-list">
+          <div style="color:#8a9bbf;font-size:.82rem;padding:12px 0">Loading binder files…</div>
         </div>
       </div>
     </div>
@@ -1015,15 +975,10 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           </div>
         </div>
         <div class="card">
-          <h2>&#128179; Billing History</h2>
-          <table class="data-table" aria-label="Billing history">
-            <thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>Receipt</th></tr></thead>
-            <tbody>
-              <tr><td>Mar 10, 2026</td><td style="font-family:var(--mono)">$77.97</td><td><span class="pill green">Paid</span></td><td><a class="dl-btn" href="#" onclick="alert('Receipt downloaded.')">&#8659; PDF</a></td></tr>
-              <tr><td>Feb 10, 2026</td><td style="font-family:var(--mono)">$77.97</td><td><span class="pill green">Paid</span></td><td><a class="dl-btn" href="#" onclick="alert('Receipt downloaded.')">&#8659; PDF</a></td></tr>
-              <tr><td>Jan 10, 2026</td><td style="font-family:var(--mono)">$77.97</td><td><span class="pill green">Paid</span></td><td><a class="dl-btn" href="#" onclick="alert('Receipt downloaded.')">&#8659; PDF</a></td></tr>
-            </tbody>
-          </table>
+          <h2>&#128179; Invoices & Receipts</h2>
+          <div id="client-invoices-list">
+            <div style="color:#8a9bbf;font-size:.82rem;padding:12px 0">Loading invoices…</div>
+          </div>
         </div>
       </div>
       <div class="card">
@@ -2461,6 +2416,62 @@ function applyDashboardAccess(access) {
   });
 }
 
+// ── Client file lists from Supabase Storage ──────────────
+async function populateClientFiles(clientCode) {
+  var buckets = [
+    { bucket: 'reports',  containerId: 'client-reports-list',  label: 'audit report' },
+    { bucket: 'evidence', containerId: 'client-evidence-list', label: 'evidence binder' },
+    { bucket: 'invoices', containerId: 'client-invoices-list', label: 'invoice' },
+  ];
+
+  buckets.forEach(function(b) {
+    var el = document.getElementById(b.containerId);
+    if (el) el.innerHTML = '<div style="color:#8a9bbf;font-size:.82rem;padding:8px 0">Loading…</div>';
+  });
+
+  for (var i = 0; i < buckets.length; i++) {
+    (function(b) {
+      _sb_client.storage.from(b.bucket).list(clientCode, {
+        limit: 100, sortBy: { column: 'created_at', order: 'desc' }
+      }).then(function(r) {
+        var container = document.getElementById(b.containerId);
+        if (!container) return;
+        if (r.error) {
+          container.innerHTML = '<div style="color:#f05f5f;font-size:.82rem">Error loading files.</div>';
+          return;
+        }
+        var files = (r.data || []).filter(function(f){ return f.name && f.name !== '.emptyFolderPlaceholder'; });
+        if (!files.length) {
+          container.innerHTML = '<div style="color:#8a9bbf;font-size:.82rem;padding:8px 0">No ' + b.label + 's uploaded yet.</div>';
+          return;
+        }
+        container.innerHTML = files.map(function(f) {
+          var filePath = clientCode + '/' + f.name;
+          var fname = f.name.replace(/^\d+_/, '').replace(/_/g, ' '); // clean filename
+          var kb = f.metadata && f.metadata.size ? Math.round(f.metadata.size / 1024) + ' KB' : '';
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(30,58,107,.4)">' +
+            '<div>' +
+              '<div style="font-size:.85rem;font-weight:600;color:#e8edf8">&#128196; ' + fname + '</div>' +
+              (kb ? '<div style="font-size:.73rem;color:#8a9bbf">' + kb + '</div>' : '') +
+            '</div>' +
+            '<a class="dl-btn" href="#" onclick="clientDownloadFile('' + b.bucket + '','' + filePath + '');return false">&#8659; Download</a>' +
+          '</div>';
+        }).join('');
+      });
+    })(buckets[i]);
+  }
+}
+
+async function clientDownloadFile(bucket, path) {
+  try {
+    var r = await _sb_client.storage.from(bucket).createSignedUrl(path, 3600);
+    if (r.error) throw r.error;
+    window.open(r.data.signedUrl, '_blank');
+  } catch(e) {
+    alert('Download failed: ' + (e.message || e));
+  }
+}
+
 function populateAccount(c, billingRows) {
   // Set input values directly
   var fields = {
@@ -2701,6 +2712,7 @@ async function downloadInvoice(yearMonth) {
     populateRoadmap(rr.data || []);
     populateTraining(_clientData);
     populateAccount(_clientData, br.data || []);
+    if (_clientData.client_code) populateClientFiles(_clientData.client_code);
     applyDashboardAccess(_clientData.dashboard_access);
     populateFeedback(fr.data || []);
     populateA11yStatement(_clientData);
