@@ -403,7 +403,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </div>
       <div class="card">
         <h2>&#9993; Zoho Email Automation</h2>
-        <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Automated AODA compliance reminders sent from <a href="mailto:compliance@accessibilitycompliance.ca" style="color:#4f8ef7">compliance@accessibilitycompliance.ca</a></p>
+        <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Automated AODA compliance reminders sent from <a href="/cdn-cgi/l/email-protection#7f1c10120f13161e111c1a3f1e1c1c1a0c0c161d1613160b061c10120f13161e111c1a511c1e" style="color:#4f8ef7"><span class="__cf_email__" data-cfemail="e4878b8994888d858a8781a48587878197978d868d888d909d878b8994888d858a8781ca8785">[email&#160;protected]</span></a></p>
         <table class="data-table">
           <thead><tr><th>Date</th><th>Template</th><th>Recipients</th><th>Status</th></tr></thead>
           <tbody>
@@ -850,7 +850,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <div class="toggle-wrap"><div class="toggle-info"><strong>Customer Feedback Form</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
         <div class="toggle-wrap"><div class="toggle-info"><strong>Accessibility Statement Template</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
       </div>
-      
+      <div class="fgroup" style="margin-top:14px"><label>Template Notes (shown to client)</label><textarea class="finput" id="ce-tmpl-notes" rows="2" placeholder="e.g. Your disruption notice template has been pre-filled with your organization details."></textarea></div>
       <button class="btn-sm btn-primary" onclick="saveTemplates()">&#10003; Save</button>
     </div>
 
@@ -987,7 +987,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
 
 <!-- Binder Editor -->
 >
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 // ── Panel switching ──
 function showPanel(id) {
@@ -1283,13 +1283,14 @@ async function loadClients() {
   try {
     var r = await _sb.from('clients').select('*').order('name', { ascending: true });
     if (r.error) {
-      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="color:#f05f5f;padding:20px;text-align:center">Error: ' + esc(r.error.message) + '</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="color:#f05f5f;padding:20px;text-align:center">Error loading clients: ' + esc(r.error.message) + '</td></tr>';
       return;
     }
     var clients = (r.data || []).filter(function(c){ return !c.deleted_at; });
     renderClientsTable(clients);
     updateOverviewStats(clients);
   } catch(e) {
+    console.error('loadClients:', e);
     if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="color:#f05f5f;padding:20px;text-align:center">Exception: ' + (e.message||String(e)) + '</td></tr>';
   }
 }
@@ -1449,10 +1450,9 @@ async function openClientEditor(btn) {
 
   try {
     // Load client + roadmap in parallel
-    var [cr, rr, tr] = await Promise.all([
+    var [cr, rr] = await Promise.all([
       _sb.from('clients').select('*').eq('id', _editingClientId).single(),
-      _sb.from('roadmap').select('*').eq('client_id', _editingClientId).is('deleted_at', null).order('year').order('target_date'),
-      _sb.from('template_access').select('*').eq('client_id', _editingClientId)
+      _sb.from('roadmap').select('*').eq('client_id', _editingClientId).is('deleted_at', null).order('year').order('target_date')
     ]);
     if (cr.error) throw cr.error;
     var c = cr.data;
@@ -1492,48 +1492,25 @@ async function openClientEditor(btn) {
     var cycleSel = document.getElementById('ce-cycle');
     if (cycleSel && c.billing_cycle) {
       for (var ci=0; ci<cycleSel.options.length; ci++) {
-        if (cycleSel.options[ci].text.toLowerCase() === c.billing_cycle.toLowerCase()) { cycleSel.selectedIndex = ci; break; }
+        if (cycleSel.options[ci].text.toLowerCase() === c.billing_cycle.toLowerCase()) {
+          cycleSel.selectedIndex = ci; break;
+        }
       }
     }
     var paySel = document.getElementById('ce-payment');
     if (paySel && c.payment_method) {
       for (var pi=0; pi<paySel.options.length; pi++) {
-        if (paySel.options[pi].text.toLowerCase() === c.payment_method.toLowerCase()) { paySel.selectedIndex = pi; break; }
+        if (paySel.options[pi].text.toLowerCase() === c.payment_method.toLowerCase()) {
+          paySel.selectedIndex = pi; break;
+        }
       }
     }
+
     // ── Notes tab ──
     f('ce-onboard-notes', c.onboarding_notes);
     f('ce-flags',         c.compliance_flags || '');
     f('ce-last-contact',  c.last_contact  || '');
     f('ce-followup',      c.next_followup || '');
-
-    // ── Binder tab — render from DB ──
-    renderBinderItems(c.binder_items || []);
-
-    // ── Access tab — restore toggles ──
-    if (c.dashboard_access && typeof c.dashboard_access === 'object') {
-      var accToggles = document.querySelectorAll('#ctab-panel-access .toggle input[type=checkbox]');
-      var accLabels  = document.querySelectorAll('#ctab-panel-access .toggle-info strong');
-      accToggles.forEach(function(t, i) {
-        if (accLabels[i]) {
-          var k = accLabels[i].textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g,'_');
-          if (k in c.dashboard_access) t.checked = c.dashboard_access[k];
-        }
-      });
-    }
-
-    // ── Templates tab — restore toggles ──
-    if (tr.data && tr.data.length) {
-      var tmplToggles = document.querySelectorAll('#template-access-list .toggle input[type=checkbox]');
-      var tmplLabels  = document.querySelectorAll('#template-access-list .toggle-info strong');
-      tmplToggles.forEach(function(t, i) {
-        if (tmplLabels[i]) {
-          var key = tmplLabels[i].textContent.trim().toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
-          var row = tr.data.find(function(r){ return r.template_key === key; });
-          if (row) t.checked = row.enabled !== false;
-        }
-      });
-    }
 
     // ── Roadmap tab — render milestone rows ──
     renderAdminRoadmapRows(rr.data || [], c.tier);
@@ -1744,29 +1721,7 @@ window.openModal = function(id) {
   setTimeout(initDatePickers, 100);
 };
 
-// ── renderBinderItems ──────────────────────────────────────
-function renderBinderItems(items) {
-  var list = document.getElementById('binder-items-list');
-  if (!list) return;
-  if (!items || !items.length) {
-    list.innerHTML = '<p style="color:#8a9bbf;font-size:.82rem">No binder items yet. Add one below.</p>';
-    return;
-  }
-  var statuses = ['Verified','On File','Pending Review','Missing'];
-  list.innerHTML = items.map(function(item) {
-    var opts = statuses.map(function(s){
-      return '<option value="'+s+'"'+(s===item.status?' selected':'')+'>'+s+'</option>';
-    }).join('');
-    return '<div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">' +
-      '<div><div style="font-size:.85rem;font-weight:600">'+esc(item.title)+'</div></div>' +
-      '<div style="display:flex;gap:6px;flex-shrink:0">' +
-      '<select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px">'+opts+'</select>' +
-      '<button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest('div[style]').remove()">&#10005;</button>' +
-      '</div></div>';
-  }).join('');
-}
-
-// ── Save Billing ─────────────────────────────────────────
+// ── Tab save functions ───────────────────────────────────
 async function saveBilling() {
   if (!_editingClientId) return;
   var btn = document.querySelector('#ctab-panel-billing .btn-primary');
@@ -1777,16 +1732,17 @@ async function saveBilling() {
     var disc  = (document.getElementById('ce-discount')||{}).value||'';
     var pay   = document.getElementById('ce-payment');
     var r = await _sb.from('clients').update({
-      billing_cycle: cycle ? cycle.options[cycle.selectedIndex].text.toLowerCase() : 'monthly',
-      billing_notes: inv||null, discount_code: disc||null,
+      billing_cycle:  cycle ? cycle.options[cycle.selectedIndex].text.toLowerCase() : 'monthly',
+      billing_notes:  inv||null, discount_code: disc||null,
       payment_method: pay ? pay.options[pay.selectedIndex].text.toLowerCase() : 'stripe',
       updated_at: new Date().toISOString()
     }).eq('id', _editingClientId);
     if (r.error) throw r.error;
     showToastAdmin('Billing saved.', 'success');
-  } catch(e) { showToastAdmin('Error: '+(e.message||e), 'error'); }
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save Billing'; btn.disabled = false; } }
 }
+
 async function saveTemplates() {
   if (!_editingClientId) return;
   var btn = document.querySelector('#ctab-panel-templates .btn-primary');
@@ -1794,25 +1750,19 @@ async function saveTemplates() {
   try {
     var toggles = document.querySelectorAll('#template-access-list .toggle input[type=checkbox]');
     var labels  = document.querySelectorAll('#template-access-list .toggle-info strong');
-    var rows = [];
-    toggles.forEach(function(t, i) {
-      if (labels[i]) {
-        rows.push({
-          client_id:    _editingClientId,
-          template_key: labels[i].textContent.trim().toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''),
-          enabled:      t.checked,
-          updated_at:   new Date().toISOString()
-        });
-      }
-    });
-    if (rows.length) {
-      var r = await _sb.from('template_access').upsert(rows, { onConflict: 'client_id,template_key' });
-      if (r.error) throw r.error;
-    }
+    var enabled = [];
+    toggles.forEach(function(t,i){ if(t.checked && labels[i]) enabled.push(labels[i].textContent.trim()); });
+    var notes = (document.getElementById('ce-tmpl-notes')||{}).value||'';
+    var r = await _sb.from('template_access').upsert(
+      { client_id: _editingClientId, enabled_templates: enabled, notes: notes||null, updated_at: new Date().toISOString() },
+      { onConflict: 'client_id' }
+    );
+    if (r.error) throw r.error;
     showToastAdmin('Templates saved.', 'success');
-  } catch(e) { showToastAdmin('Error: '+(e.message||e), 'error'); }
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save'; btn.disabled = false; } }
 }
+
 async function saveBinder() {
   if (!_editingClientId) return;
   var btn = document.querySelector('#ctab-panel-binder .btn-primary');
@@ -1821,20 +1771,19 @@ async function saveBinder() {
     var items = document.querySelectorAll('#binder-items-list > div');
     var binder = [];
     items.forEach(function(item) {
-      var titleDivs = item.querySelectorAll('div div');
-      var t = titleDivs.length ? titleDivs[0] : null;
+      var t = item.querySelector('div > div:first-child');
       var s = item.querySelector('select');
-      var title = t ? t.textContent.trim() : '';
-      if (title) binder.push({ title: title, status: s ? s.value : 'Pending Review' });
+      if (t) binder.push({ title: t.textContent.trim(), status: s ? s.value : 'Pending Review' });
     });
     var r = await _sb.from('clients').update(
       { binder_items: binder, updated_at: new Date().toISOString() }
     ).eq('id', _editingClientId);
     if (r.error) throw r.error;
     showToastAdmin('Binder saved.', 'success');
-  } catch(e) { showToastAdmin('Error: '+(e.message||e), 'error'); }
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save Binder'; btn.disabled = false; } }
 }
+
 async function saveAccess() {
   if (!_editingClientId) return;
   var btn = document.querySelector('#ctab-panel-access .btn-primary');
@@ -1843,7 +1792,7 @@ async function saveAccess() {
     var toggles = document.querySelectorAll('#ctab-panel-access .toggle input[type=checkbox]');
     var labels  = document.querySelectorAll('#ctab-panel-access .toggle-info strong');
     var access  = {};
-    toggles.forEach(function(t, i) {
+    toggles.forEach(function(t,i){
       if (labels[i]) { var k = labels[i].textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g,'_'); access[k] = t.checked; }
     });
     var r = await _sb.from('clients').update(
@@ -1851,15 +1800,18 @@ async function saveAccess() {
     ).eq('id', _editingClientId);
     if (r.error) throw r.error;
     showToastAdmin('Access saved.', 'success');
-  } catch(e) { showToastAdmin('Error: '+(e.message||e), 'error'); }
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save'; btn.disabled = false; } }
 }
+
 async function resetAccessToDefault() {
-  if (!_editingClientId || !confirm('Reset to tier defaults?')) return;
+  if (!_editingClientId) return;
+  if (!confirm('Reset to tier defaults?')) return;
   var r = await _sb.from('clients').update({ dashboard_access: null, updated_at: new Date().toISOString() }).eq('id', _editingClientId);
-  if (r.error) { showToastAdmin('Error: '+r.error.message, 'error'); return; }
-  showToastAdmin('Access reset.', 'success');
+  if (r.error) { showToastAdmin('Error: ' + r.error.message, 'error'); return; }
+  showToastAdmin('Access reset to tier defaults.', 'success');
 }
+
 async function saveNotes() {
   if (!_editingClientId) return;
   var btn = document.querySelector('#ctab-panel-notes .btn-primary');
@@ -1870,13 +1822,14 @@ async function saveNotes() {
       compliance_flags: (document.getElementById('ce-flags')||{}).value||null,
       last_contact:     (document.getElementById('ce-last-contact')||{}).value||null,
       next_followup:    (document.getElementById('ce-followup')||{}).value||null,
-      updated_at: new Date().toISOString()
+      updated_at:       new Date().toISOString()
     }).eq('id', _editingClientId);
     if (r.error) throw r.error;
     showToastAdmin('Notes saved.', 'success');
-  } catch(e) { showToastAdmin('Error: '+(e.message||e), 'error'); }
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save Notes'; btn.disabled = false; } }
 }
+
 function signOut() {
   if (confirm('Sign out of admin?')) {
     _sb.auth.signOut().then(function() {
@@ -1923,7 +1876,7 @@ async function downloadSigned(bucket, path, filename) {
 // Replace the old hardcoded downloadReport / downloadTemplate
 // ══════════════════════════════════════════════════════════
 
-// (client download functions handled by storage layer)
+// (client-side download functions handled by storage layer below)
 
 // ══════════════════════════════════════════════════════════
 // ADMIN UPLOAD FUNCTIONS
@@ -2257,10 +2210,4 @@ function copyInviteLink() {
     </div>
     <div style="display:flex;gap:10px">
       <button class="btn-sm btn-primary" onclick="copyInviteLink()" style="flex:1">&#128203; Copy Link</button>
-      <button class="btn-sm btn-ghost" onclick="closeModal('invite-link-modal')" style="flex:1">Close</button>
-    </div>
-    <p style="font-size:.75rem;color:#8a9bbf;margin-top:12px;text-align:center">Once Zoho SMTP is connected this will email automatically.</p>
-  </div>
-</div>
-</body>
-</html>
+      <button cla
