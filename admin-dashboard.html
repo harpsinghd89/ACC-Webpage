@@ -850,7 +850,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <div class="toggle-wrap"><div class="toggle-info"><strong>Customer Feedback Form</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
         <div class="toggle-wrap"><div class="toggle-info"><strong>Accessibility Statement Template</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
       </div>
-      <div class="fgroup" style="margin-top:14px"><label>Template Notes (shown to client)</label><textarea class="finput" id="ce-tmpl-notes" rows="2" placeholder="e.g. Your disruption notice template has been pre-filled with your organization details."></textarea></div>
+      
       <button class="btn-sm btn-primary" onclick="saveTemplates()">&#10003; Save</button>
     </div>
 
@@ -859,21 +859,21 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:14px">Manage the AODA Evidence Binder items for this client.</p>
       <div id="binder-items-list" style="display:grid;gap:8px;margin-bottom:14px">
         <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <div><div style="font-size:.85rem;font-weight:600">AODA Accessibility Report 2026</div><div style="font-size:.72rem;color:#8a9bbf">Uploaded Mar 1, 2026 · Verified</div></div>
+          <div><div data-binder-title style="font-size:.85rem;font-weight:600">AODA Accessibility Report 2026</div><div style="font-size:.72rem;color:#8a9bbf">Uploaded Mar 1, 2026 · Verified</div></div>
           <div style="display:flex;gap:6px;flex-shrink:0">
             <select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px"><option selected>Verified</option><option>Pending Review</option><option>Missing</option></select>
             <button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest('div[style]').remove()">&#10005;</button>
           </div>
         </div>
         <div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <div><div style="font-size:.85rem;font-weight:600">Staff Training Certificates — 3 employees</div><div style="font-size:.72rem;color:#8a9bbf">Mar 5, 2026 · On File</div></div>
+          <div><div data-binder-title style="font-size:.85rem;font-weight:600">Staff Training Certificates — 3 employees</div><div style="font-size:.72rem;color:#8a9bbf">Mar 5, 2026 · On File</div></div>
           <div style="display:flex;gap:6px;flex-shrink:0">
             <select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px"><option>Verified</option><option selected>On File</option><option>Pending Review</option><option>Missing</option></select>
             <button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest('div[style]').remove()">&#10005;</button>
           </div>
         </div>
         <div style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <div><div style="font-size:.85rem;font-weight:600">Emergency Response Plan</div><div style="font-size:.72rem;color:#f5a623">Missing — action required</div></div>
+          <div><div data-binder-title style="font-size:.85rem;font-weight:600">Emergency Response Plan</div><div style="font-size:.72rem;color:#f5a623">Missing — action required</div></div>
           <div style="display:flex;gap:6px;flex-shrink:0">
             <select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px"><option>Verified</option><option>On File</option><option>Pending Review</option><option selected>Missing</option></select>
             <button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest('div[style]').remove()">&#10005;</button>
@@ -1179,7 +1179,7 @@ function addBinderItem() {
   del.textContent = '✕';
   del.onclick = function(){ this.closest('div').remove(); };
   var info = document.createElement('div');
-  info.innerHTML = '<div style="font-size:.85rem;font-weight:600">' + val + '</div><div style="font-size:.72rem;color:#8a9bbf">Added today</div>';
+  info.innerHTML = '<div data-binder-title style="font-size:.85rem;font-weight:600">' + val + '</div>';
   var ctrl = document.createElement('div');
   ctrl.style.cssText = 'display:flex;gap:6px;flex-shrink:0';
   ctrl.appendChild(sel); ctrl.appendChild(del);
@@ -1450,9 +1450,10 @@ async function openClientEditor(btn) {
 
   try {
     // Load client + roadmap in parallel
-    var [cr, rr] = await Promise.all([
+    var [cr, rr, tr] = await Promise.all([
       _sb.from('clients').select('*').eq('id', _editingClientId).single(),
-      _sb.from('roadmap').select('*').eq('client_id', _editingClientId).is('deleted_at', null).order('year').order('target_date')
+      _sb.from('roadmap').select('*').eq('client_id', _editingClientId).is('deleted_at', null).order('year').order('target_date'),
+      _sb.from('template_access').select('*').eq('client_id', _editingClientId)
     ]);
     if (cr.error) throw cr.error;
     var c = cr.data;
@@ -1509,6 +1510,25 @@ async function openClientEditor(btn) {
     // ── Notes tab ──
     f('ce-onboard-notes', c.onboarding_notes);
     f('ce-flags',         c.compliance_flags || '');
+
+    // ── Binder tab — render from DB ──
+    renderBinderItems(c.binder_items || []);
+
+    // ── Templates tab — restore from DB ──
+    if (tr.data && tr.data.length) {
+      var tmplToggles = document.querySelectorAll('#template-access-list .toggle input[type=checkbox]');
+      var tmplLabels  = document.querySelectorAll('#template-access-list .toggle-info strong');
+      tmplToggles.forEach(function(t, i) {
+        if (tmplLabels[i]) {
+          var key = tmplLabels[i].textContent.trim()
+            .toLowerCase()
+            .replace(/&amp;/g,'and').replace(/&/g,'and')
+            .replace(/[^a-z0-9]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+          var row = tr.data.find(function(r){ return r.template_key === key; });
+          if (row) t.checked = row.enabled !== false;
+        }
+      });
+    }
     f('ce-last-contact',  c.last_contact  || '');
     f('ce-followup',      c.next_followup || '');
 
@@ -1750,14 +1770,20 @@ async function saveTemplates() {
   try {
     var toggles = document.querySelectorAll('#template-access-list .toggle input[type=checkbox]');
     var labels  = document.querySelectorAll('#template-access-list .toggle-info strong');
-    var enabled = [];
-    toggles.forEach(function(t,i){ if(t.checked && labels[i]) enabled.push(labels[i].textContent.trim()); });
-    var notes = (document.getElementById('ce-tmpl-notes')||{}).value||'';
-    var r = await _sb.from('template_access').upsert(
-      { client_id: _editingClientId, enabled_templates: enabled, notes: notes||null, updated_at: new Date().toISOString() },
-      { onConflict: 'client_id' }
-    );
-    if (r.error) throw r.error;
+    var rows = [];
+    toggles.forEach(function(t, i) {
+      if (labels[i]) {
+        var key = labels[i].textContent.trim()
+          .toLowerCase()
+          .replace(/&amp;/g,'and').replace(/&/g,'and')
+          .replace(/[^a-z0-9]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+        rows.push({ client_id: _editingClientId, template_key: key, enabled: t.checked, updated_at: new Date().toISOString() });
+      }
+    });
+    if (rows.length) {
+      var r = await _sb.from('template_access').upsert(rows, { onConflict: 'client_id,template_key' });
+      if (r.error) throw r.error;
+    }
     showToastAdmin('Templates saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save'; btn.disabled = false; } }
@@ -1771,9 +1797,10 @@ async function saveBinder() {
     var items = document.querySelectorAll('#binder-items-list > div');
     var binder = [];
     items.forEach(function(item) {
-      var t = item.querySelector('div > div:first-child');
+      var titleEl = item.querySelector('[data-binder-title]');
       var s = item.querySelector('select');
-      if (t) binder.push({ title: t.textContent.trim(), status: s ? s.value : 'Pending Review' });
+      var title = titleEl ? titleEl.textContent.trim() : '';
+      if (title) binder.push({ title: title, status: s ? s.value : 'Pending Review' });
     });
     var r = await _sb.from('clients').update(
       { binder_items: binder, updated_at: new Date().toISOString() }
@@ -1782,6 +1809,27 @@ async function saveBinder() {
     showToastAdmin('Binder saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save Binder'; btn.disabled = false; } }
+}
+
+function renderBinderItems(items) {
+  var list = document.getElementById('binder-items-list');
+  if (!list) return;
+  if (!items || !items.length) {
+    list.innerHTML = '<p style="color:#8a9bbf;font-size:.82rem;padding:8px 0">No binder items yet. Add one below.</p>';
+    return;
+  }
+  var statuses = ['Verified','On File','Pending Review','Missing'];
+  list.innerHTML = items.map(function(item) {
+    var opts = statuses.map(function(s){
+      return '<option value="'+s+'"'+(s===item.status?' selected':'')+'>'+s+'</option>';
+    }).join('');
+    return '<div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">' +
+      '<div><div data-binder-title style="font-size:.85rem;font-weight:600">'+esc(item.title)+'</div></div>' +
+      '<div style="display:flex;gap:6px;flex-shrink:0">' +
+      '<select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px">'+opts+'</select>' +
+      '<button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest(\'div[style]\').remove()">&#10005;</button>' +
+      '</div></div>';
+  }).join('');
 }
 
 async function saveAccess() {
