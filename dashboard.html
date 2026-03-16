@@ -2652,30 +2652,21 @@ async function downloadInvoice(yearMonth) {
 }
 
 // ── Edge Function Callers ─────────────────────────────────
-// Calls a Supabase Edge Function with the current user's JWT.
-// Returns the parsed JSON response or throws on error.
+// Calls a Supabase Edge Function with a guaranteed-fresh user JWT.
+// Uses functions.invoke() for correct apikey/CORS handling, but explicitly
+// passes the session access_token so we never accidentally send the anon key.
 async function callEdgeFunction(fnName, body) {
-  var session = (await _sb_client.auth.getSession()).data.session;
-  if (!session) throw new Error('Not authenticated');
-  var SUPABASE_URL = 'https://wfyzvmfvlukawidowuym.supabase.co';
-  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
-  var res = await fetch(SUPABASE_URL + '/functions/v1/' + fnName, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + session.access_token,
-      'apikey': SUPABASE_ANON_KEY,
-    },
-    body: JSON.stringify(body),
+  // getSession() auto-refreshes if the token is expired
+  var sessionRes = await _sb_client.auth.getSession();
+  var session = sessionRes.data.session;
+  if (!session) throw new Error('Not authenticated — please log in again.');
+
+  var { data, error } = await _sb_client.functions.invoke(fnName, {
+    body: body,
+    headers: { 'Authorization': 'Bearer ' + session.access_token },
   });
-  var json;
-  try { json = await res.json(); } catch(_) { json = {}; }
-  if (!res.ok) {
-    var msg = json.error || json.message || ('Edge function error ' + res.status);
-    console.error('callEdgeFunction [' + fnName + '] ' + res.status + ':', json);
-    throw new Error(msg);
-  }
-  return json;
+  if (error) throw new Error(error.message || String(error));
+  return data;
 }
 
 // Generate + download a monthly audit report for the logged-in client.
