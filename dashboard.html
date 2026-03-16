@@ -598,7 +598,10 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <p>Monthly WCAG 2.1 AA compliance reports generated automatically on the 1st of each month. Real-time monitoring runs every 24 hours.</p>
       </div>
       <div class="card">
-        <h2>&#128202; Monthly Reports</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <h2 style="margin:0">&#128202; Monthly Reports</h2>
+          <button class="btn-sm btn-primary" onclick="generateAndDownloadReport()">&#128196; Generate This Month's Report</button>
+        </div>
         <div id="client-reports-list">
           <div style="color:#8a9bbf;font-size:.82rem;padding:12px 0">Loading reports…</div>
         </div>
@@ -655,7 +658,10 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </div>
       </div>
       <div class="card">
-        <h2>&#128218; Evidence Binder Files</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <h2 style="margin:0">&#128218; Evidence Binder Files</h2>
+          <button class="btn-sm btn-primary" onclick="generateAndDownloadBinder()">&#128218; Generate This Year's Binder</button>
+        </div>
         <div id="client-evidence-list">
           <div style="color:#8a9bbf;font-size:.82rem;padding:12px 0">Loading binder files…</div>
         </div>
@@ -831,7 +837,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
                 <td><span style="font-family:'JetBrains Mono',monospace;color:#38d9a9">92%</span></td>
                 <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
                 <td style="font-size:.78rem;color:#8a9bbf">Feb 14, 2026</td>
-                <td><button class="btn-sm btn-ghost" onclick="alert('Certificate downloading…')">&#8659; PDF</button></td>
+                <td><button class="btn-sm btn-ghost" onclick="generateCertificate('Sarah Chen','Module 1 — AODA Overview','2026-02-14')">&#8659; PDF</button></td>
               </tr>
               <tr data-name="james kowalski">
                 <td><strong>James Kowalski</strong><div style="font-size:.72rem;color:#8a9bbf">HR Director</div></td>
@@ -839,7 +845,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
                 <td><span style="font-family:'JetBrains Mono',monospace;color:#38d9a9">88%</span></td>
                 <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
                 <td style="font-size:.78rem;color:#8a9bbf">Feb 18, 2026</td>
-                <td><button class="btn-sm btn-ghost" onclick="alert('Certificate downloading…')">&#8659; PDF</button></td>
+                <td><button class="btn-sm btn-ghost" onclick="generateCertificate('James Kowalski','Module 1 — AODA Overview','2026-02-18')">&#8659; PDF</button></td>
               </tr>
               <tr data-name="priya nair">
                 <td><strong>Priya Nair</strong><div style="font-size:.72rem;color:#8a9bbf">Customer Service</div></td>
@@ -847,7 +853,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
                 <td><span style="font-family:'JetBrains Mono',monospace;color:#38d9a9">95%</span></td>
                 <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
                 <td style="font-size:.78rem;color:#8a9bbf">Mar 2, 2026</td>
-                <td><button class="btn-sm btn-ghost" onclick="alert('Certificate downloading…')">&#8659; PDF</button></td>
+                <td><button class="btn-sm btn-ghost" onclick="generateCertificate('Priya Nair','Module 1 — AODA Overview','2026-03-02')">&#8659; PDF</button></td>
               </tr>
               <tr data-name="derek osei">
                 <td><strong>Derek Osei</strong><div style="font-size:.72rem;color:#8a9bbf">IT Lead</div></td>
@@ -865,7 +871,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </div>
         <div class="btn-row" style="margin-top:14px">
           <button class="btn-sm btn-primary" onclick="openModal('add-employee-modal')">+ Add Employee</button>
-          <a class="dl-btn" href="#" onclick="alert('Full training log exported as PDF.')">&#8659; Export PDF Report</a>
+          <a class="dl-btn" href="#" onclick="generateAndDownloadReport();return false">&#8659; Export PDF Report</a>
         </div>
       </div>
 
@@ -2501,7 +2507,7 @@ function populateBillingHistory(rows) {
       '<td>' + fmtDate(b.paid_at||b.created_at) + '</td>' +
       '<td>$' + (b.amount_cents ? (b.amount_cents/100).toFixed(2) : '—') + '</td>' +
       '<td><span class="pill ' + (b.status==='paid'?'green':'yellow') + '">' + esc(b.status) + '</span></td>' +
-      '<td><button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="downloadInvoice(\'' + ym + '\')">&#8659; PDF</button></td>' +
+      '<td><button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="generateAndDownloadInvoice(\'' + ym + '\')">&#8659; PDF</button></td>' +
       '</tr>';
   }).join('');
 }
@@ -2643,6 +2649,132 @@ async function downloadInvoice(yearMonth) {
   if (!window._clientData) return;
   var code = _clientData.client_code;
   await downloadSigned('invoices', code + '/' + yearMonth + '-invoice.pdf', 'ACC_Invoice_' + yearMonth + '_' + code + '.pdf');
+}
+
+// ── Edge Function Callers ─────────────────────────────────
+// Calls a Supabase Edge Function with the current user's JWT.
+// Returns the parsed JSON response or throws on error.
+async function callEdgeFunction(fnName, body) {
+  var session = (await _sb_client.auth.getSession()).data.session;
+  if (!session) throw new Error('Not authenticated');
+  var SUPABASE_URL = 'https://wfyzvmfvlukawidowuym.supabase.co';
+  var res = await fetch(SUPABASE_URL + '/functions/v1/' + fnName, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + session.access_token,
+    },
+    body: JSON.stringify(body),
+  });
+  var json = await res.json();
+  if (!res.ok) throw new Error(json.error || ('Edge function error ' + res.status));
+  return json;
+}
+
+// Generate + download a monthly audit report for the logged-in client.
+// Calls the edge function first (which creates/overwrites the file in Storage),
+// then triggers a signed-URL download.
+async function generateAndDownloadReport(monthKey) {
+  if (!window._clientData) { alert('Please log in first.'); return; }
+  var btn = (window.event && window.event.target) || null;
+  var orig = btn ? btn.innerHTML : null;
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating&hellip;'; }
+  try {
+    await callEdgeFunction('generate-audit-report', { client_id: _clientData.id });
+    await downloadReport(monthKey || (
+      new Date().toLocaleDateString('en-CA', { month: 'long' }).toLowerCase() + '-' + new Date().getFullYear()
+    ));
+  } catch(e) {
+    console.error('generateAndDownloadReport:', e);
+    alert('Could not generate report: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+  }
+}
+
+// Generate + download the annual evidence binder.
+async function generateAndDownloadBinder(year) {
+  if (!window._clientData) { alert('Please log in first.'); return; }
+  var btn = (window.event && window.event.target) || null;
+  var orig = btn ? btn.innerHTML : null;
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating&hellip;'; }
+  try {
+    await callEdgeFunction('generate-evidence-binder', { client_id: _clientData.id });
+    await downloadEvidenceBinder(year);
+  } catch(e) {
+    console.error('generateAndDownloadBinder:', e);
+    alert('Could not generate binder: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+  }
+}
+
+// Generate + download an invoice for the given YYYY-MM key.
+async function generateAndDownloadInvoice(yearMonth) {
+  if (!window._clientData) { alert('Please log in first.'); return; }
+  var btn = (window.event && window.event.target) || null;
+  var orig = btn ? btn.innerHTML : null;
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating&hellip;'; }
+  try {
+    await callEdgeFunction('generate-invoice', { client_id: _clientData.id });
+    await downloadInvoice(yearMonth || (
+      new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0')
+    ));
+  } catch(e) {
+    console.error('generateAndDownloadInvoice:', e);
+    alert('Could not generate invoice: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+  }
+}
+
+// Generate the AODA Compliance Readiness Letter and download it.
+async function generateReadinessLetter() {
+  if (!window._clientData) { alert('Please log in first.'); return; }
+  var btn = (window.event && window.event.target) || null;
+  var orig = btn ? btn.innerHTML : null;
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating&hellip;'; }
+  try {
+    var result = await callEdgeFunction('generate-compliance-letter', {
+      client_id: _clientData.id,
+      letter_type: 'compliance_confirmation',
+    });
+    // result.file = "CLIENT_CODE/YYYY-MM-compliance_confirmation.pdf"
+    await downloadSigned('reports', result.file,
+      'ACC_Compliance_Letter_' + _clientData.client_code + '.pdf');
+  } catch(e) {
+    console.error('generateReadinessLetter:', e);
+    alert('Could not generate letter: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+  }
+}
+
+// Generate a training certificate for an employee and download it.
+// employeeName   — full name string, e.g. "Sarah Chen"
+// courseName     — module/course name string
+// completionDate — ISO date string, e.g. "2026-02-14"
+async function generateCertificate(employeeName, courseName, completionDate) {
+  if (!window._clientData) { alert('Please log in first.'); return; }
+  var btn = (window.event && window.event.target) || null;
+  var orig = btn ? btn.innerHTML : null;
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating&hellip;'; }
+  try {
+    var result = await callEdgeFunction('generate-training-certificate', {
+      client_id: _clientData.id,
+      employee_name: employeeName,
+      course_name: courseName,
+      completion_date: completionDate,
+    });
+    // result.file = "CLIENT_CODE/cert-name-YYYYMM.pdf"
+    await downloadSigned('reports', result.file,
+      'ACC_Certificate_' + employeeName.replace(/\s+/g, '_') + '.pdf');
+  } catch(e) {
+    console.error('generateCertificate:', e);
+    alert('Could not generate certificate: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+  }
 }
 
 // ── Auth guard ────────────────────────────────────────────
