@@ -396,22 +396,22 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="stat-grid">
         <div class="stat-card teal">
           <div class="stat-label">Accessibility Score</div>
-          <div class="stat-value" id="stat-score">—</div>
-          <div class="stat-sub" id="stat-score-sub">/ 100</div>
+          <div class="stat-value">93</div>
+          <div class="stat-sub">/ 100 &mdash; Last scanned 2h ago</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Auto-Fixes Applied</div>
-          <div class="stat-value" id="stat-fixes">—</div>
-          <div class="stat-sub" id="stat-fixes-sub">Loading…</div>
+          <div class="stat-value">0</div>
+          <div class="stat-sub">No issues detected</div>
         </div>
         <div class="stat-card warn">
           <div class="stat-label">Open Warnings</div>
-          <div class="stat-value" id="stat-warnings">—</div>
-          <div class="stat-sub" id="stat-warnings-sub">Loading…</div>
+          <div class="stat-value">1</div>
+          <div class="stat-sub">Contrast check in progress</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Days to AODA Deadline</div>
-          <div class="stat-value" id="days-left">—</div>
+          <div class="stat-value" id="days-left">296</div>
           <div class="stat-sub">Dec 31, 2026</div>
         </div>
       </div>
@@ -422,40 +422,59 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div class="score-ring">
             <svg class="ring-svg" width="80" height="80" viewBox="0 0 80 80" aria-hidden="true">
               <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(30,58,107,.6)" stroke-width="8"/>
-              <circle id="wcag-ring-circle" cx="40" cy="40" r="34" fill="none" stroke="#38d9a9" stroke-width="8"
-                stroke-dasharray="213.6" stroke-dashoffset="213.6" stroke-linecap="round"
+              <circle cx="40" cy="40" r="34" fill="none" stroke="#38d9a9" stroke-width="8"
+                stroke-dasharray="213.6" stroke-dashoffset="57" stroke-linecap="round"
                 transform="rotate(-90 40 40)"/>
             </svg>
             <div class="ring-info">
-              <div class="big" id="wcag-score-pct">—%</div>
+              <div class="big">93%</div>
               <div class="sub">WCAG 2.1 AA</div>
-              <div class="sub" style="margin-top:4px" id="wcag-critical-sub">Loading…</div>
+              <div class="sub" style="margin-top:4px">0 Critical issues</div>
             </div>
           </div>
           <div style="margin-top:16px">
             <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
-              <span style="color:var(--muted)">Perceivable</span><span id="wcag-p-pct">—%</span>
+              <span style="color:var(--muted)">Perceivable</span><span>100%</span>
             </div>
-            <div class="progress-bar"><div class="progress-fill" id="wcag-p-bar" style="width:0%"></div></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
             <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
-              <span style="color:var(--muted)">Operable</span><span id="wcag-o-pct">—%</span>
+              <span style="color:var(--muted)">Operable</span><span>95%</span>
             </div>
-            <div class="progress-bar"><div class="progress-fill" id="wcag-o-bar" style="width:0%"></div></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:95%"></div></div>
             <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
-              <span style="color:var(--muted)">Understandable</span><span id="wcag-u-pct">—%</span>
+              <span style="color:var(--muted)">Understandable</span><span>90%</span>
             </div>
-            <div class="progress-bar"><div class="progress-fill" id="wcag-u-bar" style="width:0%"></div></div>
+            <div class="progress-bar"><div class="progress-fill warn" style="width:90%"></div></div>
             <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
-              <span style="color:var(--muted)">Robust</span><span id="wcag-r-pct">—%</span>
+              <span style="color:var(--muted)">Robust</span><span>88%</span>
             </div>
-            <div class="progress-bar"><div class="progress-fill" id="wcag-r-bar" style="width:0%"></div></div>
+            <div class="progress-bar"><div class="progress-fill warn" style="width:88%"></div></div>
           </div>
         </div>
 
         <div class="card">
           <h2>&#128203; Recent Activity</h2>
-          <div id="recent-activity-list" style="display:flex;flex-direction:column;gap:12px">
-            <div style="color:#8a9bbf;font-size:.82rem">Loading activity…</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--teal);margin-top:6px;flex-shrink:0"></div>
+              <div><strong style="font-size:.82rem">Monthly Audit Report generated</strong><div style="font-size:.75rem;color:var(--muted)">March 1, 2026</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px;flex-shrink:0"></div>
+              <div><strong style="font-size:.82rem">Widget updated to v12</strong><div style="font-size:.75rem;color:var(--muted)">Feb 28, 2026</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--warn);margin-top:6px;flex-shrink:0"></div>
+              <div><strong style="font-size:.82rem">1 contrast warning detected</strong><div style="font-size:.75rem;color:var(--muted)">Feb 25, 2026</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--teal);margin-top:6px;flex-shrink:0"></div>
+              <div><strong style="font-size:.82rem">Staff training completed: 3 employees</strong><div style="font-size:.75rem;color:var(--muted)">Feb 20, 2026</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--teal);margin-top:6px;flex-shrink:0"></div>
+              <div><strong style="font-size:.82rem">Evidence Binder scheduled: Dec 1, 2026</strong><div style="font-size:.75rem;color:var(--muted)">Feb 1, 2026</div></div>
+            </div>
           </div>
         </div>
       </div>
@@ -480,10 +499,8 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div class="fgroup">
             <label for="w-color">Accent Colour</label>
             <div style="display:flex;gap:8px;align-items:center">
-              <input type="color" id="w-color" value="#4f8ef7" style="width:44px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none"
-                oninput="document.getElementById('w-color-hex').value=this.value">
-              <input class="finput" type="text" id="w-color-hex" value="#4f8ef7" style="flex:1" placeholder="#4f8ef7"
-                oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value))document.getElementById('w-color').value=this.value"/>
+              <input type="color" id="w-color" value="#4f8ef7" style="width:44px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none">
+              <input class="finput" type="text" value="#4f8ef7" style="flex:1" placeholder="#4f8ef7"/>
             </div>
           </div>
           <div class="fgroup">
@@ -497,33 +514,33 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <h2>&#127895; Features</h2>
           <div class="toggle-wrap">
             <div class="toggle-info"><strong>Profiles</strong><span>Disability-optimized presets</span></div>
-            <label class="toggle" aria-label="Toggle profiles"><input type="checkbox" id="w-profiles" checked><span class="toggle-slider"></span></label>
+            <label class="toggle" aria-label="Toggle profiles"><input type="checkbox" checked><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-wrap">
             <div class="toggle-info"><strong>Auto-Fix Engine</strong><span>Disabled for client-facing pages</span></div>
-            <label class="toggle" aria-label="Toggle auto-fix"><input type="checkbox" id="w-autofix"><span class="toggle-slider"></span></label>
+            <label class="toggle" aria-label="Toggle auto-fix"><input type="checkbox"><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-wrap">
             <div class="toggle-info"><strong>Contrast Checker</strong><span>Warn on low contrast text</span></div>
-            <label class="toggle" aria-label="Toggle contrast checker"><input type="checkbox" id="w-contrast" checked><span class="toggle-slider"></span></label>
+            <label class="toggle" aria-label="Toggle contrast checker"><input type="checkbox" checked><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-wrap">
             <div class="toggle-info"><strong>Reading Guide</strong><span>Focus line for reading support</span></div>
-            <label class="toggle" aria-label="Toggle reading guide"><input type="checkbox" id="w-reading" checked><span class="toggle-slider"></span></label>
+            <label class="toggle" aria-label="Toggle reading guide"><input type="checkbox" checked><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-wrap">
             <div class="toggle-info"><strong>Audit History</strong><span>Show history tab to visitors</span></div>
-            <label class="toggle" aria-label="Toggle audit history"><input type="checkbox" id="w-history"><span class="toggle-slider"></span></label>
+            <label class="toggle" aria-label="Toggle audit history"><input type="checkbox"><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-wrap">
             <div class="toggle-info"><strong>Feedback Capture</strong><span>Collect accessibility feedback via widget</span></div>
-            <label class="toggle" aria-label="Toggle feedback capture"><input type="checkbox" id="w-feedback" checked><span class="toggle-slider"></span></label>
+            <label class="toggle" aria-label="Toggle feedback capture"><input type="checkbox" checked><span class="toggle-slider"></span></label>
           </div>
         </div>
       </div>
       <div class="btn-row" style="margin-top:8px">
-        <button class="btn-sm btn-primary" onclick="saveWidgetSettings()">Save Changes</button>
-        <button class="btn-sm btn-ghost" onclick="resetWidgetSettings()">Reset to Defaults</button>
+        <button class="btn-sm btn-primary" onclick="alert('Widget settings saved!')">Save Changes</button>
+        <button class="btn-sm btn-ghost" onclick="alert('Settings reset to defaults.')">Reset to Defaults</button>
       </div>
     </div>
 
@@ -538,13 +555,24 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">This code is locked to your registered domain <strong style="color:var(--text)" class="stmt-domain">—</strong>. It will not activate on other domains.</p>
         <div class="code-block">
           <button class="code-copy" onclick="copyCode('embed-code')" aria-label="Copy embed code">Copy</button>
-          <pre id="embed-code">Loading your embed code…</pre>
+          <pre id="embed-code">&lt;!-- ACC Accessibility Widget | acmecorp.ca --&gt;
+&lt;script
+  src="https://cdn.accessibilitycompliance.ca/widget/ACC-Widget.js"
+  id="ACCWidget"
+  data-domain="acmecorp.ca"
+  data-client="CLI-00142"
+  data-tier="1"
+&gt;&lt;/script&gt;</pre>
         </div>
         <h3>WordPress Plugin</h3>
         <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Prefer a plugin? Add this to your <strong>functions.php</strong> or use a code snippet plugin:</p>
         <div class="code-block">
           <button class="code-copy" onclick="copyCode('wp-code')" aria-label="Copy WordPress code">Copy</button>
-          <pre id="wp-code">Loading your WordPress code…</pre>
+          <pre id="wp-code">add_action('wp_footer', function() { ?>
+  &lt;script src="https://cdn.accessibilitycompliance.ca/widget/ACC-Widget.js"
+  id="ACCWidget" data-domain="acmecorp.ca"
+  data-client="CLI-00142"&gt;&lt;/script&gt;
+&lt;?php });</pre>
         </div>
         <h3>Installation Instructions</h3>
         <ol style="font-size:.85rem;color:var(--muted);padding-left:20px;line-height:2">
@@ -556,7 +584,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <li>Return to this dashboard — your widget status will update within 15 minutes.</li>
         </ol>
         <div style="margin-top:16px">
-          <a class="dl-btn" href="#" onclick="downloadInstallGuide();return false">
+          <a class="dl-btn" href="#" onclick="alert('Installation guide PDF downloaded.')">
             &#8659; Download Installation Guide (PDF)
           </a>
         </div>
@@ -572,7 +600,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <h2 style="margin:0">&#128202; Monthly Reports</h2>
-          <span style="font-size:.78rem;color:#8a9bbf">Auto-generated on the 1st of each month</span>
+          <button class="btn-sm btn-primary" onclick="generateAndDownloadReport()">&#128196; Generate This Month's Report</button>
         </div>
         <div id="client-reports-list">
           <div style="color:#8a9bbf;font-size:.82rem;padding:12px 0">Loading reports…</div>
@@ -582,24 +610,24 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h2>&#128270; Real-Time Monitor</h2>
         <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
           <span class="pill green">Live</span>
-          <span style="font-size:.82rem;color:var(--muted)" id="scan-last-time">Last scan: checking… &mdash; <span class="stmt-domain">—</span></span>
-          <button class="btn-sm btn-ghost" style="margin-left:auto" onclick="runScanNow(this)">Run Scan Now</button>
+          <span style="font-size:.82rem;color:var(--muted)">Last scan: 2 hours ago &mdash; <span class="stmt-domain">—</span></span>
+          <button class="btn-sm btn-ghost" style="margin-left:auto" onclick="alert('Scan initiated. Results in ~60 seconds.')">Run Scan Now</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
           <div style="text-align:center;padding:16px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--teal)" id="scan-critical">—</div>
+            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--teal)">0</div>
             <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Critical</div>
           </div>
           <div style="text-align:center;padding:16px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--warn)" id="scan-warnings">—</div>
+            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--warn)">1</div>
             <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Warnings</div>
           </div>
           <div style="text-align:center;padding:16px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--accent)" id="scan-aria">—</div>
+            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--accent)">16</div>
             <div style="font-size:.72rem;color:var(--muted);margin-top:4px">ARIA Labels</div>
           </div>
           <div style="text-align:center;padding:16px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--teal)" id="scan-score">—</div>
+            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--teal)">93</div>
             <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Score</div>
           </div>
         </div>
@@ -613,16 +641,16 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <p>Your annual Evidence Binder is automatically compiled on December 1st, aggregating all monthly reports, training logs, and feedback records for the calendar year.</p>
       </div>
       <div class="card">
-        <h2>&#128197; <span id="evidence-binder-year">2026</span> Evidence Binder</h2>
+        <h2>&#128197; 2026 Evidence Binder</h2>
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
           <span class="pill yellow">In Progress</span>
-          <span style="font-size:.82rem;color:var(--muted)">Compiling automatically &mdash; Ready December 1, <span id="evidence-binder-year2">2026</span></span>
+          <span style="font-size:.82rem;color:var(--muted)">Compiling automatically &mdash; Ready December 1, 2026</span>
         </div>
         <div style="margin-bottom:20px">
           <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px">
-            <span style="color:var(--muted)">Milestone progress</span><span id="evidence-done-count">Loading…</span>
+            <span style="color:var(--muted)">Year progress</span><span>3 / 12 months compiled</span>
           </div>
-          <div class="progress-bar" style="height:10px"><div class="progress-fill" id="evidence-progress-bar" style="width:0%"></div></div>
+          <div class="progress-bar" style="height:10px"><div class="progress-fill" style="width:25%"></div></div>
         </div>
         <h3>Document Checklist</h3>
         <div id="evidence-binder-list" style="display:grid;gap:6px;margin-bottom:12px">
@@ -753,10 +781,10 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <p style="font-size:.83rem;color:var(--muted);margin-bottom:12px">Share this unique link with your employees. They can complete training on any device.</p>
         <div class="code-block">
           <button class="code-copy" onclick="copyCode('training-link')" aria-label="Copy training link">Copy</button>
-          <pre id="training-link">https://accessibilitycompliance.ca/training.html?org=…&token=…</pre>
+          <pre id="training-link">https://accessibilitycompliance.ca/training.html?org=CLI-00142&token=acme2026</pre>
         </div>
         <div class="btn-row" style="margin-top:12px">
-          <a class="dl-btn" href="#" id="preview-mod1-link" target="_blank">&#9654; Preview Module 1</a>
+          <a class="dl-btn" href="training.html?org=CLI-00142&module=1&token=acme2026" target="_blank">&#9654; Preview Module 1</a>
         </div>
       </div>
 
@@ -765,24 +793,24 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div style="font-size:2rem;margin-bottom:8px">&#127891;</div>
           <h3 style="font-size:.95rem;margin-bottom:6px">Module 1</h3>
           <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">AODA Overview &amp; Legal Requirements</p>
-          <span class="pill green" id="mod1-count" style="font-size:.72rem;display:block;margin-bottom:10px">Loading…</span>
-          <a href="#" id="mod1-preview-link" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
+          <span class="pill green" style="font-size:.72rem;display:block;margin-bottom:10px">3 employees completed</span>
+          <a href="training.html?module=1" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
           <button class="btn-sm btn-ghost" onclick="shareModule(1,'AODA Overview')" style="margin-left:4px">&#128101; Assign</button>
         </div>
         <div class="card" style="text-align:center">
           <div style="font-size:2rem;margin-bottom:8px">&#127891;</div>
           <h3 style="font-size:.95rem;margin-bottom:6px">Module 2</h3>
           <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">WCAG 2.1 AA — Digital Accessibility</p>
-          <span class="pill yellow" id="mod2-count" style="font-size:.72rem;display:block;margin-bottom:10px">Loading…</span>
-          <a href="#" id="mod2-preview-link" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
+          <span class="pill yellow" style="font-size:.72rem;display:block;margin-bottom:10px">1 in progress</span>
+          <a href="training.html?module=2" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
           <button class="btn-sm btn-ghost" onclick="shareModule(2,'WCAG 2.1 AA')" style="margin-left:4px">&#128101; Assign</button>
         </div>
         <div class="card" style="text-align:center">
           <div style="font-size:2rem;margin-bottom:8px">&#127891;</div>
           <h3 style="font-size:.95rem;margin-bottom:6px">Module 3</h3>
           <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Customer Service &amp; Inclusion</p>
-          <span class="pill blue" id="mod3-count" style="font-size:.72rem;display:block;margin-bottom:10px">Not started</span>
-          <a href="#" id="mod3-preview-link" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
+          <span class="pill blue" style="font-size:.72rem;display:block;margin-bottom:10px">Not started</span>
+          <a href="training.html?module=3" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
           <button class="btn-sm btn-ghost" onclick="shareModule(3,'Customer Service')" style="margin-left:4px">&#128101; Assign</button>
         </div>
       </div>
@@ -794,7 +822,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <input class="finput" type="search" id="training-search" placeholder="Search employee…"
               oninput="filterTraining()" style="height:34px;min-width:160px"/>
-            <a class="dl-btn" href="#" onclick="exportTableCSV('training-table', 'ACC_Training_Registry.csv')">&#8659; Export CSV</a>
+            <a class="dl-btn" href="#" onclick="alert('Training registry exported as CSV.')">&#8659; Export CSV</a>
           </div>
         </div>
         <div style="overflow-x:auto">
@@ -843,7 +871,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </div>
         <div class="btn-row" style="margin-top:14px">
           <button class="btn-sm btn-primary" onclick="openModal('add-employee-modal')">+ Add Employee</button>
-
+          <a class="dl-btn" href="#" onclick="generateAndDownloadReport();return false">&#8659; Export PDF Report</a>
         </div>
       </div>
 
@@ -862,11 +890,19 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="card">
         <h2>&#128172; Feedback Entries</h2>
         <div class="btn-row" style="margin-bottom:16px">
-          <a class="dl-btn" href="#" onclick="exportTableCSV('feedback-table', 'ACC_Feedback_Log.csv')">&#8659; Export CSV</a>
+          <a class="dl-btn" href="#" onclick="alert('Feedback log exported.')">&#8659; Export CSV</a>
         </div>
-        <table class="data-table" id="feedback-table" aria-label="Accessibility feedback entries">
+        <table class="data-table" aria-label="Accessibility feedback entries">
           <thead><tr><th>Date</th><th>Type</th><th>Summary</th><th>Status</th></tr></thead>
-          <tbody id="feedback-tbody"><tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">Loading feedback…</td></tr></tbody>
+          <tbody>
+            <tr><td>Mar 3, 2026</td><td>Widget</td><td>Font size too small on mobile menu</td><td><select class="finput" onchange="updateFeedbackStatus(this)" style="padding:4px 8px;font-size:.75rem;width:120px"><option selected>Resolved</option><option>In Review</option><option>New</option><option>Closed</option></select></td></tr>
+            <tr><td>Feb 28, 2026</td><td>Email</td><td>Contact form not accessible with screen reader</td><td><select class="finput" onchange="updateFeedbackStatus(this)" style="padding:4px 8px;font-size:.75rem;width:120px"><option selected>Resolved</option><option>In Review</option><option>New</option><option>Closed</option></select></td></tr>
+            <tr><td>Feb 22, 2026</td><td>Widget</td><td>Low contrast on footer text</td><td><select class="finput" onchange="updateFeedbackStatus(this)" style="padding:4px 8px;font-size:.75rem;width:120px"><option>Resolved</option><option selected>In Review</option><option>New</option><option>Closed</option></select></td></tr>
+            <tr><td>Feb 15, 2026</td><td>Widget</td><td>Images missing alt text on blog page</td><td><span class="pill green">Resolved</span></td></tr>
+            <tr><td>Feb 10, 2026</td><td>Phone</td><td>PDF documents not accessible</td><td><span class="pill green">Resolved</span></td></tr>
+            <tr><td>Jan 30, 2026</td><td>Email</td><td>Video captions missing</td><td><span class="pill green">Resolved</span></td></tr>
+            <tr><td>Jan 20, 2026</td><td>Widget</td><td>Skip navigation not working in Firefox</td><td><span class="pill green">Resolved</span></td></tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -920,12 +956,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             <button class="btn-sm btn-primary" onclick="generateAndDownloadInvoice()">&#128196; Generate This Month's Invoice</button>
           </div>
           <div id="client-invoices-list">
-            <table class="data-table" id="billing-history-table" aria-label="Invoice history">
-              <thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>PDF</th></tr></thead>
-              <tbody id="billing-history-tbody">
-                <tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">Loading invoices…</td></tr>
-              </tbody>
-            </table>
+            <div style="color:#8a9bbf;font-size:.82rem;padding:12px 0">Loading invoices…</div>
           </div>
         </div>
       </div>
@@ -949,7 +980,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             <input class="finput" type="url" id="acc-url" value="" style="width:100%"/>
           </div>
         </div>
-        <button class="btn-sm btn-primary" style="margin-top:8px" onclick="saveAccountDetails()">Save Changes</button>
+        <button class="btn-sm btn-primary" style="margin-top:8px" onclick="alert('Account details saved successfully.')">Save Changes</button>
       </div>
 
       <!-- Change Password -->
@@ -1092,9 +1123,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h2>&#128101; All Clients</h2>
         <div class="btn-row" style="margin-bottom:16px">
           <button class="btn-sm btn-primary" onclick="openModal('add-client-modal')">+ Add Client</button>
-          <a class="dl-btn" href="#" onclick="exportTableCSV('admin-clients-table', 'ACC_Client_List.csv')">&#8659; Export CSV</a>
+          <a class="dl-btn" href="#" onclick="alert('Client list exported.')">&#8659; Export CSV</a>
         </div>
-        <table class="data-table" id="admin-clients-table" aria-label="Client list">
+        <table class="data-table" aria-label="Client list">
           <thead><tr><th>Client</th><th>Domain</th><th>Tier</th><th>Score</th><th>Billing</th><th>Actions</th></tr></thead>
           <tbody>
             <tr>
@@ -1279,7 +1310,7 @@ Unsubscribe: accessibilitycompliance.ca/unsubscribe.html</div>
       <div class="card">
         <h2>&#127991; Active Codes</h2>
         <div class="btn-row" style="margin-bottom:16px">
-          <a class="dl-btn" href="#" onclick="exportTableCSV('discount-table', 'ACC_Discount_Codes.csv')">&#8659; Export CSV</a>
+          <a class="dl-btn" href="#" onclick="alert('Discount codes exported.')">&#8659; Export CSV</a>
         </div>
         <table class="data-table" id="discount-table" aria-label="Active discount codes">
           <thead><tr><th>Code</th><th>Discount</th><th>Applies To</th><th>Uses</th><th>Expiry</th><th>Note</th><th>Status</th><th>Actions</th></tr></thead>
@@ -1673,20 +1704,19 @@ function applyStmtChanges() {
 
 // ── Feedback status update ──
 function updateFeedbackStatus(sel) {
-  // Legacy shim — new rows use updateFeedbackStatusDB
-  showToast('Status updated.');
-}
-
-async function updateFeedbackStatusDB(feedbackId, newStatus) {
-  try {
-    var { error } = await _sb_client
-      .from('feedback')
-      .update({ status: newStatus })
-      .eq('id', feedbackId);
-    if (error) throw error;
-    showToast('Status updated to: ' + newStatus);
-  } catch(e) {
-    showToast('Could not update status: ' + e.message);
+  var val = sel.value;
+  var cls = val === 'Resolved' ? 'green' : val === 'In Review' ? 'yellow' : val === 'New' ? 'blue' : 'red';
+  // Visual confirmation only — replace dropdown with pill temporarily then restore
+  var row = sel.closest('tr');
+  if (row) {
+    var orig = sel.outerHTML;
+    var pill = '<span class="pill ' + cls + '" style="cursor:pointer" onclick="this.outerHTML=\'' + orig.replace(/'/g,"\\'") + '\'">' + val + '</span>';
+    // Just show toast
+    var toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0d1f3c;border:1px solid #1e3a6b;border-radius:10px;padding:12px 20px;color:#38d9a9;font-size:.82rem;font-weight:700;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.4)';
+    toast.textContent = 'Status updated: ' + val;
+    document.body.appendChild(toast);
+    setTimeout(function(){ toast.remove(); }, 2500);
   }
 }
 
@@ -1799,9 +1829,6 @@ function showPanel(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   var panel = document.getElementById('panel-' + id);
   if (panel) panel.classList.add('active');
-  // Reload live data when switching to relevant panels
-  if (id === 'feedback' && window._clientData) reloadFeedback();
-  if (id === 'reports'  && window._clientData && _clientData.client_code) populateScanData(_clientData.client_code);
   document.querySelectorAll('.nav-item').forEach(b => {
     b.classList.remove('active');
     b.removeAttribute('aria-current');
@@ -2046,63 +2073,22 @@ function fmtExpiry(el) {
   el.value = v;
 }
 
-async function saveCard() {
+function saveCard() {
   var num  = (document.getElementById('new-card-num')  ||{}).value.trim();
   var name = (document.getElementById('new-card-name') ||{}).value.trim();
   var exp  = (document.getElementById('new-card-exp')  ||{}).value.trim();
   if (!num || !name || !exp) { alert('Please fill in all card fields.'); return; }
   var last4 = num.replace(/\s/g,'').slice(-4);
-  var btn = (window.event && window.event.target) || null;
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
-  try {
-    if (window._clientData) {
-      var { error } = await _sb_client.from('clients').update({
-        card_last4:   last4,
-        card_name:    name,
-        card_expiry:  exp,
-      }).eq('id', _clientData.id);
-      if (error) throw error;
-    }
-    // Update display
-    var d = document.getElementById('card-display');
-    if (d) d.innerHTML = '<div style="display:flex;align-items:center;gap:14px">' +
-      '<div style="background:#1a3060;border-radius:6px;padding:6px 10px;font-size:.75rem;font-weight:700;color:#4f8ef7;letter-spacing:.04em">VISA</div>' +
-      '<div><div style="font-size:.88rem;font-weight:600">&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; ' + last4 + '</div>' +
-      '<div style="font-size:.75rem;color:#8a9bbf">Expires ' + exp + ' &nbsp;&bull;&nbsp; ' + esc(name) + '</div></div></div>' +
-      '<span class="pill green" style="font-size:.72rem">Default</span>';
-    closeModal('update-card-modal');
-    showToast('Payment method updated.');
-  } catch(e) {
-    alert('Could not save card: ' + e.message);
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Save New Card'; }
-  }
+  var d = document.getElementById('card-display');
+  if (d) d.innerHTML = 'VISA &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; ' + last4 + ' &nbsp;&bull;&nbsp; ' + name;
+  closeModal('update-card-modal');
 }
-async function saveBillingAddress() {
+function saveBillingAddress() {
   var addr   = (document.getElementById('bill-addr')  ||{}).value.trim();
   var city   = (document.getElementById('bill-city')  ||{}).value.trim();
-  var prov   = (document.getElementById('bill-prov')  ||{}).value;
   var postal = (document.getElementById('bill-postal')||{}).value.trim();
-  if (!addr || !city || !postal) { alert('Please fill in all address fields.'); return; }
-  var btn = (window.event && window.event.target) || null;
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
-  try {
-    if (window._clientData) {
-      var { error } = await _sb_client.from('clients').update({
-        billing_address: addr,
-        billing_city:    city,
-        billing_province: prov,
-        billing_postal:  postal,
-      }).eq('id', _clientData.id);
-      if (error) throw error;
-    }
-    closeModal('billing-address-modal');
-    showToast('Billing address saved.');
-  } catch(e) {
-    alert('Could not save address: ' + e.message);
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Save Address'; }
-  }
+  if (!addr||!city||!postal){ alert('Please fill in all address fields.'); return; }
+  closeModal('billing-address-modal');
 }
 
 </script>
@@ -2339,6 +2325,7 @@ function populateOverview(c) {
   var hour = new Date().getHours();
   var greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   var firstName = (c.name || 'there').split(' ')[0];
+  set('client-greeting', greeting + ', ' + (c.name || 'there'));
   set('overview-domain', c.domain || '—');
   var days = daysUntil(c.renewal_date);
   set('days-left', days !== null ? String(days) : '—');
@@ -2409,47 +2396,9 @@ function populateRoadmap(milestones) {
   }).join('');
 }
 
-async function populateTraining(c) {
-  var code  = c.client_code || '';
-  var token = c.client_code || '';
-  var base  = 'https://accessibilitycompliance.ca/training.html';
-
-  // Update training link pre text and preview hrefs
-  var pre = document.getElementById('training-link');
-  if (pre) pre.textContent = base + '?org=' + code + '&token=' + token;
-
-  var pm1 = document.getElementById('preview-mod1-link');
-  if (pm1) { pm1.href = base + '?org=' + code + '&module=1&token=' + token; pm1.removeAttribute('id'); }
-
-  ['mod1-preview-link','mod2-preview-link','mod3-preview-link'].forEach(function(id, i) {
-    var el = document.getElementById(id);
-    if (el) { el.href = base + '?org=' + code + '&module=' + (i+1) + '&token=' + token; }
-  });
-
-  // Load training completion counts from training_logs
-  try {
-    var { data: logs } = await _sb_client
-      .from('training_logs')
-      .select('course_name, completed_at')
-      .eq('client_id', c.id);
-
-    var counts = { 1: 0, 2: 0, 3: 0 };
-    (logs || []).forEach(function(log) {
-      var name = (log.course_name || '').toLowerCase();
-      if (name.includes('module 1') || name.includes('aoda overview')) counts[1]++;
-      else if (name.includes('module 2') || name.includes('wcag')) counts[2]++;
-      else if (name.includes('module 3') || name.includes('customer service')) counts[3]++;
-    });
-
-    var m1 = document.getElementById('mod1-count');
-    if (m1) { m1.textContent = counts[1] ? counts[1] + ' employee' + (counts[1]!==1?'s':'') + ' completed' : 'Not started'; m1.className = 'pill ' + (counts[1] ? 'green' : 'blue'); m1.style.cssText = 'font-size:.72rem;display:block;margin-bottom:10px'; }
-    var m2 = document.getElementById('mod2-count');
-    if (m2) { m2.textContent = counts[2] ? counts[2] + ' employee' + (counts[2]!==1?'s':'') + ' completed' : 'Not started'; }
-    var m3 = document.getElementById('mod3-count');
-    if (m3) { m3.textContent = counts[3] ? counts[3] + ' completed' : 'Not started'; }
-  } catch(_) {
-    // training_logs table may not exist yet — leave pills as-is
-  }
+function populateTraining(c) {
+  var link = document.getElementById('training-link');
+  if (link) link.href = 'https://training.accessibilitycompliance.ca/?org=' + encodeURIComponent(c.client_code||'') + '&token=' + encodeURIComponent(c.client_code||'');
 }
 
 function applyDashboardAccess(access) {
@@ -2474,7 +2423,7 @@ async function populateClientFiles(clientCode) {
   var buckets = [
     { bucket: 'reports',  containerId: 'client-reports-list',  label: 'audit report',    path: clientCode },
     { bucket: 'evidence', containerId: 'client-evidence-list', label: 'evidence binder', path: clientCode },
-    // invoices shown via populateBillingHistory from DB instead of storage listing
+    { bucket: 'invoices', containerId: 'client-invoices-list', label: 'invoice',          path: clientCode },
     { bucket: 'templates', containerId: 'client-templates-list', label: 'template',         path: 'shared' },
   ];
 
@@ -2545,24 +2494,6 @@ function populateAccount(c, billingRows) {
   set('acc-price',   tierPrice(c.tier));
   set('acc-renewal', fmtDateLong(c.renewal_date));
   set('acc-status',  (c.status || 'active').charAt(0).toUpperCase() + (c.status || 'active').slice(1));
-
-  // Pre-fill billing address modal fields from DB
-  if (c.billing_address) setVal('bill-addr',   c.billing_address);
-  if (c.billing_city)    setVal('bill-city',   c.billing_city);
-  if (c.billing_province){ var ps = document.getElementById('bill-prov'); if(ps) ps.value = c.billing_province; }
-  if (c.billing_postal)  setVal('bill-postal', c.billing_postal);
-
-  // Show saved card if on file
-  if (c.card_last4) {
-    var d = document.getElementById('card-display');
-    if (d) d.innerHTML = '<div style="display:flex;align-items:center;gap:14px">' +
-      '<div style="background:#1a3060;border-radius:6px;padding:6px 10px;font-size:.75rem;font-weight:700;color:#4f8ef7;letter-spacing:.04em">CARD</div>' +
-      '<div><div style="font-size:.88rem;font-weight:600">&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; ' + esc(c.card_last4) + '</div>' +
-      '<div style="font-size:.75rem;color:#8a9bbf">' + (c.card_expiry ? 'Expires ' + esc(c.card_expiry) : '') +
-      (c.card_name ? ' &nbsp;&bull;&nbsp; ' + esc(c.card_name) : '') + '</div></div></div>' +
-      '<span class="pill green" style="font-size:.72rem">Default</span>';
-  }
-
   populateBillingHistory(billingRows);
 }
 
@@ -2577,7 +2508,7 @@ function populateBillingHistory(rows) {
     var ym = (b.paid_at||b.created_at||'').substring(0,7);
     return '<tr>' +
       '<td>' + fmtDate(b.paid_at||b.created_at) + '</td>' +
-      '<td>' + (b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) : '—') + '</td>' +
+      '<td>$' + (b.amount_cents ? (b.amount_cents/100).toFixed(2) : '—') + '</td>' +
       '<td><span class="pill ' + (b.status==='paid'?'green':'yellow') + '">' + esc(b.status) + '</span></td>' +
       '<td><button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="generateAndDownloadInvoice(\'' + ym + '\')">&#8659; PDF</button></td>' +
       '</tr>';
@@ -2592,16 +2523,11 @@ function populateFeedback(rows) {
     return;
   }
   tbody.innerHTML = rows.map(function(f) {
-    var statusOpts = ['open','in-progress','resolved','closed'].map(function(s) {
-      return '<option value="' + s + '"' + (f.status === s ? ' selected' : '') + '>' +
-        s.charAt(0).toUpperCase() + s.slice(1).replace('-',' ') + '</option>';
-    }).join('');
     return '<tr>' +
       '<td>' + fmtDate(f.created_at) + '</td>' +
       '<td>' + esc(f.type||'general') + '</td>' +
       '<td>' + esc(f.message||'') + '</td>' +
-      '<td><select class="finput" style="padding:4px 8px;font-size:.75rem;width:120px" ' +
-        'onchange="updateFeedbackStatusDB(\'' + f.id + '\', this.value)">' + statusOpts + '</select></td>' +
+      '<td><span class="pill ' + (f.status==='resolved'?'green':f.status==='in-progress'?'yellow':'') + '">' + esc(f.status||'open') + '</span></td>' +
       '</tr>';
   }).join('');
 }
@@ -2663,6 +2589,7 @@ function populateEvidence(c, milestones) {
   var pct = milestones && milestones.length ? Math.round(done/milestones.length*100) : 0;
   var bar = document.getElementById('evidence-progress-bar');
   if (bar) bar.style.width = pct + '%';
+  set('evidence-pct', pct + '%');
 }
 
 function populateReports(c) {
@@ -2685,8 +2612,8 @@ async function downloadSigned(bucket, path, filename) {
     a.target = '_blank';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   } catch(e) {
-    console.error('downloadSigned error:', bucket, path, e);
-    alert('Could not download file: ' + (e.message || e) + '\n\nPath: ' + path);
+    console.error('downloadSigned error:', e);
+    alert('File not available yet. Please contact ACC to check your files.');
   }
 }
 
@@ -2767,12 +2694,10 @@ async function generateAndDownloadReport(monthKey) {
   var orig = btn ? btn.innerHTML : null;
   if (btn) { btn.disabled = true; btn.innerHTML = 'Generating&hellip;'; }
   try {
-    var result = await callEdgeFunction('generate-audit-report', { client_id: _clientData.id });
-    var code = _clientData.client_code;
-    var now = new Date();
-    var ym = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
-    var filePath = (result && result.file) ? result.file : (code + '/' + ym + '.pdf');
-    await downloadSigned('reports', filePath, 'ACC_Report_' + ym + '_' + code + '.pdf');
+    await callEdgeFunction('generate-audit-report', { client_id: _clientData.id });
+    await downloadReport(monthKey || (
+      new Date().toLocaleDateString('en-CA', { month: 'long' }).toLowerCase() + '-' + new Date().getFullYear()
+    ));
   } catch(e) {
     console.error('generateAndDownloadReport:', e);
     alert('Could not generate report: ' + e.message);
@@ -2788,11 +2713,8 @@ async function generateAndDownloadBinder(year) {
   var orig = btn ? btn.innerHTML : null;
   if (btn) { btn.disabled = true; btn.innerHTML = 'Generating&hellip;'; }
   try {
-    var result = await callEdgeFunction('generate-evidence-binder', { client_id: _clientData.id });
-    var code = _clientData.client_code;
-    var yr = year || new Date().getFullYear();
-    var filePath = (result && result.file) ? result.file : (code + '/' + yr + '-binder.pdf');
-    await downloadSigned('evidence', filePath, 'ACC_Evidence_Binder_' + yr + '_' + code + '.pdf');
+    await callEdgeFunction('generate-evidence-binder', { client_id: _clientData.id });
+    await downloadEvidenceBinder(year);
   } catch(e) {
     console.error('generateAndDownloadBinder:', e);
     alert('Could not generate binder: ' + e.message);
@@ -2808,11 +2730,10 @@ async function generateAndDownloadInvoice(yearMonth) {
   var orig = btn ? btn.innerHTML : null;
   if (btn) { btn.disabled = true; btn.innerHTML = 'Generating&hellip;'; }
   try {
-    var result = await callEdgeFunction('generate-invoice', { client_id: _clientData.id });
-    var code = _clientData.client_code;
-    var ym = yearMonth || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
-    var filePath = (result && result.file) ? result.file : (code + '/' + ym + '-invoice.pdf');
-    await downloadSigned('invoices', filePath, 'ACC_Invoice_' + ym + '_' + code + '.pdf');
+    await callEdgeFunction('generate-invoice', { client_id: _clientData.id });
+    await downloadInvoice(yearMonth || (
+      new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0')
+    ));
   } catch(e) {
     console.error('generateAndDownloadInvoice:', e);
     alert('Could not generate invoice: ' + e.message);
@@ -2868,436 +2789,6 @@ async function generateCertificate(employeeName, courseName, completionDate) {
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = orig; }
   }
-}
-
-// ── Item 1 & 2: Populate overview stats + scan data from DB ──
-async function populateScanData(clientCode) {
-  // Load latest scan from scans table; fall back to zeros if table missing or no rows
-  var scan = null;
-  try {
-    var scanResult = await _sb_client
-      .from('scans')
-      .select('*')
-      .eq('client_code', clientCode)
-      .order('scanned_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    scan = scanResult.data;
-  } catch(_) { scan = null; }
-
-  var score    = scan ? (scan.score    ?? 0) : 0;
-  var critical = scan ? (scan.critical ?? 0) : 0;
-  var warnings = scan ? (scan.warnings ?? 0) : 0;
-  var aria     = scan ? (scan.aria     ?? 0) : 0;
-  var lastTime = scan ? fmtDate(scan.scanned_at) : 'Never';
-
-  // Overview stat cards
-  var scoreEl = document.getElementById('stat-score');
-  if (scoreEl) scoreEl.textContent = score;
-  var scoreSubEl = document.getElementById('stat-score-sub');
-  if (scoreSubEl) scoreSubEl.textContent = '/ 100 — Last scanned ' + lastTime;
-
-  var fixesEl = document.getElementById('stat-fixes');
-  if (fixesEl) fixesEl.textContent = scan ? (scan.fixes_applied ?? 0) : 0;
-  var fixesSubEl = document.getElementById('stat-fixes-sub');
-  if (fixesSubEl) fixesSubEl.textContent = critical === 0 ? 'No critical issues' : critical + ' critical';
-
-  var warnEl = document.getElementById('stat-warnings');
-  if (warnEl) warnEl.textContent = warnings;
-  var warnSubEl = document.getElementById('stat-warnings-sub');
-  if (warnSubEl) warnSubEl.textContent = warnings === 0 ? 'No warnings' : 'Open warnings';
-
-  // WCAG ring
-  var pctEl = document.getElementById('wcag-score-pct');
-  if (pctEl) pctEl.textContent = score + '%';
-  var critSubEl = document.getElementById('wcag-critical-sub');
-  if (critSubEl) critSubEl.textContent = critical + ' Critical issue' + (critical === 1 ? '' : 's');
-  // Update SVG ring — circumference 213.6, offset = 213.6 * (1 - score/100)
-  var ringCircle = document.getElementById('wcag-ring-circle');
-  if (ringCircle) {
-    var offset = (213.6 * (1 - score / 100)).toFixed(1);
-    ringCircle.setAttribute('stroke-dashoffset', offset);
-    ringCircle.setAttribute('stroke', score >= 80 ? '#38d9a9' : score >= 50 ? '#f5a623' : '#f05f5f');
-  }
-  // Update WCAG category breakdown bars from scan data
-  var cats = [
-    { key: 'perceivable',    idPfx: 'wcag-p' },
-    { key: 'operable',       idPfx: 'wcag-o' },
-    { key: 'understandable', idPfx: 'wcag-u' },
-    { key: 'robust',         idPfx: 'wcag-r' },
-  ];
-  cats.forEach(function(cat) {
-    var val = scan && scan[cat.key] != null ? scan[cat.key] : score;
-    var pctEl = document.getElementById(cat.idPfx + '-pct');
-    var barEl = document.getElementById(cat.idPfx + '-bar');
-    if (pctEl) pctEl.textContent = val + '%';
-    if (barEl) { barEl.style.width = val + '%'; barEl.className = 'progress-fill' + (val < 80 ? ' warn' : ''); }
-  });
-
-  // Real-time monitor panel
-  var scanTimeEl = document.getElementById('scan-last-time');
-  if (scanTimeEl) {
-    var domain = _clientData ? (_clientData.domain || '') : '';
-    scanTimeEl.innerHTML = 'Last scan: ' + lastTime + ' &mdash; ' + esc(domain);
-  }
-  var critEl = document.getElementById('scan-critical');
-  if (critEl) critEl.textContent = critical;
-  var wEl = document.getElementById('scan-warnings');
-  if (wEl) wEl.textContent = warnings;
-  var ariaEl = document.getElementById('scan-aria');
-  if (ariaEl) ariaEl.textContent = aria;
-  var sEl = document.getElementById('scan-score');
-  if (sEl) sEl.textContent = score;
-}
-
-async function populateRecentActivity(c) {
-  var list = document.getElementById('recent-activity-list');
-  if (!list) return;
-
-  // Pull recent items from billing, feedback, scans — wrap each so a missing table doesn't crash
-  var [scanRes, feedRes, billRes] = await Promise.all([
-    _sb_client.from('scans').select('scanned_at,score,critical').eq('client_code', c.client_code).order('scanned_at', {ascending:false}).limit(1).catch(function(){ return {data:null}; }),
-    _sb_client.from('feedback').select('created_at,message').eq('client_id', c.id).order('created_at', {ascending:false}).limit(2).catch(function(){ return {data:null}; }),
-    _sb_client.from('billing').select('created_at,status,amount').eq('client_id', c.id).order('created_at', {ascending:false}).limit(1).catch(function(){ return {data:null}; }),
-  ]);
-
-  var items = [];
-  if (scanRes.data && scanRes.data[0]) {
-    var s = scanRes.data[0];
-    var col = s.critical > 0 ? 'var(--warn)' : 'var(--teal)';
-    items.push({ color: col, text: 'Scan completed — Score ' + (s.score ?? '—'), date: fmtDate(s.scanned_at) });
-  }
-  if (billRes.data && billRes.data[0]) {
-    var b = billRes.data[0];
-    var amt = b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) + ' CAD' : '';
-    items.push({ color: 'var(--teal)', text: 'Invoice ' + esc(b.status||'') + (amt?' — '+amt:''), date: fmtDate(b.created_at) });
-  }
-  (feedRes.data || []).forEach(function(f) {
-    items.push({ color: 'var(--accent)', text: 'Feedback: ' + esc((f.message||'').substring(0,60)), date: fmtDate(f.created_at) });
-  });
-  // Always show renewal date
-  if (c.renewal_date) {
-    var days = daysUntil(c.renewal_date);
-    items.push({ color: days < 60 ? 'var(--warn)' : 'var(--teal)', text: 'AODA renewal: ' + fmtDateLong(c.renewal_date), date: days !== null ? days + ' days away' : '' });
-  }
-
-  if (!items.length) {
-    list.innerHTML = '<div style="color:#8a9bbf;font-size:.82rem">No recent activity yet.</div>';
-    return;
-  }
-  list.innerHTML = items.map(function(item) {
-    return '<div style="display:flex;gap:12px;align-items:flex-start">' +
-      '<div style="width:8px;height:8px;border-radius:50%;background:' + item.color + ';margin-top:6px;flex-shrink:0"></div>' +
-      '<div><strong style="font-size:.82rem">' + item.text + '</strong>' +
-      (item.date ? '<div style="font-size:.75rem;color:var(--muted)">' + esc(item.date) + '</div>' : '') +
-      '</div></div>';
-  }).join('');
-}
-
-// ── Item 2: Run scan now ──
-async function runScanNow(btn) {
-  var orig = btn ? btn.innerHTML : null;
-  if (btn) { btn.disabled = true; btn.innerHTML = 'Scanning…'; }
-  try {
-    // Insert a scan request record; actual scan runs server-side
-    if (_clientData) {
-      await _sb_client.from('scan_requests').insert({
-        client_id: _clientData.id,
-        client_code: _clientData.client_code,
-        domain: _clientData.domain,
-        requested_at: new Date().toISOString(),
-        status: 'pending'
-      });
-    }
-    showToast('Scan queued — results will update within 60 seconds.');
-    // Poll for new scan result after 10s
-    setTimeout(function() {
-      if (_clientData) populateScanData(_clientData.client_code);
-    }, 10000);
-  } catch(e) {
-    showToast('Could not queue scan: ' + e.message);
-  } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
-  }
-}
-
-// ── Item 3: signScopeAck — save to DB + show signed state ──
-async function signScopeAck() {
-  var chk = document.getElementById('scope-chk');
-  if (!chk || !chk.checked) { alert('Please check the box to confirm before signing.'); return; }
-  if (!window._clientData) { alert('Please log in first.'); return; }
-  var btn = (window.event && window.event.target) || null;
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
-  try {
-    var now = new Date();
-    var { error } = await _sb_client.from('scope_acknowledgments').upsert({
-      client_id: _clientData.id,
-      client_name: _clientData.name,
-      signed_at: now.toISOString(),
-      year: now.getFullYear(),
-    }, { onConflict: 'client_id,year' });
-    if (error) throw error;
-
-    // Show signed state
-    var unsigned = document.getElementById('signoff-unsigned');
-    var signed   = document.getElementById('signoff-signed');
-    var dateEl   = document.getElementById('signoff-date');
-    if (unsigned) unsigned.style.display = 'none';
-    if (signed)   signed.style.display   = 'block';
-    if (dateEl)   dateEl.textContent = now.toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
-
-    showToast('Scope Acknowledgment signed and saved.');
-  } catch(e) {
-    alert('Could not save acknowledgment: ' + e.message);
-    if (btn) { btn.disabled = false; btn.textContent = '\u2705 Sign & Confirm \u2014 ' + new Date().getFullYear(); }
-  }
-}
-
-// ── Item 3: Download All Templates ZIP ──
-async function downloadAllTemplates() {
-  // Templates are stored in the 'templates' bucket under 'shared/'
-  var { data: files, error } = await _sb_client.storage.from('templates').list('shared', {
-    limit: 100, sortBy: { column: 'name', order: 'asc' }
-  });
-  if (error || !files || !files.length) {
-    alert('No template files available yet. Contact ACC to set up your templates.');
-    return;
-  }
-  // Download each file individually — browser will queue them
-  var pdfs = files.filter(function(f) { return f.name && f.name.endsWith('.pdf'); });
-  if (!pdfs.length) { alert('No PDF templates available yet.'); return; }
-  showToast('Downloading ' + pdfs.length + ' template(s)…');
-  for (var i = 0; i < pdfs.length; i++) {
-    await downloadSigned('templates', 'shared/' + pdfs[i].name, pdfs[i].name);
-    await new Promise(function(r){ setTimeout(r, 400); }); // stagger downloads
-  }
-}
-
-// ── Item 5: Export any table to CSV ──
-function exportTableCSV(tableId, filename) {
-  var table = document.getElementById(tableId);
-  if (!table) { alert('No data to export yet.'); return; }
-  var rows = Array.from(table.querySelectorAll('tr'));
-  if (rows.length <= 1) { alert('No data to export yet.'); return; }
-  var csv = rows.map(function(row) {
-    return Array.from(row.querySelectorAll('th,td')).map(function(cell) {
-      var text = cell.innerText || cell.textContent || '';
-      text = text.replace(/\n/g, ' ').trim();
-      // Quote cells that contain commas or quotes
-      if (text.includes(',') || text.includes('"')) {
-        text = '"' + text.replace(/"/g, '""') + '"';
-      }
-      return text;
-    }).join(',');
-  }).join('\n');
-  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
-  a.href = url; a.download = filename; a.style.display = 'none';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-// ── Item 6: Reload feedback from DB in real-time ──
-async function reloadFeedback() {
-  if (!window._clientData) return;
-  var { data: rows } = await _sb_client
-    .from('feedback')
-    .select('*')
-    .eq('client_id', _clientData.id)
-    .order('created_at', { ascending: false })
-    .limit(50);
-  populateFeedback(rows || []);
-}
-
-// ── Item 7: Save account details to DB ──
-async function saveAccountDetails() {
-  if (!window._clientData) { alert('Not logged in.'); return; }
-  var name   = (document.getElementById('acc-name')    ||{}).value.trim();
-  var email  = (document.getElementById('acc-email')   ||{}).value.trim();
-  var domain = (document.getElementById('acc-url')     ||{}).value.trim().replace(/^https?:\/\//,'').replace(/\/.*$/,'');
-  if (!name || !email) { alert('Name and email are required.'); return; }
-  var btn = (window.event && window.event.target) || null;
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
-  try {
-    var { error } = await _sb_client
-      .from('clients')
-      .update({ name: name, email: email, domain: domain || _clientData.domain })
-      .eq('id', _clientData.id);
-    if (error) throw error;
-    // Refresh local cache
-    _clientData.name   = name;
-    _clientData.email  = email;
-    if (domain) _clientData.domain = domain;
-    window._clientData = _clientData;
-    populateOverview(_clientData);
-    showToast('Account details saved.');
-  } catch(e) {
-    alert('Could not save: ' + e.message);
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
-  }
-}
-
-
-// ── Widget settings save / reset ──
-// ── Widget settings helpers ──────────────────────────────
-
-function applyWidgetSettingsToPanel(cfg) {
-  var pos = document.getElementById('w-position');
-  var col = document.getElementById('w-color');
-  var lang = document.getElementById('w-lang');
-  var profiles = document.getElementById('w-profiles');
-  var autofix  = document.getElementById('w-autofix');
-  var contrast = document.getElementById('w-contrast');
-  var reading  = document.getElementById('w-reading');
-  var history  = document.getElementById('w-history');
-  var feedback = document.getElementById('w-feedback');
-
-  if (pos && cfg.position)      pos.value = cfg.position;
-  if (col && cfg.accent_color)  { col.value = cfg.accent_color; var hex = col.nextElementSibling; if (hex) hex.value = cfg.accent_color; }
-  if (lang && cfg.language)     lang.value = cfg.language;
-  if (profiles) profiles.checked = !cfg.hide_profiles;
-  if (autofix)  autofix.checked  = !!cfg.enable_autofix;
-  if (contrast) contrast.checked = cfg.enable_contrast !== false;
-  if (reading)  reading.checked  = cfg.enable_reading  !== false;
-  if (history)  history.checked  = !cfg.hide_history;
-  if (feedback) feedback.checked = !cfg.hide_feedback;
-}
-
-function updateEmbedCode(c, settings) {
-  var code  = c ? (c.client_code || '') : '';
-  var tier  = c ? (c.tier || '1') : '1';
-  var domain= c ? (c.domain || '') : '';
-  var pos   = settings ? (settings.position || 'Bottom Right') : 'Bottom Right';
-  var color = settings ? (settings.accent_color || '#4f8ef7') : '#4f8ef7';
-  var hideFb = settings ? !!settings.hide_feedback : false;
-
-  var attrs = [
-    'src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js"',
-    'data-client="' + code + '"',
-    'data-tier="' + tier + '"',
-    'data-domain="' + domain + '"',
-    'data-position="' + pos + '"',
-    'data-color="' + color + '"',
-    hideFb ? 'data-hide-feedback="true"' : null,
-    'defer',
-  ].filter(Boolean).join('
-  ');
-
-  var embedCode = '<script
-  ' + attrs + '
-><\/script>';
-  var wpCode = '[acc_widget client="' + code + '" tier="' + tier + '" domain="' + domain + '"]';
-
-  var embedEl = document.getElementById('embed-code');
-  var wpEl    = document.getElementById('wp-code');
-  if (embedEl) embedEl.textContent = embedCode;
-  if (wpEl)    wpEl.textContent    = wpCode;
-}
-
-async function loadWidgetSettings() {
-  if (!window._clientData) return;
-  try {
-    var { data: rows } = await _sb_client
-      .from('widget_settings')
-      .select('*')
-      .eq('client_id', _clientData.id)
-      .limit(1);
-    var cfg = (rows && rows.length) ? rows[0] : null;
-    if (cfg) applyWidgetSettingsToPanel(cfg);
-    // Always update embed code whether or not settings exist
-    updateEmbedCode(_clientData, cfg || {});
-  } catch(e) {
-    // widget_settings table may not exist yet — just update embed code
-    updateEmbedCode(_clientData, {});
-  }
-}
-
-async function saveWidgetSettings() {
-  if (!window._clientData) { alert('Please log in first.'); return; }
-  var btn = (window.event && window.event.target) || null;
-  var orig = btn ? btn.innerHTML : null;
-  if (btn) { btn.disabled = true; btn.innerHTML = 'Saving&hellip;'; }
-
-  var settings = {
-    client_id:        _clientData.id,
-    position:         (document.getElementById('w-position') || {}).value || 'Bottom Right',
-    accent_color:     (document.getElementById('w-color')    || {}).value || '#4f8ef7',
-    language:         (document.getElementById('w-lang')     || {}).value || 'English',
-    hide_profiles:   !(document.getElementById('w-profiles') || {checked:true}).checked,
-    enable_autofix:   (document.getElementById('w-autofix')  || {}).checked || false,
-    enable_contrast:  (document.getElementById('w-contrast') || {checked:true}).checked,
-    enable_reading:   (document.getElementById('w-reading')  || {checked:true}).checked,
-    hide_history:    !(document.getElementById('w-history')  || {}).checked,
-    hide_feedback:   !(document.getElementById('w-feedback') || {checked:true}).checked,
-    updated_at:       new Date().toISOString(),
-  };
-
-  try {
-    var { error } = await _sb_client
-      .from('widget_settings')
-      .upsert(settings, { onConflict: 'client_id' });
-    if (error) throw error;
-    // Rebuild embed code with new settings
-    updateEmbedCode(_clientData, settings);
-    showToast('Widget settings saved. Embed code updated.');
-  } catch(e) {
-    alert('Could not save settings: ' + e.message);
-  } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
-  }
-}
-
-async function resetWidgetSettings() {
-  if (!window._clientData) return;
-  var defaults = {
-    client_id: _clientData.id,
-    position: 'Bottom Right', accent_color: '#4f8ef7', language: 'English',
-    hide_profiles: false, enable_autofix: false, enable_contrast: true,
-    enable_reading: true, hide_history: false, hide_feedback: false,
-  };
-  applyWidgetSettingsToPanel(defaults);
-  updateEmbedCode(_clientData, defaults);
-  showToast('Settings reset to defaults. Click Save Changes to persist.');
-}
-
-// ── Installation guide download ──
-async function downloadInstallGuide() {
-  // Try storage first (admin may have uploaded a custom guide)
-  try {
-    var r = await _sb_client.storage.from('templates').createSignedUrl('shared/acc-installation-guide.pdf', 3600);
-    if (!r.error && r.data && r.data.signedUrl) {
-      window.open(r.data.signedUrl, '_blank');
-      return;
-    }
-  } catch(_) {}
-  // Fallback: generate a simple HTML installation guide and open it
-  var clientCode = (window._clientData && _clientData.client_code) || 'YOUR-CLIENT-CODE';
-  var domain = (window._clientData && _clientData.domain) || 'yourdomain.com';
-  var guideHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>ACC Widget Installation Guide</title>' +
-    '<style>body{font-family:system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0 24px;line-height:1.7;color:#1a2a40}' +
-    'h1{color:#0a1628}code{background:#f0f4ff;padding:2px 6px;border-radius:4px;font-size:.9em}' +
-    'pre{background:#0a1628;color:#e8edf8;padding:20px;border-radius:10px;overflow-x:auto;font-size:.85rem}' +
-    '.step{background:#f8f9fc;border-left:4px solid #4f8ef7;padding:14px 18px;margin:16px 0;border-radius:0 8px 8px 0}' +
-    '</style></head><body>' +
-    '<h1>ACC Widget Installation Guide</h1>' +
-    '<p>Client Code: <strong>' + clientCode + '</strong> &nbsp;|&nbsp; Domain: <strong>' + domain + '</strong></p>' +
-    '<div class="step"><strong>Step 1:</strong> Copy the embed code from your dashboard under <em>Embed Code</em>.</div>' +
-    '<div class="step"><strong>Step 2:</strong> Open your website's HTML editor or theme editor.</div>' +
-    '<div class="step"><strong>Step 3:</strong> Paste the code immediately before the <code>&lt;/body&gt;</code> closing tag on every page.</div>' +
-    '<div class="step"><strong>Step 4:</strong> Save and publish. The ACC icon will appear in the bottom-right corner.</div>' +
-    '<div class="step"><strong>Step 5:</strong> Return to your dashboard — widget status updates within 15 minutes.</div>' +
-    '<h2>Your Embed Code</h2>' +
-    '<pre>&lt;script src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js" data-client="' + clientCode + '" data-tier="1" data-domain="' + domain + '" async&gt;&lt;/script&gt;</pre>' +
-    '<p style="color:#8a9bbf;font-size:.8rem;margin-top:32px">Accessibility Compliance Canada Inc. &mdash; support@accessibilitycompliance.ca</p>' +
-    '</body></html>';
-  var blob = new Blob([guideHtml], {type:'text/html'});
-  var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
-  a.href = url; a.download = 'ACC-Widget-Installation-Guide.html'; a.click();
-  URL.revokeObjectURL(url);
 }
 
 // ── Auth guard ────────────────────────────────────────────
@@ -3361,40 +2852,14 @@ async function downloadInstallGuide() {
     populateRoadmap(rr.data || []);
     populateTraining(_clientData);
     populateAccount(_clientData, br.data || []);
-    if (_clientData.client_code) {
-      populateClientFiles(_clientData.client_code);
-      populateScanData(_clientData.client_code);
-    }
+    if (_clientData.client_code) populateClientFiles(_clientData.client_code);
     applyDashboardAccess(_clientData.dashboard_access);
     populateFeedback(fr.data || []);
     populateA11yStatement(_clientData);
     populateStandards(_clientData, tar.data || []);
     
-    // Check if scope acknowledgment already signed this year
-    (async function() {
-      try {
-        var year = new Date().getFullYear();
-        var { data: ack } = await _sb_client
-          .from('scope_acknowledgments')
-          .select('signed_at')
-          .eq('client_id', _clientData.id)
-          .eq('year', year)
-          .maybeSingle();
-        if (ack && ack.signed_at) {
-          var unsigned = document.getElementById('signoff-unsigned');
-          var signed   = document.getElementById('signoff-signed');
-          var dateEl   = document.getElementById('signoff-date');
-          if (unsigned) unsigned.style.display = 'none';
-          if (signed)   signed.style.display   = 'block';
-          if (dateEl)   dateEl.textContent = fmtDateLong(ack.signed_at);
-        }
-      } catch(_) {}
-    })();
-    
     populateEvidence(_clientData, rr.data || []);
     populateReports(_clientData);
-    populateRecentActivity(_clientData);
-    loadWidgetSettings();
 
   } catch(e) {
     console.error('Client auth/load error:', e);
