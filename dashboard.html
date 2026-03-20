@@ -2672,12 +2672,11 @@ async function populateReports(c) {
   var container = document.getElementById('client-reports-list');
   if (!container) return;
 
-  // Build month grid from client start_date to now
   var startDate = c.start_date || c.created_at || c.renewal_date;
   var start;
   if (startDate) {
     start = new Date(startDate);
-    start.setDate(1); // normalize to 1st
+    start.setDate(1);
   } else {
     start = new Date();
     start.setMonth(start.getMonth() - 5);
@@ -2691,15 +2690,13 @@ async function populateReports(c) {
     months.push({ year: cur.getFullYear(), month: cur.getMonth() + 1 });
     cur.setMonth(cur.getMonth() + 1);
   }
-  months.reverse(); // newest first
+  months.reverse();
 
-  // List available PDFs from storage
   var availablePdfs = new Set();
   try {
     var code = c.client_code || '';
     var { data: files } = await _sb_client.storage.from('reports').list(code);
     (files || []).forEach(function(f) {
-      // filename format: YYYY-MM.pdf
       var m = (f.name || '').match(/^(\d{4}-\d{2})\.pdf$/);
       if (m) availablePdfs.add(m[1]);
     });
@@ -2718,17 +2715,17 @@ async function populateReports(c) {
     var statusPill, actionBtn;
     if (isCurrentMonth) {
       statusPill = '<span class="pill yellow" style="font-size:.72rem">In Progress</span>';
-      actionBtn  = '<button class="btn-sm btn-primary" style="font-size:.72rem" onclick="generateAndDownloadReport()">&#9658; Generate Now</button>';
+      actionBtn  = '<button class="btn-sm btn-primary report-gen-btn" data-ym="' + ym + '" style="font-size:.72rem">&#9658; Generate Now</button>';
     } else if (hasPdf) {
       statusPill = '<span class="pill green" style="font-size:.72rem">&#10003; Available</span>';
-      actionBtn  = '<button class="btn-sm btn-ghost" style="font-size:.72rem" onclick="downloadReport('' + ym + '')">&#8659; Download PDF</button>';
+      actionBtn  = '<button class="btn-sm btn-ghost report-dl-btn" data-ym="' + ym + '" style="font-size:.72rem">&#8659; Download PDF</button>';
     } else {
       var isPast = new Date(m.year, m.month, 1) < now;
       statusPill = isPast
         ? '<span class="pill" style="font-size:.72rem;background:rgba(247,95,95,.1);color:#f75f5f">Missing</span>'
         : '<span class="pill" style="font-size:.72rem;background:rgba(79,142,247,.1);color:#8a9bbf">Scheduled</span>';
       actionBtn = isPast
-        ? '<button class="btn-sm btn-ghost" style="font-size:.72rem" onclick="generateAndDownloadReport('' + ym + '')">&#9658; Regenerate</button>'
+        ? '<button class="btn-sm btn-ghost report-gen-btn" data-ym="' + ym + '" style="font-size:.72rem">&#9658; Regenerate</button>'
         : '<span style="font-size:.72rem;color:#8a9bbf">Auto on 1st</span>';
     }
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;gap:12px">' +
@@ -2737,9 +2734,20 @@ async function populateReports(c) {
       '<div style="display:flex;align-items:center;gap:10px">' + statusPill + actionBtn + '</div>' +
       '</div>';
   }).join('');
-}
 
-// ── Storage: signed URL helpers ───────────────────────────
+  // Wire up buttons via event delegation — avoids all quote-escaping issues
+  container.addEventListener('click', function(e) {
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    var ym = btn.dataset.ym;
+    if (!ym) return;
+    if (btn.classList.contains('report-dl-btn')) {
+      downloadReport(ym);
+    } else if (btn.classList.contains('report-gen-btn')) {
+      generateAndDownloadReport(ym);
+    }
+  });
+}
 async function getSignedUrl(bucket, path) {
   var r = await _sb_client.storage.from(bucket).createSignedUrl(path, 3600);
   if (r.error) throw r.error;
@@ -3268,7 +3276,7 @@ function updateEmbedCode(c, settings) {
     'defer',
   ].filter(Boolean).join('\n  ');
 
-  var embedCode = '<script\n  ' + attrs + '\n><\/script>';
+  var embedCode = '<scr'+'ipt\n  ' + attrs + '\n><\/script>';
   var wpCode = '[acc_widget client="' + code + '" tier="' + tier + '" domain="' + domain + '"]';
 
   var embedEl = document.getElementById('embed-code');
@@ -3365,7 +3373,7 @@ async function downloadInstallGuide() {
     '<h1>ACC Widget Installation Guide</h1>' +
     '<p>Client Code: <strong>' + clientCode + '</strong> &nbsp;|&nbsp; Domain: <strong>' + domain + '</strong></p>' +
     '<div class="step"><strong>Step 1:</strong> Copy the embed code from your dashboard under <em>Embed Code</em>.</div>' +
-    '<div class="step"><strong>Step 2:</strong> Open your website's HTML editor or theme editor.</div>' +
+    '<div class="step"><strong>Step 2:</strong> Open your website&#39;s HTML editor or theme editor.</div>' +
     '<div class="step"><strong>Step 3:</strong> Paste the code immediately before the <code>&lt;/body&gt;</code> closing tag on every page.</div>' +
     '<div class="step"><strong>Step 4:</strong> Save and publish. The ACC icon will appear in the bottom-right corner.</div>' +
     '<div class="step"><strong>Step 5:</strong> Return to your dashboard — widget status updates within 15 minutes.</div>' +
@@ -3478,11 +3486,15 @@ async function downloadInstallGuide() {
 
   } catch(e) {
     console.error('Client auth/load error:', e);
+    // Show visible error with full details so we can debug
     var errEl = document.getElementById('auth-error-msg');
     if (errEl) {
       errEl.style.display = 'block';
-      errEl.textContent = 'Something went wrong. Please refresh or log in again.';
+      errEl.textContent = 'Load error: ' + (e && e.message ? e.message : String(e));
     }
+    // Also show a visible alert for immediate debugging
+    // (remove this once stable)
+    console.warn('FULL ERROR:', e);
     // Do NOT redirect — avoids login loop
   }
 })();
