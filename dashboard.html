@@ -880,7 +880,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Conformance status:</strong> This website conforms to WCAG 2.1 Level AA.</p>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Feedback:</strong> We welcome feedback on the accessibility of this website. Please email <a href="/cdn-cgi/l/email-protection#721311111701011b101b1e1b060b32290b1d0700161d1f131b1c2f5c1113" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a>
           <a class="dl-btn" href="#" onclick="downloadA11yStatement()">&#8659; Download PDF</a>
-          <button class="btn-sm btn-ghost" onclick="openModal('edit-stmt-modal')">&#9998; Customize</button>
+          <button class="btn-sm btn-ghost" onclick="openStmtModal()">&#9998; Customize</button>
         </div>
       </div>
     </div>
@@ -1620,47 +1620,55 @@ function filterTraining() {
 }
 
 // ── Accessibility Statement live update ──
-function applyStmtChanges() {
+async function applyStmtChanges() {
   var co    = document.getElementById('stmt-co').value.trim() || 'Your Organization';
   var email = document.getElementById('stmt-email').value.trim() || 'accessibility@yourdomain.ca';
   var level = document.getElementById('stmt-level').value;
 
-  // Update email display in statement preview
+  // Update DOM immediately
   var emailDisplay = document.getElementById('stmt-email-display');
-  if (emailDisplay) {
-    emailDisplay.href = 'mailto:' + email;
-    emailDisplay.textContent = email;
+  if (emailDisplay) { emailDisplay.href = 'mailto:' + email; emailDisplay.textContent = email; }
+
+  var stmtBox = document.querySelector('#panel-a11y-stmt .card');
+  if (stmtBox) {
+    // Update org name in first paragraph strong
+    var firstStrong = stmtBox.querySelector('p strong.stmt-org-name, strong.stmt-org-name');
+    document.querySelectorAll('.stmt-org-name').forEach(function(el){ el.textContent = co; });
+
+    // Update email link
+    stmtBox.querySelectorAll('a[href^="mailto"]').forEach(function(a){
+      a.href = 'mailto:' + email; a.textContent = email;
+    });
+
+    // Update conformance level mention
+    stmtBox.querySelectorAll('p').forEach(function(p){
+      if (p.textContent.includes('conforms to WCAG')) {
+        p.innerHTML = p.innerHTML.replace(/conforms to [^.]+\./, 'conforms to ' + level.replace(' (recommended)','') + '.');
+      }
+    });
   }
 
-  // Update company name in statement
-  var stmtBox = document.querySelector('#panel-a11y-stmt .card');
-  if (!stmtBox) { closeModal('edit-stmt-modal'); return; }
-
-  // Update all company name references
-  stmtBox.querySelectorAll('strong').forEach(function(el){
-    if (el.textContent.includes('Corp') || el.textContent.includes('Inc') || el.textContent.trim().length > 2) {
-      if (el.closest('p') && !el.textContent.includes('Conformance') && !el.textContent.includes('Feedback')) {
-        el.textContent = co;
-      }
+  // Persist to DB
+  if (window._clientData) {
+    try {
+      var stmt_data = {
+        stmt_email:       email,
+        stmt_level:       level.replace(' (recommended)',''),
+        stmt_custom_name: co,
+      };
+      // Store as JSON in dashboard_access column under stmt key
+      var existing = _clientData.dashboard_access || {};
+      existing.stmt = stmt_data;
+      var { error } = await _sb_client.from('clients')
+        .update({ dashboard_access: existing })
+        .eq('id', _clientData.id);
+      if (error) throw error;
+      _clientData.dashboard_access = existing;
+      showToast('Statement saved.');
+    } catch(e) {
+      showToast('Saved on screen. DB error: ' + (e.message||''));
     }
-  });
-
-  // Update email link
-  stmtBox.querySelectorAll('a[href^="mailto"]').forEach(function(a){
-    a.href = 'mailto:' + email;
-    a.textContent = email;
-  });
-
-  // Update conformance level
-  stmtBox.querySelectorAll('p').forEach(function(p){
-    if (p.textContent.includes('conforms to WCAG')) {
-      var bold = p.querySelector('strong');
-      if (bold && bold.textContent.includes('Conformance')) {
-        p.innerHTML = p.innerHTML.replace(/conforms to [\w\s.]+\./,
-          'conforms to ' + level.replace(' (recommended)','') + '.');
-      }
-    }
-  });
+  }
 
   closeModal('edit-stmt-modal');
 }
@@ -2469,11 +2477,11 @@ async function populateTraining(c) {
           '<td><span class="pill ' + (status === 'Passed' ? 'green' : 'yellow') +
             '" style="font-size:.72rem">&#10003; ' + esc(status) + '</span></td>' +
           '<td style="font-size:.78rem;color:#8a9bbf">' + fmtDate(rec.completed_at) + '</td>' +
-          '<td><button class="btn-sm btn-ghost" onclick="generateCertificate(' +
-            JSON.stringify(rec.staff_name) + ',' +
-            JSON.stringify(rec.course_name) + ',' +
-            JSON.stringify((rec.completed_at||'').substring(0,10)) +
-            ')">&#8659; PDF</button></td>';
+          '<td><button class="btn-sm btn-ghost training-cert-btn"' +
+            ' data-name="' + (rec.staff_name||'').replace(/"/g,'&quot;') + '"' +
+            ' data-module="' + (rec.course_name||'').replace(/"/g,'&quot;') + '"' +
+            ' data-date="' + (rec.completed_at||'').substring(0,10) + '"' +
+            '>&#8659; PDF</button></td>';
         if (noResults) tbody.insertBefore(row, noResults);
         else tbody.appendChild(row);
       });
@@ -2638,14 +2646,33 @@ function populateFeedback(rows) {
 }
 
 function populateA11yStatement(c) {
-  set('stmt-email-display', c.email);
-  var els = document.querySelectorAll('.stmt-org-name');
-  els.forEach(function(el){ el.textContent = c.name || ''; });
-  var domEls = document.querySelectorAll('.stmt-domain');
-  domEls.forEach(function(el){ el.textContent = c.domain || ''; });
+  var stmt = (c.dashboard_access || {}).stmt || {};
+  var displayEmail = stmt.stmt_email || c.email || '';
+  var displayName  = stmt.stmt_custom_name || c.name || '';
+
+  // Update email display link
+  var emailEl = document.getElementById('stmt-email-display');
+  if (emailEl) { emailEl.textContent = displayEmail; emailEl.href = 'mailto:' + displayEmail; }
+
+  // Update org name spans
+  document.querySelectorAll('.stmt-org-name').forEach(function(el){ el.textContent = displayName; });
+  document.querySelectorAll('.stmt-domain').forEach(function(el){ el.textContent = c.domain || ''; });
+
+  // Restore saved conformance level in statement text
+  if (stmt.stmt_level) {
+    var stmtBox = document.querySelector('#panel-a11y-stmt .card');
+    if (stmtBox) {
+      stmtBox.querySelectorAll('p').forEach(function(p){
+        if (p.textContent.includes('conforms to WCAG')) {
+          p.innerHTML = p.innerHTML.replace(/conforms to [^.]+\./, 'conforms to ' + stmt.stmt_level + '.');
+        }
+      });
+    }
+  }
+
   // Update scope acknowledgment company name
   var sc2 = document.getElementById('signoff-company2');
-  if (sc2) sc2.textContent = c.name || 'your organization';
+  if (sc2) sc2.textContent = displayName || 'your organization';
 }
 
 function populateStandards(c, templateAccess) {
@@ -3549,6 +3576,26 @@ document.addEventListener('click', function(e) {
   var date   = btn.dataset.date;
   if (name && module) generateCertificate(name, module, date || '');
 });
+
+
+function openStmtModal() {
+  // Pre-fill from DB-saved values if available
+  if (window._clientData) {
+    var stmt = (_clientData.dashboard_access || {}).stmt || {};
+    var coEl  = document.getElementById('stmt-co');
+    var emEl  = document.getElementById('stmt-email');
+    var lvEl  = document.getElementById('stmt-level');
+    if (coEl && stmt.stmt_custom_name) coEl.value = stmt.stmt_custom_name;
+    else if (coEl && _clientData.name)  coEl.value = _clientData.name;
+    if (emEl && stmt.stmt_email)        emEl.value = stmt.stmt_email;
+    if (lvEl && stmt.stmt_level) {
+      Array.from(lvEl.options).forEach(function(o){
+        if (o.value.includes(stmt.stmt_level)) lvEl.value = o.value;
+      });
+    }
+  }
+  openModal('edit-stmt-modal');
+}
 
 // ── Auth guard ────────────────────────────────────────────
 // Runs once on page load. Redirects to login if no valid session.
