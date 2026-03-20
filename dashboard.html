@@ -794,44 +794,41 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <input class="finput" type="search" id="training-search" placeholder="Search employee…"
               oninput="filterTraining()" style="height:34px;min-width:160px"/>
+            <button class="btn-sm btn-primary" onclick="openModal('add-training-modal')">&#43; Add Employee</button>
             <a class="dl-btn" href="#" onclick="exportTableCSV('training-table', 'ACC_Training_Registry.csv')">&#8659; Export CSV</a>
           </div>
         </div>
         <div style="overflow-x:auto">
           <table class="data-table" id="training-table" aria-label="Staff training registry" style="min-width:560px">
             <thead>
-              <tr><th>Employee</th><th>Module</th><th>Score</th><th>Status</th><th>Date</th><th>Cert</th></tr>
+              <tr><th>Employee</th><th>Module</th><th>Status</th><th>Date</th><th>Cert</th></tr>
             </thead>
             <tbody id="training-tbody">
               <tr data-name="sarah chen">
                 <td><strong>Sarah Chen</strong><div style="font-size:.72rem;color:#8a9bbf">Manager</div></td>
                 <td>Module 1 — AODA Overview</td>
-                <td><span style="font-family:'JetBrains Mono',monospace;color:#38d9a9">92%</span></td>
-                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
+                                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
                 <td style="font-size:.78rem;color:#8a9bbf">Feb 14, 2026</td>
                 <td><button class="btn-sm btn-ghost" onclick="generateCertificate('Sarah Chen','Module 1 — AODA Overview','2026-02-14')">&#8659; PDF</button></td>
               </tr>
               <tr data-name="james kowalski">
                 <td><strong>James Kowalski</strong><div style="font-size:.72rem;color:#8a9bbf">HR Director</div></td>
                 <td>Module 1 — AODA Overview</td>
-                <td><span style="font-family:'JetBrains Mono',monospace;color:#38d9a9">88%</span></td>
-                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
+                                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
                 <td style="font-size:.78rem;color:#8a9bbf">Feb 18, 2026</td>
                 <td><button class="btn-sm btn-ghost" onclick="generateCertificate('James Kowalski','Module 1 — AODA Overview','2026-02-18')">&#8659; PDF</button></td>
               </tr>
               <tr data-name="priya nair">
                 <td><strong>Priya Nair</strong><div style="font-size:.72rem;color:#8a9bbf">Customer Service</div></td>
                 <td>Module 1 — AODA Overview</td>
-                <td><span style="font-family:'JetBrains Mono',monospace;color:#38d9a9">95%</span></td>
-                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
+                                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
                 <td style="font-size:.78rem;color:#8a9bbf">Mar 2, 2026</td>
                 <td><button class="btn-sm btn-ghost" onclick="generateCertificate('Priya Nair','Module 1 — AODA Overview','2026-03-02')">&#8659; PDF</button></td>
               </tr>
               <tr data-name="derek osei">
                 <td><strong>Derek Osei</strong><div style="font-size:.72rem;color:#8a9bbf">IT Lead</div></td>
                 <td>Module 2 — WCAG 2.1 AA</td>
-                <td><span style="font-family:'JetBrains Mono',monospace;color:#f5a623">In Progress</span></td>
-                <td><span class="pill yellow" style="font-size:.72rem">&#9654; In Progress</span></td>
+                                <td><span class="pill yellow" style="font-size:.72rem">&#9654; In Progress</span></td>
                 <td style="font-size:.78rem;color:#8a9bbf">Started Mar 5, 2026</td>
                 <td style="color:#8a9bbf;font-size:.75rem">—</td>
               </tr>
@@ -885,7 +882,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><span class="stmt-org-name">Your organization</span> is committed to ensuring digital accessibility for people with disabilities. We continually improve the user experience for everyone and apply relevant accessibility standards.</p>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Conformance status:</strong> This website conforms to WCAG 2.1 Level AA.</p>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Feedback:</strong> We welcome feedback on the accessibility of this website. Please email <a href="/cdn-cgi/l/email-protection#721311111701011b101b1e1b060b32290b1d0700161d1f131b1c2f5c1113" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a>
-          <a class="dl-btn" href="#" onclick="alert('PDF downloaded.')">&#8659; Download PDF</a>
+          <a class="dl-btn" href="#" onclick="generateReadinessLetter()">&#8659; Download PDF</a>
           <button class="btn-sm btn-ghost" onclick="openModal('edit-stmt-modal')">&#9998; Customize</button>
         </div>
       </div>
@@ -1558,7 +1555,7 @@ Questions? Reply to this email.
     <div class="fgroup"><label for="tr-date">Completion Date</label><input class="finput" type="date" id="tr-date" style="width:100%"/></div>
     <div class="fgroup"><label for="tr-method">Method</label><select class="finput" id="tr-method" style="width:100%"><option>Online Video</option><option>In-Person</option><option>Webinar</option><option>Self-Study</option></select></div>
     <div class="btn-row" style="margin-top:8px">
-      <button class="btn-sm btn-primary" onclick="alert('Training record logged.');closeModal('add-training-modal')">Save Record</button>
+      <button class="btn-sm btn-primary" onclick="saveTrainingRecord()">Save Record</button>
       <button class="btn-sm btn-ghost" onclick="closeModal('add-training-modal')">Cancel</button>
     </div>
   </div>
@@ -3158,16 +3155,19 @@ function exportTableCSV(tableId, filename) {
   if (rows.length <= 1) { alert('No data to export yet.'); return; }
   var csv = rows.map(function(row) {
     return Array.from(row.querySelectorAll('th,td')).map(function(cell) {
-      var text = cell.innerText || cell.textContent || '';
-      text = text.replace(/\n/g, ' ').trim();
-      // Quote cells that contain commas or quotes
-      if (text.includes(',') || text.includes('"')) {
+      // Use textContent, strip emoji and non-ASCII, collapse whitespace
+      var text = (cell.innerText || cell.textContent || '')
+        .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u2014\u201C\u201D\u2018\u2019\u2013\u00A0]/gu, '')
+        .replace(/\s+/g, ' ').trim();
+      if (text.includes(',') || text.includes('"') || text.includes('\n')) {
         text = '"' + text.replace(/"/g, '""') + '"';
       }
       return text;
     }).join(',');
   }).join('\n');
-  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  // UTF-8 BOM ensures Excel opens with correct encoding
+  var bom  = '\uFEFF';
+  var blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
   a.href = url; a.download = filename; a.style.display = 'none';
@@ -3386,6 +3386,65 @@ async function downloadInstallGuide() {
   var a    = document.createElement('a');
   a.href = url; a.download = 'ACC-Widget-Installation-Guide.html'; a.click();
   URL.revokeObjectURL(url);
+}
+
+
+async function saveTrainingRecord() {
+  var empName   = (document.getElementById('tr-emp')    || {}).value.trim();
+  var module    = (document.getElementById('tr-module') || {}).value;
+  var dateVal   = (document.getElementById('tr-date')   || {}).value;
+  var statusVal = (document.getElementById('tr-status') || {}).value || 'Passed';
+
+  if (!empName)  { alert('Please enter the employee name.'); return; }
+  if (!module)   { alert('Please select a module.'); return; }
+  if (!dateVal)  { alert('Please enter the completion date.'); return; }
+  if (!window._clientData) { alert('Not logged in.'); return; }
+
+  var btn = document.querySelector('#add-training-modal .btn-sm.btn-primary');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+  try {
+    // Save to training_logs
+    var { error } = await _sb_client.from('training_logs').insert({
+      client_id:    _clientData.id,
+      staff_name:   empName,
+      course_name:  module,
+      completed_at: dateVal || new Date().toISOString(),
+      notes:        statusVal,
+    });
+    if (error) throw error;
+
+    // Add row to the training table in the DOM
+    var tbody = document.getElementById('training-tbody');
+    if (tbody) {
+      var noResults = document.getElementById('training-no-results');
+      var row = document.createElement('tr');
+      row.setAttribute('data-name', empName.toLowerCase());
+      row.innerHTML =
+        '<td><strong>' + esc(empName) + '</strong></td>' +
+        '<td>' + esc(module) + '</td>' +
+        '<td><span class="pill ' + (statusVal === 'Passed' ? 'green' : 'yellow') +
+          '" style="font-size:.72rem">&#10003; ' + esc(statusVal) + '</span></td>' +
+        '<td style="font-size:.78rem;color:#8a9bbf">' + fmtDate(dateVal) + '</td>' +
+        '<td><button class="btn-sm btn-ghost" onclick="generateCertificate(' +
+          JSON.stringify(empName) + ',' + JSON.stringify(module) + ',' + JSON.stringify(dateVal) +
+          ')">&#8659; PDF</button></td>';
+      if (noResults) tbody.insertBefore(row, noResults);
+      else tbody.appendChild(row);
+    }
+
+    closeModal('add-training-modal');
+    // Reset form
+    ['tr-emp','tr-module','tr-date','tr-status'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    showToast('Training record saved.');
+  } catch(e) {
+    alert('Could not save record: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Record'; }
+  }
 }
 
 // ── Auth guard ────────────────────────────────────────────
