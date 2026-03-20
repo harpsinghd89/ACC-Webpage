@@ -3488,37 +3488,33 @@ async function downloadA11yStatement() {
   if (!window._clientData) { alert('Please log in first.'); return; }
   var c = _clientData;
   var orgName = c.name || 'Your Organization';
-  var domain  = c.domain ? 'https://' + c.domain.replace(/^https?:\/\//, '') : '[yourdomain].ca';
-  var email   = c.email || 'accessibility@' + (c.domain || '[yourdomain].ca');
-  var year    = new Date().getFullYear();
 
-  var content = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">' +
-    '<title>Accessibility Statement - ' + orgName + '</title>' +
+  // Grab the rendered statement directly from the panel so PDF = screen exactly
+  var stmtDiv = document.querySelector('#panel-a11y-stmt .card > div');
+  var stmtHTML = stmtDiv ? stmtDiv.innerHTML : '<p>Accessibility statement not available.</p>';
+
+  // Resolve the dynamic email/domain text from the live element
+  var emailEl = document.getElementById('stmt-email-display');
+  var emailText = emailEl ? emailEl.textContent : (c.email || '');
+
+  var content =
+    '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">' +
+    '<title>Accessibility Statement — ' + orgName + '</title>' +
     '<style>' +
-      'body{font-family:Arial,sans-serif;max-width:720px;margin:40px auto;padding:0 24px;color:#111;line-height:1.6}' +
-      'h1{font-size:1.4rem;border-bottom:2px solid #0a1628;padding-bottom:8px;color:#0a1628}' +
-      'h2{font-size:1rem;color:#0a1628;margin-top:24px}' +
-      'p{margin:8px 0}' +
-      '.footer{margin-top:48px;padding-top:12px;border-top:1px solid #ccc;font-size:.8rem;color:#555}' +
+      'body{font-family:Arial,sans-serif;max-width:720px;margin:40px auto;padding:0 24px;color:#111;line-height:1.7;font-size:14px}' +
+      'h3{font-size:1.15rem;border-bottom:2px solid #0a1628;padding-bottom:6px;color:#0a1628;margin-bottom:12px}' +
+      'p{margin:8px 0}a{color:#0a1628}' +
+      'strong{color:#111}' +
+      '.dl-btn,.btn-sm{display:none!important}' +  /* hide buttons */
+      '.footer{margin-top:40px;padding-top:10px;border-top:1px solid #ccc;font-size:.78rem;color:#555}' +
     '</style></head><body>' +
-    '<h1>Accessibility Statement</h1>' +
-    '<p><strong>' + orgName + '</strong> &mdash; Last reviewed: ' + new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long'}) + '</p>' +
-    '<p>' + orgName + ' is committed to ensuring digital accessibility for people with disabilities. We continually improve the user experience for everyone and apply relevant accessibility standards.</p>' +
-    '<h2>Conformance Status</h2>' +
-    '<p>This website conforms to <strong>WCAG 2.1 Level AA</strong> under the Accessibility for Ontarians with Disabilities Act (AODA) Integrated Accessibility Standards Regulation.</p>' +
-    '<h2>Feedback</h2>' +
-    '<p>We welcome feedback on the accessibility of <strong>' + domain + '</strong>. If you experience any barriers, please contact us:</p>' +
-    '<p>Email: <a href="mailto:' + email + '">' + email + '</a></p>' +
-    '<h2>Technical Specifications</h2>' +
-    '<p>This website relies on the following technologies for conformance: HTML, CSS, JavaScript. The ACC Accessibility Widget (WCAG 2.1 AA) is actively deployed and provides real-time accessibility enhancements.</p>' +
-    '<h2>Assessment Approach</h2>' +
-    '<p>' + orgName + ' assesses accessibility through monthly automated scans conducted by Accessibility Compliance Canada Inc. using WCAG 2.1 Level AA criteria. Results are reviewed and remediation is tracked through the ACC compliance portal.</p>' +
-    '<h2>Formal Complaints</h2>' +
-    '<p>We aim to respond to accessibility feedback within 5 business days. If you are not satisfied with our response, you may contact the Accessibility Directorate of Ontario.</p>' +
+    stmtHTML +
     '<div class="footer">' +
-      '<p>This statement was prepared on ' + new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'}) + '.</p>' +
-      '<p>Accessibility compliance services provided by Accessibility Compliance Canada Inc. &bull; accessibilitycompliance.ca</p>' +
-    '</div></body></html>';
+      '<p>This statement was prepared on ' +
+        new Date().toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"}) + '.</p>' +
+      '<p>Accessibility compliance services provided by Accessibility Compliance Canada Inc.</p>' +
+    '</div>' +
+    '</body></html>';
 
   var blob = new Blob([content], { type: 'text/html;charset=utf-8' });
   var url  = URL.createObjectURL(blob);
