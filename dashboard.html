@@ -698,28 +698,32 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           </table>
         </div>
 
-        <!-- Annual Sign-off -->
+        <!-- Scope Acknowledgment Sign-off -->
         <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.2);border-radius:10px;padding:18px;margin-top:20px" id="scope-signoff">
-          <strong style="font-size:.88rem;color:#38d9a9;display:block;margin-bottom:8px">&#9998; Annual Scope Acknowledgment — 2026</strong>
-          <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:14px">By signing below, <strong style="color:#e8edf8" id="signoff-company2">your organization</strong> confirms it has reviewed the Scope of Responsibility table and understands its operational duties for the 2026 AODA filing period.</p>
+          <strong style="font-size:.88rem;color:#38d9a9;display:block;margin-bottom:4px">&#9998; Scope of Responsibility Acknowledgment</strong>
+          <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:14px">Confirm your organization's operational duties for the <span id="scope-year">2026</span> AODA period. You can update and re-generate this document at any time.</p>
+
+          <!-- Unsigned state -->
           <div id="signoff-unsigned">
             <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px">
               <input type="checkbox" id="scope-chk" style="margin-top:3px;accent-color:#4f8ef7;width:16px;height:16px"/>
               <label for="scope-chk" style="font-size:.82rem;color:#8a9bbf;cursor:pointer">
-                I, <strong style="color:#e8edf8" id="signoff-name">—</strong> (authorized representative of <span id="signoff-company">your organization</span>), confirm that I have read and understood the Scope of Responsibility. I acknowledge that Accessibility Compliance Canada Inc. is responsible only for the deliverables listed, and that operational implementation is the responsibility of our organization.
+                I, <strong style="color:#e8edf8" id="signoff-name">—</strong>, authorized representative of <strong style="color:#e8edf8" id="signoff-company">your organization</strong>, confirm I have read and understood the Scope of Responsibility above. Accessibility Compliance Canada Inc. is responsible only for the deliverables listed; operational implementation is our organization's responsibility.
               </label>
             </div>
-            <button class="btn-sm btn-primary" onclick="signScopeAck()">&#9989; Sign &amp; Confirm — 2026</button>
+            <button class="btn-sm btn-primary" onclick="signScopeAck(event)">&#9989; Sign &amp; Generate PDF</button>
           </div>
+
+          <!-- Signed state -->
           <div id="signoff-signed" style="display:none">
-            <span class="pill green" style="font-size:.8rem">&#9989; Signed by <span id="signoff-signer">—</span> — <span id="signoff-date"></span></span>
-            <p style="font-size:.78rem;color:#8a9bbf;margin-top:8px">A copy has been added to your 2026 Evidence Binder.</p>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+              <span class="pill green" style="font-size:.8rem">&#9989; Signed by <span id="signoff-signer">—</span> on <span id="signoff-date"></span></span>
+              <button class="btn-sm btn-ghost" style="font-size:.75rem" onclick="resignScopeAck()">&#8635; Re-sign &amp; Update PDF</button>
+            </div>
+            <button class="btn-sm" onclick="downloadLatestScopeAck()" style="background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:6px 14px;font-size:.78rem;cursor:pointer">&#8659; Download Current PDF</button>
           </div>
         </div>
 
-        <div class="btn-row" style="margin-top:16px">
-          <a class="dl-btn" href="#" onclick="downloadAllTemplates()">&#8659; Download All Templates (ZIP)</a>
-        </div>
       </div>
 
       <!-- Annual reminder info -->
@@ -2975,7 +2979,7 @@ async function generateReadinessLetter() {
       'ACC_Compliance_Letter_' + _clientData.client_code + '.pdf');
   } catch(e) {
     console.error('generateReadinessLetter:', e);
-    alert('Could not generate letter: ' + e.message);
+    alert('Could not generate letter: ' + (e.message || String(e)) + '\n\nMake sure the generate-compliance-letter edge function is deployed in Supabase.');
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = orig; }
   }
@@ -3179,36 +3183,113 @@ async function runScanNow(btn) {
   }
 }
 
-// ── Item 3: signScopeAck — save to DB + show signed state ──
-async function signScopeAck() {
+// ── Scope of Responsibility Acknowledgment ────────────────────
+async function signScopeAck(evt) {
   var chk = document.getElementById('scope-chk');
-  if (!chk || !chk.checked) { alert('Please check the box to confirm before signing.'); return; }
+  if (!chk || !chk.checked) { alert('Please tick the box to confirm before signing.'); return; }
   if (!window._clientData) { alert('Please log in first.'); return; }
-  var btn = (window.event && window.event.target) || null;
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  var btn = evt ? evt.target : null;
+  var orig = btn ? btn.innerHTML : null;
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating PDF…'; }
   try {
     var now = new Date();
-    var { error } = await _sb_client.from('scope_acknowledgments').upsert({
-      client_id: _clientData.id,
+    // Save acknowledgment to DB (table must exist — see SQL note)
+    var dbRes = await _sb_client.from('scope_acknowledgments').upsert({
+      client_id:   _clientData.id,
       client_name: _clientData.name,
-      signed_at: now.toISOString(),
-      year: now.getFullYear(),
+      signed_at:   now.toISOString(),
+      year:        now.getFullYear(),
     }, { onConflict: 'client_id,year' });
-    if (error) throw error;
+    // Don't block on DB error — table may not exist yet, still generate PDF
+    if (dbRes.error) console.warn('scope_acknowledgments upsert:', dbRes.error.message);
+
+    // Generate PDF via edge function
+    var result = await callEdgeFunction('generate-compliance-letter', {
+      client_id:   _clientData.id,
+      letter_type: 'scope_acknowledgment',
+    });
+    if (!result || !result.file) throw new Error('No file path returned from edge function.');
+    window._lastScopeAckFile = result.file;
+
+    // Download immediately
+    await downloadSigned('reports', result.file,
+      'ACC_Scope_Acknowledgment_' + _clientData.client_code + '_' + now.getFullYear() + '.pdf');
 
     // Show signed state
     var unsigned = document.getElementById('signoff-unsigned');
     var signed   = document.getElementById('signoff-signed');
     var dateEl   = document.getElementById('signoff-date');
+    var signerEl = document.getElementById('signoff-signer');
     if (unsigned) unsigned.style.display = 'none';
     if (signed)   signed.style.display   = 'block';
     if (dateEl)   dateEl.textContent = now.toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
+    if (signerEl) signerEl.textContent = _clientData.name || _clientData.email || '—';
 
-    showToast('Scope Acknowledgment signed and saved.');
+    showToast('✅ Scope Acknowledgment signed and PDF downloaded.');
   } catch(e) {
-    alert('Could not save acknowledgment: ' + e.message);
-    if (btn) { btn.disabled = false; btn.textContent = '\u2705 Sign & Confirm \u2014 ' + new Date().getFullYear(); }
+    console.error('signScopeAck:', e);
+    alert('Could not generate acknowledgment: ' + (e.message || String(e)));
+    if (btn && orig) { btn.disabled = false; btn.innerHTML = orig; }
   }
+}
+
+function resignScopeAck() {
+  // Reset to unsigned state so client can re-sign and get a fresh PDF
+  var unsigned = document.getElementById('signoff-unsigned');
+  var signed   = document.getElementById('signoff-signed');
+  var chk      = document.getElementById('scope-chk');
+  if (unsigned) unsigned.style.display = 'block';
+  if (signed)   signed.style.display   = 'none';
+  if (chk)      chk.checked = false;
+}
+
+async function downloadLatestScopeAck() {
+  if (!window._clientData) { alert('Please log in first.'); return; }
+  // Try last known file path first
+  if (window._lastScopeAckFile) {
+    await downloadSigned('reports', window._lastScopeAckFile,
+      'ACC_Scope_Acknowledgment_' + _clientData.client_code + '.pdf');
+    return;
+  }
+  // Otherwise regenerate
+  var btn = (window.event && window.event.target) || null;
+  var orig = btn ? btn.innerHTML : null;
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating…'; }
+  try {
+    var result = await callEdgeFunction('generate-compliance-letter', {
+      client_id:   _clientData.id,
+      letter_type: 'scope_acknowledgment',
+    });
+    window._lastScopeAckFile = result.file;
+    await downloadSigned('reports', result.file,
+      'ACC_Scope_Acknowledgment_' + _clientData.client_code + '.pdf');
+  } catch(e) {
+    alert('Could not generate PDF: ' + (e.message || String(e)));
+  } finally {
+    if (btn && orig) { btn.disabled = false; btn.innerHTML = orig; }
+  }
+}
+
+// ── Load saved scope acknowledgment state on login ─────────
+async function loadScopeAckStatus() {
+  if (!window._clientData) return;
+  try {
+    var r = await _sb_client.from('scope_acknowledgments')
+      .select('signed_at, client_name')
+      .eq('client_id', _clientData.id)
+      .eq('year', new Date().getFullYear())
+      .maybeSingle();
+    if (r.data && r.data.signed_at) {
+      var unsigned = document.getElementById('signoff-unsigned');
+      var signed   = document.getElementById('signoff-signed');
+      var dateEl   = document.getElementById('signoff-date');
+      var signerEl = document.getElementById('signoff-signer');
+      if (unsigned) unsigned.style.display = 'none';
+      if (signed)   signed.style.display   = 'block';
+      if (dateEl)   dateEl.textContent = new Date(r.data.signed_at).toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
+      if (signerEl) signerEl.textContent = r.data.client_name || _clientData.name || '—';
+    }
+  } catch(e) { console.warn('loadScopeAckStatus:', e.message); }
 }
 
 // ── Item 3: Download All Templates ZIP ──
@@ -3699,6 +3780,7 @@ function openStmtModal() {
       populateClientFiles(_clientData.client_code);
       populateScanData(_clientData.client_code);
     }
+    loadScopeAckStatus();
     applyDashboardAccess(_clientData.dashboard_access);
     populateFeedback(fr.data || []);
     populateA11yStatement(_clientData);
