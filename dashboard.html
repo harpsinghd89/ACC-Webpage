@@ -838,10 +838,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             </tbody>
           </table>
         </div>
-        <div class="btn-row" style="margin-top:14px">
-          <button class="btn-sm btn-primary" onclick="openModal('add-employee-modal')">+ Add Employee</button>
 
-        </div>
       </div>
 
     </div>
@@ -882,7 +879,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><span class="stmt-org-name">Your organization</span> is committed to ensuring digital accessibility for people with disabilities. We continually improve the user experience for everyone and apply relevant accessibility standards.</p>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Conformance status:</strong> This website conforms to WCAG 2.1 Level AA.</p>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Feedback:</strong> We welcome feedback on the accessibility of this website. Please email <a href="/cdn-cgi/l/email-protection#721311111701011b101b1e1b060b32290b1d0700161d1f131b1c2f5c1113" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a>
-          <a class="dl-btn" href="#" onclick="generateReadinessLetter()">&#8659; Download PDF</a>
+          <a class="dl-btn" href="#" onclick="downloadA11yStatement()">&#8659; Download PDF</a>
           <button class="btn-sm btn-ghost" onclick="openModal('edit-stmt-modal')">&#9998; Customize</button>
         </div>
       </div>
@@ -2447,6 +2444,43 @@ async function populateTraining(c) {
   } catch(_) {
     // training_logs table may not exist yet — leave pills as-is
   }
+
+  // Load actual training records into the registry table
+  try {
+    var { data: records } = await _sb_client
+      .from('training_logs')
+      .select('staff_name, course_name, completed_at, notes')
+      .eq('client_id', c.id)
+      .order('completed_at', { ascending: false });
+
+    var tbody = document.getElementById('training-tbody');
+    if (tbody && records && records.length > 0) {
+      // Remove hardcoded sample rows (keep the no-results row)
+      Array.from(tbody.querySelectorAll('tr[data-name]')).forEach(function(r){ r.remove(); });
+
+      var noResults = document.getElementById('training-no-results');
+      records.forEach(function(rec) {
+        var status = rec.notes || 'Passed';
+        var row = document.createElement('tr');
+        row.setAttribute('data-name', (rec.staff_name || '').toLowerCase());
+        row.innerHTML =
+          '<td><strong>' + esc(rec.staff_name || '') + '</strong></td>' +
+          '<td>' + esc(rec.course_name || '') + '</td>' +
+          '<td><span class="pill ' + (status === 'Passed' ? 'green' : 'yellow') +
+            '" style="font-size:.72rem">&#10003; ' + esc(status) + '</span></td>' +
+          '<td style="font-size:.78rem;color:#8a9bbf">' + fmtDate(rec.completed_at) + '</td>' +
+          '<td><button class="btn-sm btn-ghost" onclick="generateCertificate(' +
+            JSON.stringify(rec.staff_name) + ',' +
+            JSON.stringify(rec.course_name) + ',' +
+            JSON.stringify((rec.completed_at||'').substring(0,10)) +
+            ')">&#8659; PDF</button></td>';
+        if (noResults) tbody.insertBefore(row, noResults);
+        else tbody.appendChild(row);
+      });
+    }
+  } catch(_) {
+    // training_logs rows not available — leave hardcoded rows as-is
+  }
 }
 
 function applyDashboardAccess(access) {
@@ -3426,9 +3460,11 @@ async function saveTrainingRecord() {
         '<td><span class="pill ' + (statusVal === 'Passed' ? 'green' : 'yellow') +
           '" style="font-size:.72rem">&#10003; ' + esc(statusVal) + '</span></td>' +
         '<td style="font-size:.78rem;color:#8a9bbf">' + fmtDate(dateVal) + '</td>' +
-        '<td><button class="btn-sm btn-ghost" onclick="generateCertificate(' +
-          JSON.stringify(empName) + ',' + JSON.stringify(module) + ',' + JSON.stringify(dateVal) +
-          ')">&#8659; PDF</button></td>';
+        '<td><button class="btn-sm btn-ghost training-cert-btn"' +
+          ' data-name="' + empName.replace(/"/g,'&quot;') + '"' +
+          ' data-module="' + module.replace(/"/g,'&quot;') + '"' +
+          ' data-date="' + (dateVal||'').substring(0,10) + '"' +
+          '>&#8659; PDF</button></td>';
       if (noResults) tbody.insertBefore(row, noResults);
       else tbody.appendChild(row);
     }
@@ -3446,6 +3482,77 @@ async function saveTrainingRecord() {
     if (btn) { btn.disabled = false; btn.textContent = 'Save Record'; }
   }
 }
+
+
+async function downloadA11yStatement() {
+  if (!window._clientData) { alert('Please log in first.'); return; }
+  var c = _clientData;
+  var orgName = c.name || 'Your Organization';
+  var domain  = c.domain ? 'https://' + c.domain.replace(/^https?:\/\//, '') : '[yourdomain].ca';
+  var email   = c.email || 'accessibility@' + (c.domain || '[yourdomain].ca');
+  var year    = new Date().getFullYear();
+
+  var content = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">' +
+    '<title>Accessibility Statement - ' + orgName + '</title>' +
+    '<style>' +
+      'body{font-family:Arial,sans-serif;max-width:720px;margin:40px auto;padding:0 24px;color:#111;line-height:1.6}' +
+      'h1{font-size:1.4rem;border-bottom:2px solid #0a1628;padding-bottom:8px;color:#0a1628}' +
+      'h2{font-size:1rem;color:#0a1628;margin-top:24px}' +
+      'p{margin:8px 0}' +
+      '.footer{margin-top:48px;padding-top:12px;border-top:1px solid #ccc;font-size:.8rem;color:#555}' +
+    '</style></head><body>' +
+    '<h1>Accessibility Statement</h1>' +
+    '<p><strong>' + orgName + '</strong> &mdash; Last reviewed: ' + new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long'}) + '</p>' +
+    '<p>' + orgName + ' is committed to ensuring digital accessibility for people with disabilities. We continually improve the user experience for everyone and apply relevant accessibility standards.</p>' +
+    '<h2>Conformance Status</h2>' +
+    '<p>This website conforms to <strong>WCAG 2.1 Level AA</strong> under the Accessibility for Ontarians with Disabilities Act (AODA) Integrated Accessibility Standards Regulation.</p>' +
+    '<h2>Feedback</h2>' +
+    '<p>We welcome feedback on the accessibility of <strong>' + domain + '</strong>. If you experience any barriers, please contact us:</p>' +
+    '<p>Email: <a href="mailto:' + email + '">' + email + '</a></p>' +
+    '<h2>Technical Specifications</h2>' +
+    '<p>This website relies on the following technologies for conformance: HTML, CSS, JavaScript. The ACC Accessibility Widget (WCAG 2.1 AA) is actively deployed and provides real-time accessibility enhancements.</p>' +
+    '<h2>Assessment Approach</h2>' +
+    '<p>' + orgName + ' assesses accessibility through monthly automated scans conducted by Accessibility Compliance Canada Inc. using WCAG 2.1 Level AA criteria. Results are reviewed and remediation is tracked through the ACC compliance portal.</p>' +
+    '<h2>Formal Complaints</h2>' +
+    '<p>We aim to respond to accessibility feedback within 5 business days. If you are not satisfied with our response, you may contact the Accessibility Directorate of Ontario.</p>' +
+    '<div class="footer">' +
+      '<p>This statement was prepared on ' + new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'}) + '.</p>' +
+      '<p>Accessibility compliance services provided by Accessibility Compliance Canada Inc. &bull; accessibilitycompliance.ca</p>' +
+    '</div></body></html>';
+
+  var blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+  var url  = URL.createObjectURL(blob);
+
+  // Open in new tab so user can Ctrl+P / Save as PDF
+  var win = window.open(url, '_blank');
+  if (win) {
+    win.onload = function() {
+      setTimeout(function() {
+        win.print();
+        URL.revokeObjectURL(url);
+      }, 300);
+    };
+  } else {
+    // Popup blocked — fallback to direct download of HTML
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'Accessibility_Statement_' + orgName.replace(/[^a-zA-Z0-9]/g,'_') + '.html';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
+
+// ── Training cert button delegation ──────────────────────────────
+// Handles cert PDF buttons added dynamically (data-name/module/date attrs)
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.training-cert-btn');
+  if (!btn) return;
+  var name   = btn.dataset.name;
+  var module = btn.dataset.module;
+  var date   = btn.dataset.date;
+  if (name && module) generateCertificate(name, module, date || '');
+});
 
 // ── Auth guard ────────────────────────────────────────────
 // Runs once on page load. Redirects to login if no valid session.
