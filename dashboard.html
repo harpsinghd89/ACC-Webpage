@@ -690,7 +690,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
               <tr data-template-key="disruption-of-services-notice"><td>11</td><td><strong>Notice of Temporary Disruption of Services</strong></td><td>Provide digital &amp; printable signage</td><td>Post when lift or power-door fails</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-disruption-notice')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-disruption-notice')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
               <tr style="border-top:2px solid rgba(79,142,247,.2)"><td>+</td><td><strong>AODA Filing Checklist</strong><div style="font-size:.72rem;color:#8a9bbf">All 11 questions pre-submission</div></td><td>Provide pre-filled checklist</td><td>Submit via Ontario government portal by Dec 31</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-aoda-checklist')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-aoda-checklist')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
               <tr><td>+</td><td><strong>Compliance Readiness Letter</strong><div style="font-size:.72rem;color:#8a9bbf">Auto-generated Dec 1 — covers your service period</div></td><td>Issue letter confirming ACC services delivered</td><td>Include in filing binder</td><td><a class="dl-btn" href="#" onclick="generateReadinessLetter()">&#8659; Generate</a></td></tr>
-              <tr><td>+</td><td><strong>Scope of Responsibility Acknowledgment</strong><div style="font-size:.72rem;color:#8a9bbf">Sign annually — protects both parties legally</div></td><td>Prepare acknowledgment document</td><td>&#9989; Sign below to confirm your duties</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-scope-acknowledgment.html')">&#8659;</a></td></tr>
+              
             </tbody>
           </table>
         </div>
@@ -702,8 +702,8 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <p style="color:#8a9bbf;font-size:.8rem;margin:4px 0 0">You signed the Scope Acknowledgment in <span id="scope-banner-year">—</span>. Please sign again for <strong style="color:#e8edf8">2026</strong> to keep your compliance record current.</p>
         </div>
         <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.2);border-radius:10px;padding:18px;margin-top:20px" id="scope-signoff">
-          <strong style="font-size:.88rem;color:#38d9a9;display:block;margin-bottom:8px">&#9998; Annual Scope Acknowledgment — 2026</strong>
-          <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:14px">By signing below, <strong style="color:#e8edf8" id="signoff-company2">your organization</strong> confirms it has reviewed the Scope of Responsibility table and understands its operational duties for the 2026 AODA filing period.</p>
+          <strong style="font-size:.88rem;color:#38d9a9;display:block;margin-bottom:8px">&#9998; Annual Scope Acknowledgment — <span class="scope-year"></span></strong>
+          <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:14px">By signing below, <strong style="color:#e8edf8" id="signoff-company2">your organization</strong> confirms it has reviewed the Scope of Responsibility table and understands its operational duties for the <span class="scope-year"></span> AODA filing period.</p>
           <div id="signoff-unsigned">
             <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px">
               <input type="checkbox" id="scope-chk" style="margin-top:3px;accent-color:#4f8ef7;width:16px;height:16px"/>
@@ -711,7 +711,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
                 I, <strong style="color:#e8edf8" id="signoff-name">—</strong> (authorized representative of <span id="signoff-company">your organization</span>), confirm that I have read and understood the Scope of Responsibility. I acknowledge that Accessibility Compliance Canada Inc. is responsible only for the deliverables listed, and that operational implementation is the responsibility of our organization.
               </label>
             </div>
-            <button class="btn-sm btn-primary" onclick="signScopeAck()">&#9989; Sign &amp; Confirm — 2026</button>
+            <button class="btn-sm btn-primary" onclick="signScopeAck()">&#9989; Sign &amp; Confirm — <span class="scope-year"></span></button>
           </div>
           <div id="signoff-signed" style="display:none">
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
@@ -719,7 +719,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
               <button class="btn-sm btn-ghost" style="font-size:.75rem" onclick="resignScopeAck()">&#8635; Re-sign &amp; Update</button>
             </div>
             <button class="btn-sm" onclick="downloadLatestScopeAck()" style="background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:6px 14px;font-size:.78rem;cursor:pointer">&#8659; Download PDF</button>
-            <p style="font-size:.78rem;color:#8a9bbf;margin-top:8px">A copy has been added to your 2026 Evidence Binder.</p>
+            
           </div>
         </div>
 
@@ -3751,6 +3751,9 @@ function openStmtModal() {
     populateTraining(_clientData);
     populateAccount(_clientData, br.data || []);
     loadScopeAckStatus();
+    // Populate dynamic year spans
+    var yr = new Date().getFullYear();
+    document.querySelectorAll('.scope-year').forEach(function(el){ el.textContent = yr; });
     if (_clientData.client_code) {
       populateClientFiles(_clientData.client_code);
       populateScanData(_clientData.client_code);
