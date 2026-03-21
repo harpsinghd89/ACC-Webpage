@@ -933,6 +933,75 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </div>
     </div>
 
+    <!-- ════════ TRAINING PANEL ════════ -->
+
+    <div class="panel" id="panel-training">
+      <div class="page-header">
+        <h1>&#127891; AODA Training</h1>
+        <p>Track staff accessibility training completion and download certificates.</p>
+      </div>
+
+      <!-- Training modules -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:20px">
+        <div class="card" style="margin:0">
+          <h2 style="font-size:.95rem;margin-bottom:8px">Module 1 — AODA Overview</h2>
+          <span id="mod1-count" class="pill blue" style="font-size:.72rem;display:block;margin-bottom:10px">Not started</span>
+          <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Introduction to AODA, compliance obligations, and client responsibilities under Ontario law.</p>
+          <a id="mod1-preview-link" href="#" target="_blank" class="btn-sm btn-ghost" style="font-size:.75rem">&#9654; Preview Module</a>
+        </div>
+        <div class="card" style="margin:0">
+          <h2 style="font-size:.95rem;margin-bottom:8px">Module 2 — WCAG 2.1 AA</h2>
+          <span id="mod2-count" class="pill blue" style="font-size:.72rem;display:block;margin-bottom:10px">Not started</span>
+          <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Web Content Accessibility Guidelines — what they require and how your website meets them.</p>
+          <a id="mod2-preview-link" href="#" target="_blank" class="btn-sm btn-ghost" style="font-size:.75rem">&#9654; Preview Module</a>
+        </div>
+        <div class="card" style="margin:0">
+          <h2 style="font-size:.95rem;margin-bottom:8px">Module 3 — Customer Service</h2>
+          <span id="mod3-count" class="pill blue" style="font-size:.72rem;display:block;margin-bottom:10px">Not started</span>
+          <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Accessible customer service standards — serving people with disabilities respectfully.</p>
+          <a id="mod3-preview-link" href="#" target="_blank" class="btn-sm btn-ghost" style="font-size:.75rem">&#9654; Preview Module</a>
+        </div>
+      </div>
+
+      <!-- Training registry -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+          <h2 style="margin:0">&#128203; Staff Training Registry</h2>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input class="finput" id="training-search" type="search" placeholder="Search staff…" style="padding:6px 10px;font-size:.8rem;width:160px" oninput="filterTraining()">
+            <button class="btn-sm btn-primary" style="font-size:.75rem" onclick="openModal('add-training-modal')">+ Log Training</button>
+            <button class="btn-sm btn-ghost" style="font-size:.75rem" onclick="exportTableCSV('training-registry-table','ACC_Training_Registry.csv')">&#8659; Export CSV</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="training-registry-table" aria-label="Staff training registry">
+            <thead>
+              <tr>
+                <th>Staff Member</th>
+                <th>Module</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Certificate</th>
+              </tr>
+            </thead>
+            <tbody id="training-tbody">
+              <tr id="training-no-results">
+                <td colspan="5" style="color:var(--muted);text-align:center;padding:20px">No training records yet. Use &ldquo;Log Training&rdquo; to add entries.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Training link -->
+      <div class="card">
+        <h2>&#128279; Training Portal Link</h2>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:10px">Share this link with your team to access the ACC training modules directly.</p>
+        <pre id="training-link" style="background:rgba(10,22,40,.6);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:.78rem;color:#4f8ef7;overflow-x:auto;white-space:pre-wrap;word-break:break-all">Loading…</pre>
+        <button class="btn-sm btn-ghost" style="margin-top:8px;font-size:.75rem" onclick="navigator.clipboard.writeText(document.getElementById('training-link').textContent).then(function(){showToast('Link copied!')})">&#128203; Copy Link</button>
+      </div>
+    </div>
+
     <!-- ════════ ADMIN PANELS ════════ -->
 
     <!-- ADMIN OVERVIEW -->
@@ -2284,7 +2353,7 @@ function populateRoadmap(milestones) {
       }).join('');
       return '<tr data-rid="'+esc(m.id||'')+'" data-year="'+yr+'">' +
         '<td><input class="finput" style="padding:4px 6px;font-size:.85rem;width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" value="'+esc(m.title||m.milestone||'')+'" aria-label="Milestone"></td>' +
-        '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" value="'+esc(m.target_date||'')+'" aria-label="Target date"></td>' +
+        '<td><input class="finput" type="text" style="padding:4px 6px;font-size:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" placeholder="e.g. Jan 2026" value="'+esc(m.target_date||'')+'" aria-label="Target date"></td>' +
         '<td><select class="finput" style="padding:4px 6px;font-size:.85rem;background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);color:#e8edf8" aria-label="Status">'+opts+'</select></td>' +
         '</tr>';
     }).join('');
@@ -2314,7 +2383,7 @@ function addClientRoadmapRow(yr) {
   tr.setAttribute('data-year', yr);
   tr.innerHTML =
     '<td><input class="finput" style="padding:4px 6px;font-size:.85rem;width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" placeholder="Milestone title" aria-label="Milestone"></td>' +
-    '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" aria-label="Target date"></td>' +
+    '<td><input class="finput" type="text" style="padding:4px 6px;font-size:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" placeholder="e.g. Jan 2026" aria-label="Target date"></td>' +
     '<td><select class="finput" style="padding:4px 6px;font-size:.85rem;background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);color:#e8edf8" aria-label="Status">'+sopts+'</select></td>';
   tbody.appendChild(tr);
   var saveBtn = document.getElementById('client-roadmap-save');
