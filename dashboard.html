@@ -2974,19 +2974,24 @@ async function generateAndDownloadReport(monthKey) {
   if (!window._clientData) { alert('Please log in first.'); return; }
   var btn = (window.event && window.event.target) || null;
   var orig = btn ? btn.innerHTML : null;
-  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating&hellip;'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating…'; }
   try {
-    var result = await callEdgeFunction('generate-audit-report', { client_id: _clientData.id });
+    // monthKey is "YYYY-MM" from the data-ym attribute
+    var ym   = monthKey || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
     var code = _clientData.client_code;
-    var now = new Date();
-    var ym = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+    var result = await callEdgeFunction('generate-audit-report', {
+      client_id:    _clientData.id,
+      target_month: ym,           // tells edge function which month to generate
+    });
     var filePath = (result && result.file) ? result.file : (code + '/' + ym + '.pdf');
     await downloadSigned('reports', filePath, 'ACC_Report_' + ym + '_' + code + '.pdf');
+    // Refresh the reports list so status flips from Missing → Available
+    await populateReports(_clientData);
   } catch(e) {
     console.error('generateAndDownloadReport:', e);
-    alert('Could not generate report: ' + e.message);
+    alert('Could not generate report: ' + (e.message || e));
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+    if (btn) { btn.disabled = false; btn.innerHTML = orig || '▶ Regenerate'; }
   }
 }
 
