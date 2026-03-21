@@ -626,8 +626,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </div>
         <h3>Document Checklist</h3>
         <div id="evidence-binder-list" style="display:grid;gap:6px;margin-bottom:12px">
-          <p style="color:#8a9bbf;font-size:.82rem">No binder items configured yet. Your ACC admin will set these up.</p>
+          <p style="color:#8a9bbf;font-size:.82rem">Loading checklist…</p>
         </div>
+        <button id="binder-save-btn" class="btn-sm btn-primary" style="display:none;margin-bottom:4px" onclick="saveClientBinder()">&#10003; Save Checklist</button>
       </div>
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -2769,26 +2770,92 @@ function populateStandards(c, templateAccess) {
 }
 
 function populateEvidence(c, milestones) {
-  // Show binder items from DB if available
-  if (c.binder_items && Array.isArray(c.binder_items) && c.binder_items.length) {
-    var evList = document.getElementById('evidence-binder-list');
-    if (evList) {
-      var statColors = { 'Verified':'#38d9a9','On File':'#4f8ef7','Pending Review':'#f5a623','Missing':'#f05f5f' };
-      evList.innerHTML = c.binder_items.map(function(item) {
-        var col = statColors[item.status] || '#8a9bbf';
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.4);border-radius:8px;margin-bottom:6px">' +
-          '<span style="font-size:.85rem">' + item.title + '</span>' +
-          '<span class="pill" style="background:'+col+'22;color:'+col+';border:1px solid '+col+'44;font-size:.72rem">' + item.status + '</span>' +
-          '</div>';
+  // Default AODA checklist if admin hasn't configured binder items yet
+  var DEFAULT_BINDER_ITEMS = [
+    { title: 'Accessibility Policy & Statement of Commitment',   status: 'Pending Review' },
+    { title: 'Multi-Year Accessibility Plan (MYAP)',              status: 'Pending Review' },
+    { title: 'Staff AODA Training Registry',                      status: 'Pending Review' },
+    { title: 'Accessible Customer Feedback Process',              status: 'Pending Review' },
+    { title: 'Accessible Formats Request Procedure',              status: 'Pending Review' },
+    { title: 'Accessibility Statement (Web)',                     status: 'Pending Review' },
+    { title: 'Accommodation Clause — Job Postings',               status: 'Pending Review' },
+    { title: 'Accessibility Clause — Offer Letters',              status: 'Pending Review' },
+    { title: 'Service Animals & Support Persons Policy',          status: 'Pending Review' },
+    { title: 'Notice of Temporary Disruption of Services',        status: 'Pending Review' },
+    { title: 'HR Accommodation Policy',                           status: 'Pending Review' },
+    { title: 'Monthly Audit Reports (all months)',                status: 'Pending Review' },
+    { title: 'Scope of Responsibility Acknowledgment',            status: 'Pending Review' },
+    { title: 'AODA Filing Checklist',                             status: 'Pending Review' },
+  ];
+
+  var items = (c.binder_items && Array.isArray(c.binder_items) && c.binder_items.length)
+    ? c.binder_items
+    : DEFAULT_BINDER_ITEMS;
+
+  var evList = document.getElementById('evidence-binder-list');
+  if (evList) {
+    var statColors = { 'Verified':'#38d9a9', 'On File':'#4f8ef7', 'Pending Review':'#f5a623', 'Missing':'#f05f5f' };
+    var statuses = ['Verified', 'On File', 'Pending Review', 'Missing'];
+    evList.innerHTML = items.map(function(item, idx) {
+      var col  = statColors[item.status] || '#8a9bbf';
+      var opts = statuses.map(function(s) {
+        return '<option value="'+s+'"'+(s===item.status?' selected':'')+'>'+s+'</option>';
       }).join('');
-    }
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.4);border-radius:8px;margin-bottom:6px;gap:10px">' +
+        '<span style="font-size:.85rem;flex:1">'+esc(item.title)+'</span>' +
+        '<select class="finput binder-status-sel" data-idx="'+idx+'" style="padding:3px 8px;font-size:.72rem;width:130px;background:rgba(10,22,40,.8);border:1px solid '+col+';color:'+col+'" onchange="onBinderStatusChange(this)">'+opts+'</select>' +
+        '</div>';
+    }).join('');
+
+    // Show save button
+    var saveBtn = document.getElementById('binder-save-btn');
+    if (saveBtn) saveBtn.style.display = 'inline-flex';
   }
-  var done = (milestones||[]).filter(function(m){ return m.status==='complete'; }).length;
+
+  var done = (milestones||[]).filter(function(m){ return m.status==='complete' || m.status==='done'; }).length;
   set('evidence-done-count', done + ' milestones complete');
   var pct = milestones && milestones.length ? Math.round(done/milestones.length*100) : 0;
   var bar = document.getElementById('evidence-progress-bar');
   if (bar) bar.style.width = pct + '%';
 }
+
+function onBinderStatusChange(sel) {
+  // Update border/color live
+  var statColors = { 'Verified':'#38d9a9', 'On File':'#4f8ef7', 'Pending Review':'#f5a623', 'Missing':'#f05f5f' };
+  var col = statColors[sel.value] || '#8a9bbf';
+  sel.style.borderColor = col;
+  sel.style.color = col;
+  // Show save button
+  var saveBtn = document.getElementById('binder-save-btn');
+  if (saveBtn) saveBtn.style.display = 'inline-flex';
+}
+
+async function saveClientBinder() {
+  if (!window._clientData) return;
+  var btn = document.getElementById('binder-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    var sels = document.querySelectorAll('.binder-status-sel');
+    var items = Array.from(sels).map(function(sel) {
+      var row = sel.closest('div');
+      var titleEl = row ? row.querySelector('span') : null;
+      return { title: titleEl ? titleEl.textContent.trim() : '', status: sel.value };
+    }).filter(function(i){ return i.title; });
+
+    var r = await _sb_client.from('clients').update({
+      binder_items: items, updated_at: new Date().toISOString()
+    }).eq('id', _clientData.id);
+    if (r.error) throw r.error;
+    _clientData.binder_items = items;
+    window._clientData = _clientData;
+    showToast('✅ Checklist saved.');
+  } catch(e) {
+    alert('Could not save checklist: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✓ Save Checklist'; }
+  }
+}
+
 
 async function populateReports(c) {
   var domEls = document.querySelectorAll('.report-domain');

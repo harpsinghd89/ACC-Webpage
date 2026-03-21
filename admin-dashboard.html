@@ -758,27 +758,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div id="ctab-panel-binder" style="display:none">
       <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:14px">Manage the AODA Evidence Binder items for this client.</p>
       <div id="binder-items-list" style="display:grid;gap:8px;margin-bottom:14px">
-        <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <div><div data-binder-title style="font-size:.85rem;font-weight:600">AODA Accessibility Report 2026</div><div style="font-size:.72rem;color:#8a9bbf">Uploaded Mar 1, 2026 · Verified</div></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px"><option selected>Verified</option><option>Pending Review</option><option>Missing</option></select>
-            <button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest('div[style]').remove();saveBinder()" aria-label="Delete binder item">&#10005;</button>
-          </div>
-        </div>
-        <div style="background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <div><div data-binder-title style="font-size:.85rem;font-weight:600">Staff Training Certificates — 3 employees</div><div style="font-size:.72rem;color:#8a9bbf">Mar 5, 2026 · On File</div></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px"><option>Verified</option><option selected>On File</option><option>Pending Review</option><option>Missing</option></select>
-            <button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest('div[style]').remove();saveBinder()" aria-label="Delete binder item">&#10005;</button>
-          </div>
-        </div>
-        <div style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px">
-          <div><div data-binder-title style="font-size:.85rem;font-weight:600">Emergency Response Plan</div><div style="font-size:.72rem;color:#f5a623">Missing — action required</div></div>
-          <div style="display:flex;gap:6px;flex-shrink:0">
-            <select class="finput" style="padding:3px 8px;font-size:.72rem;width:110px"><option>Verified</option><option>On File</option><option>Pending Review</option><option selected>Missing</option></select>
-            <button class="btn-sm btn-danger" style="padding:4px 8px" onclick="this.closest('div[style]').remove();saveBinder()" aria-label="Delete binder item">&#10005;</button>
-          </div>
-        </div>
+        <p style="color:#8a9bbf;font-size:.82rem;padding:8px 0">Loading binder items…</p>
       </div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
         <input class="finput" id="binder-new-item" placeholder="Add binder item (document name)" style="flex:1">
@@ -1868,9 +1848,24 @@ async function saveBinder() {
 function renderBinderItems(items) {
   var list = document.getElementById('binder-items-list');
   if (!list) return;
+  // Seed default AODA checklist if empty
   if (!items || !items.length) {
-    list.innerHTML = '<p style="color:#8a9bbf;font-size:.82rem;padding:8px 0">No binder items yet. Add one below.</p>';
-    return;
+    items = [
+      { title: 'Accessibility Policy & Statement of Commitment',   status: 'Pending Review' },
+      { title: 'Multi-Year Accessibility Plan (MYAP)',              status: 'Pending Review' },
+      { title: 'Staff AODA Training Registry',                      status: 'Pending Review' },
+      { title: 'Accessible Customer Feedback Process',              status: 'Pending Review' },
+      { title: 'Accessible Formats Request Procedure',              status: 'Pending Review' },
+      { title: 'Accessibility Statement (Web)',                     status: 'Pending Review' },
+      { title: 'Accommodation Clause — Job Postings',               status: 'Pending Review' },
+      { title: 'Accessibility Clause — Offer Letters',              status: 'Pending Review' },
+      { title: 'Service Animals & Support Persons Policy',          status: 'Pending Review' },
+      { title: 'Notice of Temporary Disruption of Services',        status: 'Pending Review' },
+      { title: 'HR Accommodation Policy',                           status: 'Pending Review' },
+      { title: 'Monthly Audit Reports (all months)',                status: 'Pending Review' },
+      { title: 'Scope of Responsibility Acknowledgment',            status: 'Pending Review' },
+      { title: 'AODA Filing Checklist',                             status: 'Pending Review' },
+    ];
   }
   var statuses = ['Verified','On File','Pending Review','Missing'];
   list.innerHTML = items.map(function(item) {
