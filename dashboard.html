@@ -673,30 +673,34 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
                 <th style="min-width:180px">Template</th>
                 <th style="min-width:160px">&#9989; ACC Delivers</th>
                 <th style="min-width:150px">&#128100; Your Duty</th>
-                <th>Format</th>
                 <th>Download</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td>1</td><td><strong>Accessibility Policy + Statement of Commitment</strong></td><td>Draft policy aligned to AODA</td><td>Approve &amp; adopt as company bylaw</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessibility-policy')">&#8659;</a></td></tr>
-              <tr data-template-key="multi-year-accessibility-plan"><td>2</td><td><strong>Multi-Year Accessibility Plan</strong></td><td>Create 3-year roadmap</td><td>Review annually with leadership</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-myap')">&#8659;</a></td></tr>
-              <tr data-template-key="staff-training-registry-template"><td>3</td><td><strong>Staff Training Registry</strong></td><td>Provide modules, maintain registry</td><td>Ensure all employees complete training</td><td>XLSX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-training-registry')">&#8659;</a></td></tr>
-              <tr data-template-key="customer-feedback-form"><td>4</td><td><strong>Accessible Feedback Process</strong></td><td>Build WCAG-compliant feedback form</td><td>Respond to accessibility inquiries</td><td>DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-feedback-process')">&#8659;</a></td></tr>
-              <tr data-template-key="accessible-formats-request-procedure"><td>5</td><td><strong>Accessible Formats Request Procedure</strong></td><td>Available as an additional service from ACC — contact us for pricing</td><td>Notify ACC when print materials need conversion</td><td>DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessible-formats')">&#8659;</a></td></tr>
-              <tr data-template-key="accessibility-statement-template"><td>6</td><td><strong>Accessibility Statement (Web)</strong></td><td>Full AI remediation + monthly audits</td><td>Notify ACC before major site changes</td><td>HTML / DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-a11y-statement')">&#8659;</a></td></tr>
-              <tr><td>7</td><td><strong>Accommodation Clause — Job Postings</strong></td><td>Provide mandatory legal clause text</td><td>Paste into all job advertisements</td><td>DOCX / TXT</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-job')">&#8659;</a></td></tr>
-              <tr><td>8</td><td><strong>Accessibility Clause — Offer Letters</strong></td><td>Provide clause for offer letters</td><td>Include in all new employment contracts</td><td>DOCX / TXT</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-offer')">&#8659;</a></td></tr>
-              <tr data-template-key="emergency-response-plan"><td>9</td><td><strong>Employee Emergency Response Plan</strong></td><td>Provide template &amp; guide</td><td>Complete for each employee with a disability</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-emergency-response.html')">&#8659;</a></td></tr>
-              <tr data-template-key="service-animal-and-support-person-policy"><td>10</td><td><strong>Service Animal &amp; Support Person Policy</strong></td><td>Include protocols in training manual</td><td>Ensure staff do not bar entry</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-service-animal.html')">&#8659;</a></td></tr>
-              <tr data-template-key="disruption-of-services-notice"><td>11</td><td><strong>Notice of Temporary Disruption</strong></td><td>Provide digital &amp; printable signage</td><td>Post when lift or power-door fails</td><td>PDF / PNG</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-disruption.html')">&#8659;</a></td></tr>
-              <tr style="border-top:2px solid rgba(79,142,247,.2)"><td>+</td><td><strong>AODA Filing Checklist</strong><div style="font-size:.72rem;color:#8a9bbf">All 11 questions pre-submission</div></td><td>Provide pre-filled checklist</td><td>Submit via Ontario government portal by Dec 31</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-aoda-checklist')">&#8659;</a></td></tr>
-              <tr><td>+</td><td><strong>Compliance Readiness Letter</strong><div style="font-size:.72rem;color:#8a9bbf">Auto-generated Dec 1 — covers your service period</div></td><td>Issue letter confirming ACC services delivered</td><td>Include in filing binder</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="generateReadinessLetter()">&#8659; Generate</a></td></tr>
-              <tr><td>+</td><td><strong>Scope of Responsibility Acknowledgment</strong><div style="font-size:.72rem;color:#8a9bbf">Sign annually — protects both parties legally</div></td><td>Prepare acknowledgment document</td><td>&#9989; Sign below to confirm your duties</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-scope-acknowledgment.html')">&#8659;</a></td></tr>
+              <tr><td>1</td><td><strong>Accessibility Policy + Statement of Commitment</strong></td><td>Draft policy aligned to AODA</td><td>Approve &amp; adopt as company bylaw</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessibility-policy')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-accessibility-policy')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr data-template-key="multi-year-accessibility-plan"><td>2</td><td><strong>Multi-Year Accessibility Plan</strong></td><td>Create 3-year roadmap</td><td>Review annually with leadership</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-myap')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-myap')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr data-template-key="staff-training-registry-template"><td>3</td><td><strong>Staff Training Registry</strong></td><td>Provide modules, maintain registry</td><td>Ensure all employees complete training</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-training-registry')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-training-registry')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr data-template-key="customer-feedback-form"><td>4</td><td><strong>Accessible Feedback Process</strong></td><td>Build WCAG-compliant feedback form</td><td>Respond to accessibility inquiries</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-feedback-process')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-feedback-process')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr data-template-key="accessible-formats-request-procedure"><td>5</td><td><strong>Accessible Formats Request Procedure</strong></td><td>Available as an additional service from ACC — contact us for pricing</td><td>Notify ACC when print materials need conversion</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessible-formats')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-accessible-formats')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr data-template-key="accessibility-statement-template"><td>6</td><td><strong>Accessibility Statement (Web)</strong></td><td>Full AI remediation + monthly audits</td><td>Notify ACC before major site changes</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-a11y-statement')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-a11y-statement')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr><td>7</td><td><strong>Accommodation Clause — Job Postings</strong></td><td>Provide mandatory legal clause text</td><td>Paste into all job advertisements</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-job')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-accommodation-job')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr><td>8</td><td><strong>Accessibility Clause — Offer Letters</strong></td><td>Provide clause for offer letters</td><td>Include in all new employment contracts</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-offer')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-accommodation-offer')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr data-template-key="emergency-response-plan"><td>9</td><td><strong>HR Accommodation Policy</strong></td><td>Provide template &amp; guide</td><td>Complete for each employee with a disability</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-hr-policy')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-hr-policy')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr data-template-key="service-animal-and-support-person-policy"><td>10</td><td><strong>Service Animals &amp; Support Persons Policy</strong></td><td>Include protocols in training manual</td><td>Ensure staff do not bar entry</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-service-animals')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-service-animals')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr data-template-key="disruption-of-services-notice"><td>11</td><td><strong>Notice of Temporary Disruption of Services</strong></td><td>Provide digital &amp; printable signage</td><td>Post when lift or power-door fails</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-disruption-notice')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-disruption-notice')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr style="border-top:2px solid rgba(79,142,247,.2)"><td>+</td><td><strong>AODA Filing Checklist</strong><div style="font-size:.72rem;color:#8a9bbf">All 11 questions pre-submission</div></td><td>Provide pre-filled checklist</td><td>Submit via Ontario government portal by Dec 31</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-aoda-checklist')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-aoda-checklist')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
+              <tr><td>+</td><td><strong>Compliance Readiness Letter</strong><div style="font-size:.72rem;color:#8a9bbf">Auto-generated Dec 1 — covers your service period</div></td><td>Issue letter confirming ACC services delivered</td><td>Include in filing binder</td><td><a class="dl-btn" href="#" onclick="generateReadinessLetter()">&#8659; Generate</a></td></tr>
+              <tr><td>+</td><td><strong>Scope of Responsibility Acknowledgment</strong><div style="font-size:.72rem;color:#8a9bbf">Sign annually — protects both parties legally</div></td><td>Prepare acknowledgment document</td><td>&#9989; Sign below to confirm your duties</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-scope-acknowledgment.html')">&#8659;</a></td></tr>
             </tbody>
           </table>
         </div>
 
         <!-- Annual Sign-off -->
+        <!-- Annual renewal banner -->
+        <div id="scope-renewal-banner" style="display:none;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.3);border-radius:10px;padding:12px 16px;margin-bottom:14px">
+          <strong style="color:#f5a623;font-size:.85rem">&#9888; Annual Re-sign Required</strong>
+          <p style="color:#8a9bbf;font-size:.8rem;margin:4px 0 0">You signed the Scope Acknowledgment in <span id="scope-banner-year">—</span>. Please sign again for <strong style="color:#e8edf8">2026</strong> to keep your compliance record current.</p>
+        </div>
         <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.2);border-radius:10px;padding:18px;margin-top:20px" id="scope-signoff">
           <strong style="font-size:.88rem;color:#38d9a9;display:block;margin-bottom:8px">&#9998; Annual Scope Acknowledgment — 2026</strong>
           <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:14px">By signing below, <strong style="color:#e8edf8" id="signoff-company2">your organization</strong> confirms it has reviewed the Scope of Responsibility table and understands its operational duties for the 2026 AODA filing period.</p>
@@ -710,7 +714,11 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             <button class="btn-sm btn-primary" onclick="signScopeAck()">&#9989; Sign &amp; Confirm — 2026</button>
           </div>
           <div id="signoff-signed" style="display:none">
-            <span class="pill green" style="font-size:.8rem">&#9989; Signed by <span id="signoff-signer">—</span> — <span id="signoff-date"></span></span>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+              <span class="pill green" style="font-size:.8rem">&#9989; Signed by <span id="signoff-signer">—</span> on <span id="signoff-date"></span></span>
+              <button class="btn-sm btn-ghost" style="font-size:.75rem" onclick="resignScopeAck()">&#8635; Re-sign &amp; Update</button>
+            </div>
+            <button class="btn-sm" onclick="downloadLatestScopeAck()" style="background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:6px 14px;font-size:.78rem;cursor:pointer">&#8659; Download PDF</button>
             <p style="font-size:.78rem;color:#8a9bbf;margin-top:8px">A copy has been added to your 2026 Evidence Binder.</p>
           </div>
         </div>
@@ -2839,6 +2847,13 @@ async function downloadTemplate(templateKey) {
   await downloadSigned('templates', path, 'ACC_Template_' + label.replace(/ /g,'_') + '.pdf');
 }
 
+async function downloadTemplateDocx(templateKey) {
+  var key   = templateKey.replace(/\.html$/, '');
+  var path  = 'shared/' + key + '.docx';
+  var label = key.replace('template-','').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
+  await downloadSigned('templates', path, 'ACC_Template_' + label.replace(/ /g,'_') + '.docx');
+}
+
 async function openTemplate(templateKey) {
   await downloadTemplate(templateKey);
 }
@@ -3156,30 +3171,113 @@ async function signScopeAck() {
   if (!chk || !chk.checked) { alert('Please check the box to confirm before signing.'); return; }
   if (!window._clientData) { alert('Please log in first.'); return; }
   var btn = (window.event && window.event.target) || null;
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing & generating PDF…'; }
   try {
     var now = new Date();
-    var { error } = await _sb_client.from('scope_acknowledgments').upsert({
-      client_id: _clientData.id,
-      client_name: _clientData.name,
-      signed_at: now.toISOString(),
-      year: now.getFullYear(),
-    }, { onConflict: 'client_id,year' });
-    if (error) throw error;
+    var yr  = now.getFullYear();
 
-    // Show signed state
+    // 1. Save to DB
+    var r = await _sb_client.from('scope_acknowledgments').upsert({
+      client_id:   _clientData.id,
+      client_name: _clientData.name,
+      signed_at:   now.toISOString(),
+      year:        yr,
+    }, { onConflict: 'client_id,year' });
+    if (r.error) throw r.error;
+
+    // 2. Generate PDF via edge function
+    var result = await callEdgeFunction('generate-compliance-letter', {
+      client_id:   _clientData.id,
+      letter_type: 'scope_acknowledgment',
+    });
+
+    // 3. Update UI to signed state
     var unsigned = document.getElementById('signoff-unsigned');
     var signed   = document.getElementById('signoff-signed');
+    var signerEl = document.getElementById('signoff-signer');
     var dateEl   = document.getElementById('signoff-date');
     if (unsigned) unsigned.style.display = 'none';
     if (signed)   signed.style.display   = 'block';
+    if (signerEl) signerEl.textContent = _clientData.name || '—';
     if (dateEl)   dateEl.textContent = now.toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
 
-    showToast('Scope Acknowledgment signed and saved.');
+    // Store file path for later download
+    window._scopeAckFile = result.file;
+
+    showToast('✅ Scope Acknowledgment signed and PDF saved to your portal.');
   } catch(e) {
-    alert('Could not save acknowledgment: ' + e.message);
-    if (btn) { btn.disabled = false; btn.textContent = '\u2705 Sign & Confirm \u2014 ' + new Date().getFullYear(); }
+    console.error('signScopeAck:', e);
+    alert('Could not save acknowledgment: ' + (e.message || e));
+    if (btn) { btn.disabled = false; btn.textContent = '✅ Sign & Confirm — ' + new Date().getFullYear(); }
   }
+}
+
+async function downloadLatestScopeAck() {
+  if (!window._clientData) return;
+  try {
+    // Try stored path first, otherwise construct it
+    var path = window._scopeAckFile;
+    if (!path) {
+      var yr = new Date().getFullYear();
+      path = _clientData.client_code + '/' + yr + '-' + String(new Date().getMonth()+1).padStart(2,'0') + '-scope_acknowledgment.pdf';
+    }
+    await downloadSigned('reports', path, 'ACC_Scope_Acknowledgment_' + _clientData.client_code + '.pdf');
+  } catch(e) {
+    alert('Could not download: ' + (e.message || e));
+  }
+}
+
+async function resignScopeAck() {
+  // Reset UI to unsigned state so client can re-sign
+  var unsigned = document.getElementById('signoff-unsigned');
+  var signed   = document.getElementById('signoff-signed');
+  var chk      = document.getElementById('scope-chk');
+  if (unsigned) unsigned.style.display = 'block';
+  if (signed)   signed.style.display   = 'none';
+  if (chk)      chk.checked = false;
+}
+
+// ── Load scope acknowledgment status on dashboard load ──────
+async function loadScopeAckStatus() {
+  if (!window._clientData) return;
+  try {
+    var yr  = new Date().getFullYear();
+    var r   = await _sb_client.from('scope_acknowledgments')
+      .select('signed_at, year, client_name')
+      .eq('client_id', _clientData.id)
+      .order('year', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (r.error) { console.warn('loadScopeAckStatus:', r.error.message); return; }
+
+    if (!r.data) return; // Never signed — leave unsigned state
+
+    var signedYr = r.data.year;
+    var signedAt = new Date(r.data.signed_at);
+
+    if (signedYr < yr) {
+      // Signed in a prior year — show renewal banner
+      var banner = document.getElementById('scope-renewal-banner');
+      if (banner) {
+        banner.style.display = 'block';
+        var bannerYr = document.getElementById('scope-banner-year');
+        if (bannerYr) bannerYr.textContent = signedYr;
+      }
+      // Leave as unsigned so they sign again
+      return;
+    }
+
+    // Signed this year — show signed state
+    var unsigned = document.getElementById('signoff-unsigned');
+    var signed   = document.getElementById('signoff-signed');
+    var signerEl = document.getElementById('signoff-signer');
+    var dateEl   = document.getElementById('signoff-date');
+    if (unsigned) unsigned.style.display = 'none';
+    if (signed)   signed.style.display   = 'block';
+    if (signerEl) signerEl.textContent = r.data.client_name || _clientData.name || '—';
+    if (dateEl)   dateEl.textContent   = signedAt.toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
+  } catch(e) { console.warn('loadScopeAckStatus:', e.message); }
 }
 
 // ── Item 3: Download All Templates ZIP ──
@@ -3652,6 +3750,7 @@ function openStmtModal() {
     populateRoadmap(rr.data || []);
     populateTraining(_clientData);
     populateAccount(_clientData, br.data || []);
+    loadScopeAckStatus();
     if (_clientData.client_code) {
       populateClientFiles(_clientData.client_code);
       populateScanData(_clientData.client_code);
