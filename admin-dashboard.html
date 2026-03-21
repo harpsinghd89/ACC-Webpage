@@ -1071,7 +1071,7 @@ function renderAdminRoadmapRows(milestones) {
       }).join('');
       return '<tr data-rid="'+m.id+'" data-year="'+yr+'">' +
         '<td><input class="finput" style="padding:4px 6px;font-size:.78rem;width:100%" value="'+esc(m.title||m.milestone||'')+'"></td>' +
-        '<td><input class="finput" type="text" style="padding:4px 6px;font-size:.78rem" placeholder="e.g. Jan 2026" value="'+esc(m.target_date||'')+'"></td>' +
+        '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.78rem" value="'+toIsoDate(m.target_date)+'"></td>' +
         '<td><select class="finput" style="padding:4px 6px;font-size:.78rem">'+opts+'</select></td>' +
         '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeRoadmapRow(this)">&#10005;</button></td></tr>';
     }).join('');
@@ -1083,6 +1083,20 @@ function renderAdminRoadmapRows(milestones) {
       '<th style="width:45%">Milestone</th><th style="width:22%">Target Date</th><th style="width:22%">Status</th><th style="width:11%"></th>' +
       '</tr></thead><tbody id="roadmap-tbody-'+yr+'">'+rows+'</tbody></table></div>';
   }).join('');
+  initAdminRoadmapDatePickers();
+}
+
+function initAdminRoadmapDatePickers() {
+  if (typeof flatpickr === 'undefined') return;
+  document.querySelectorAll('#roadmap-milestones-area input[type="text"][placeholder="e.g. Jan 2026"]').forEach(function(el) {
+    if (!el._flatpickr) {
+      flatpickr(el, {
+        dateFormat: 'M Y',
+        allowInput: true,
+        disableMobile: false,
+      });
+    }
+  });
 }
 
 function addRoadmapYear() {
@@ -1116,10 +1130,11 @@ function addRoadmapRow(yr) {
   tr.setAttribute('data-rid','new-'+Date.now());
   tr.setAttribute('data-year',yr);
   tr.innerHTML = '<td><input class="finput" style="padding:4px 6px;font-size:.78rem;width:100%" placeholder="Milestone title"></td>' +
-    '<td><input class="finput" type="text" style="padding:4px 6px;font-size:.78rem" placeholder="e.g. Jan 2026"></td>' +
+    '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.78rem"></td>' +
     '<td><select class="finput" style="padding:4px 6px;font-size:.78rem">'+sopts+'</select></td>' +
     '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeRoadmapRow(this)">&#10005;</button></td>';
   tbody.appendChild(tr);
+  setTimeout(initAdminRoadmapDatePickers, 50);
 }
 
 function removeRoadmapRow(btn) {
@@ -1339,6 +1354,37 @@ function renderClientsTable(clients) {
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ── Date normalizer — converts any date string to YYYY-MM-DD for <input type="date"> ──
+function toIsoDate(val) {
+  if (!val) return '';
+  val = String(val).trim();
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+  // ISO timestamp — strip time
+  if (/^\d{4}-\d{2}-\d{2}T/.test(val)) return val.substring(0, 10);
+  // Try native Date parse (handles "Jan 2026", "December 1, 2026", "Q1 2027" won't parse — fall back)
+  var d = new Date(val);
+  if (!isNaN(d.getTime())) {
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  // Quarter format "Q1 2027" → first day of that quarter
+  var q = val.match(/^Q(\d)\s+(\d{4})$/i);
+  if (q) {
+    var month = (parseInt(q[1]) - 1) * 3 + 1;
+    return q[2] + '-' + String(month).padStart(2,'0') + '-01';
+  }
+  // "Jan 2026" or "March 2026" — first day of month
+  var mo = val.match(/^([A-Za-z]+)\s+(\d{4})$/);
+  if (mo) {
+    var d2 = new Date(mo[1] + ' 1, ' + mo[2]);
+    if (!isNaN(d2.getTime())) {
+      return d2.getFullYear() + '-' + String(d2.getMonth()+1).padStart(2,'0') + '-01';
+    }
+  }
+  return ''; // unparseable — blank the field
+}
+
 
 function updateOverviewStats(clients) {
   var active = clients.filter(function(c){ return (c.status||'').toLowerCase() === 'active' || (c.status||'').toLowerCase() === 'current'; }).length;
