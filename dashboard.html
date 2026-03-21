@@ -2892,18 +2892,6 @@ async function downloadSigned(bucket, path, filename) {
   }
 }
 
-async function downloadReport(monthKey) {
-  if (!window._clientData) { alert('Please log in to download reports.'); return; }
-  var code = _clientData.client_code;
-  var monthMap = { 'january':'01','february':'02','march':'03','april':'04',
-    'may':'05','june':'06','july':'07','august':'08',
-    'september':'09','october':'10','november':'11','december':'12' };
-  var parts = monthKey.toLowerCase().split('-');
-  var month = monthMap[parts[0]] || parts[0];
-  var year  = parts[1] || new Date().getFullYear();
-  var path  = code + '/' + year + '-' + month + '.pdf';
-  await downloadSigned('reports', path, 'ACC_Report_' + year + '-' + month + '_' + code + '.pdf');
-}
 
 async function downloadTemplate(templateKey) {
   var key = templateKey.replace(/\.html$/, '');
@@ -2976,16 +2964,15 @@ async function generateAndDownloadReport(monthKey) {
   var orig = btn ? btn.innerHTML : null;
   if (btn) { btn.disabled = true; btn.innerHTML = 'Generating…'; }
   try {
-    // monthKey is "YYYY-MM" from the data-ym attribute
     var ym   = monthKey || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
     var code = _clientData.client_code;
     var result = await callEdgeFunction('generate-audit-report', {
       client_id:    _clientData.id,
-      target_month: ym,           // tells edge function which month to generate
+      target_month: ym,
     });
     var filePath = (result && result.file) ? result.file : (code + '/' + ym + '.pdf');
     await downloadSigned('reports', filePath, 'ACC_Report_' + ym + '_' + code + '.pdf');
-    // Refresh the reports list so status flips from Missing → Available
+    // Refresh list — rebuilds DOM, clearing all stacked event listeners
     await populateReports(_clientData);
   } catch(e) {
     console.error('generateAndDownloadReport:', e);
@@ -2995,7 +2982,25 @@ async function generateAndDownloadReport(monthKey) {
   }
 }
 
-// Generate + download the annual evidence binder.
+async function downloadReport(monthKey) {
+  if (!window._clientData) { alert('Please log in to download reports.'); return; }
+  // monthKey is always YYYY-MM from data-ym attribute
+  var code = _clientData.client_code;
+  var path = code + '/' + monthKey + '.pdf';
+  await downloadSigned('reports', path, 'ACC_Report_' + monthKey + '_' + code + '.pdf');
+}
+
+
+
+
+
+
+// ── Edge Function Callers ─────────────────────────────────
+// Calls a Supabase Edge Function with a guaranteed-fresh user JWT.
+// Uses functions.invoke() for correct apikey/CORS handling, but explicitly
+// passes the session access_token so we never accidentally send the anon key.
+
+
 async function generateAndDownloadBinder(year) {
   if (!window._clientData) { alert('Please log in first.'); return; }
   var btn = (window.event && window.event.target) || null;
