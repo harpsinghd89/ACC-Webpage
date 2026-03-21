@@ -795,6 +795,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             <span class="pill green" id="acc-status">Active</span>
           </div>
           <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px"><span id="acc-price">$69</span> <span style="font-size:.85rem;font-weight:400;color:var(--muted)">CAD / month</span></div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:6px">Service start: <strong id="acc-start-date" style="color:#e8edf8">—</strong></div>
           <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Next billing: <span id="acc-renewal">—</span></div>
           <div class="btn-row">
             <button class="btn-sm btn-ghost" onclick="alert('Upgrade options coming soon.')">Upgrade to Tier 2</button>
@@ -2647,7 +2648,8 @@ function populateAccount(c, billingRows) {
   // Update display spans
   set('acc-tier',    tierName(c.tier));
   set('acc-price',   tierPrice(c.tier));
-  set('acc-renewal', fmtDateLong(c.renewal_date));
+  set('acc-renewal',    fmtDateLong(c.renewal_date));
+  set('acc-start-date', c.start_date ? fmtDate(c.start_date) : '—');
   set('acc-status',  (c.status || 'active').charAt(0).toUpperCase() + (c.status || 'active').slice(1));
 
   // Pre-fill billing address modal fields from DB
