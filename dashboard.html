@@ -646,6 +646,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h1>&#128506; 3-Year Compliance Roadmap</h1>
         <p>Your personalized AODA compliance roadmap covering 2026–2028 milestones.</p>
       </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+        <button id="client-roadmap-save" class="btn-sm btn-primary" style="display:none" onclick="saveClientRoadmap()">&#10003; Save Roadmap</button>
+      </div>
       <div id="roadmap-year-cards">
         <div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">Loading roadmap…</div>
       </div>
@@ -2261,44 +2264,101 @@ function populateRoadmap(milestones) {
   if (!container) return;
 
   if (!milestones || !milestones.length) {
-    container.innerHTML = '<div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">No roadmap milestones yet. Your ACC admin will configure these.</div>';
+    container.innerHTML = '<div class="card"><p style="color:#8a9bbf;font-size:.85rem">No roadmap milestones yet. Your ACC admin will configure these.</p></div>';
     return;
   }
 
-  // Group by year
   var years = {};
   milestones.forEach(function(m) {
-    var yr = m.year || (m.target_date ? m.target_date.substring(0,4) : '2026');
+    var yr = String(m.year || (m.target_date ? m.target_date.substring(0,4) : '2026'));
     if (!years[yr]) years[yr] = [];
     years[yr].push(m);
   });
 
-  var statusPill = {
-    'done':        '<span class="pill green">Done</span>',
-    'complete':    '<span class="pill green">Done</span>',
-    'in-progress': '<span class="pill yellow">In Progress</span>',
-    'planned':     '<span class="pill blue">Planned</span>',
-    'deferred':    '<span class="pill" style="background:rgba(138,155,191,.15);color:#8a9bbf">Deferred</span>',
-  };
+  var sopts = ['planned','in-progress','done','deferred'];
 
   container.innerHTML = Object.keys(years).sort().map(function(yr) {
     var rows = years[yr].map(function(m) {
-      var title = m.title || m.milestone || '';
-      var pill  = statusPill[m.status] || statusPill['planned'];
-      var date  = m.target_date ? fmtDate(m.target_date) : (m.target_date || '');
-      return '<tr>' +
-        '<td>' + esc(title) + '</td>' +
-        '<td style="white-space:nowrap">' + date + '</td>' +
-        '<td>' + pill + '</td>' +
+      var opts = sopts.map(function(s){
+        return '<option value="'+s+'"'+(s===(m.status||'planned')?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
+      }).join('');
+      return '<tr data-rid="'+esc(m.id||'')+'" data-year="'+yr+'">' +
+        '<td><input class="finput" style="padding:4px 6px;font-size:.85rem;width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" value="'+esc(m.title||m.milestone||'')+'" aria-label="Milestone"></td>' +
+        '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" value="'+esc(m.target_date||'')+'" aria-label="Target date"></td>' +
+        '<td><select class="finput" style="padding:4px 6px;font-size:.85rem;background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);color:#e8edf8" aria-label="Status">'+opts+'</select></td>' +
         '</tr>';
     }).join('');
     return '<div class="card">' +
-      '<h2>&#128197; ' + yr + '</h2>' +
-      '<table class="data-table" aria-label="' + yr + ' roadmap milestones">' +
-      '<thead><tr><th>Milestone</th><th>Target</th><th>Status</th></tr></thead>' +
-      '<tbody>' + rows + '</tbody></table>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
+      '<h2 style="margin:0">&#128197; '+yr+'</h2>' +
+      '<button class="btn-sm btn-ghost" style="font-size:.75rem" onclick="addClientRoadmapRow(\'' + yr + '\')">+ Add Row</button>' +
+      '</div>' +
+      '<table class="data-table" aria-label="'+yr+' roadmap milestones">' +
+      '<thead><tr><th>Milestone</th><th>Target Date</th><th>Status</th></tr></thead>' +
+      '<tbody id="client-roadmap-tbody-'+yr+'">'+rows+'</tbody></table>' +
       '</div>';
   }).join('');
+
+  var saveBtn = document.getElementById('client-roadmap-save');
+  if (saveBtn) saveBtn.style.display = 'inline-flex';
+}
+
+function addClientRoadmapRow(yr) {
+  var tbody = document.getElementById('client-roadmap-tbody-' + yr);
+  if (!tbody) return;
+  var sopts = ['planned','in-progress','done','deferred'].map(function(s){
+    return '<option value="'+s+'"'+(s==='planned'?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
+  }).join('');
+  var tr = document.createElement('tr');
+  tr.setAttribute('data-rid', 'new-' + Date.now());
+  tr.setAttribute('data-year', yr);
+  tr.innerHTML =
+    '<td><input class="finput" style="padding:4px 6px;font-size:.85rem;width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" placeholder="Milestone title" aria-label="Milestone"></td>' +
+    '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" aria-label="Target date"></td>' +
+    '<td><select class="finput" style="padding:4px 6px;font-size:.85rem;background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);color:#e8edf8" aria-label="Status">'+sopts+'</select></td>';
+  tbody.appendChild(tr);
+  var saveBtn = document.getElementById('client-roadmap-save');
+  if (saveBtn) saveBtn.style.display = 'inline-flex';
+}
+
+async function saveClientRoadmap() {
+  if (!window._clientData) return;
+  var btn = document.getElementById('client-roadmap-save');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    var rows = document.querySelectorAll('#roadmap-year-cards tr[data-rid]');
+    var inserts = [], updates = [];
+    rows.forEach(function(row) {
+      var rid    = row.getAttribute('data-rid');
+      var yr     = parseInt(row.getAttribute('data-year')) || new Date().getFullYear();
+      var inputs = row.querySelectorAll('input');
+      var sel    = row.querySelector('select');
+      var title  = inputs[0] ? inputs[0].value.trim() : '';
+      var tdate  = inputs[1] ? (inputs[1].value || null) : null;
+      var status = sel ? sel.value : 'planned';
+      if (!title) return;
+      if (rid && rid.startsWith('new-')) {
+        inserts.push({client_id:_clientData.id, title:title, milestone:title, target_date:tdate, status:status, year:yr});
+      } else if (rid) {
+        updates.push(_sb_client.from('roadmap').update({title:title, milestone:title, target_date:tdate, status:status, year:yr, updated_at:new Date().toISOString()}).eq('id', rid).eq('client_id', _clientData.id));
+      }
+    });
+    var ops = [];
+    if (inserts.length) ops.push(_sb_client.from('roadmap').insert(inserts));
+    updates.forEach(function(u){ ops.push(u); });
+    if (ops.length) {
+      var results = await Promise.all(ops);
+      var errs = results.filter(function(r){ return r.error; });
+      if (errs.length) throw errs[0].error;
+    }
+    var rr = await _sb_client.from('roadmap').select('*').eq('client_id', _clientData.id).is('deleted_at', null).order('year').order('target_date');
+    if (!rr.error) populateRoadmap(rr.data || []);
+    showToast('✅ Roadmap saved.');
+  } catch(e) {
+    alert('Could not save roadmap: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✓ Save Roadmap'; }
+  }
 }
 
 async function populateTraining(c) {
