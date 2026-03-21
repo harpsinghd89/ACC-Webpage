@@ -723,18 +723,16 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <div class="fgroup" style="margin:0"><label>Add Year</label>
           <div style="display:flex;gap:6px">
             <select class="finput" id="new-roadmap-year" style="width:80px">
-              <option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2029</option><option>2030</option>
+              <option>2025</option><option selected>2026</option><option>2027</option><option>2028</option><option>2029</option>
             </select>
             <button class="btn-sm btn-ghost" style="padding:4px 10px;font-size:.75rem" onclick="addRoadmapYear()">+ Add Year</button>
           </div>
         </div>
       </div>
 
-      <!-- Dynamic milestones rendered by renderAdminRoadmapRows() -->
       <div id="roadmap-milestones-area" style="margin-bottom:12px">
-        <p style="color:#8a9bbf;font-size:.82rem;margin:8px 0">Loading milestones…</p>
+        <p style="color:#8a9bbf;font-size:.82rem">Loading milestones…</p>
       </div>
-
             <button class="btn-sm btn-primary" onclick="saveRoadmap()">&#10003; Save Roadmap</button>
     </div>
 
@@ -1051,13 +1049,11 @@ function loadClientOverride(clientId) {
 
 
 
-// ── Roadmap helpers ──────────────────────────────────────
-
 function renderAdminRoadmapRows(milestones) {
   var area = document.getElementById('roadmap-milestones-area');
   if (!area) return;
   if (!milestones || !milestones.length) {
-    area.innerHTML = '<p style="color:#8a9bbf;font-size:.82rem;margin:8px 0">No milestones yet. Use + Add Year to get started.</p>';
+    area.innerHTML = '<p style="color:#8a9bbf;font-size:.82rem;margin:8px 0">No milestones yet. Use Add Year to get started.</p>';
     return;
   }
   var years = {};
@@ -1073,10 +1069,10 @@ function renderAdminRoadmapRows(milestones) {
         return '<option value="'+s+'"'+(s===(m.status||'planned')?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
       }).join('');
       return '<tr data-rid="'+m.id+'" data-year="'+yr+'">' +
-        '<td><input class="finput" style="padding:4px 6px;font-size:.78rem;width:100%" value="'+esc(m.title||m.milestone||'')+'" aria-label="Milestone"></td>' +
-        '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.78rem" value="'+esc(m.target_date||'')+'" aria-label="Target date"></td>' +
+        '<td><input class="finput" style="padding:4px 6px;font-size:.78rem;width:100%" value="'+esc(m.title||m.milestone||'')+'"></td>' +
+        '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.78rem" value="'+esc(m.target_date||'')+'"></td>' +
         '<td><select class="finput" style="padding:4px 6px;font-size:.78rem">'+opts+'</select></td>' +
-        '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeRoadmapRow(this)" aria-label="Delete">&#10005;</button></td>' +
+        '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeRoadmapRow(this)">&#10005;</button></td>' +
         '</tr>';
     }).join('');
     return '<div style="background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:14px;margin-bottom:12px">' +
@@ -1084,8 +1080,7 @@ function renderAdminRoadmapRows(milestones) {
       '<strong style="font-size:.88rem;color:#e8edf8">&#128197; '+yr+'</strong>' +
       '<button class="btn-sm btn-ghost" style="padding:2px 10px;font-size:.72rem" onclick="addRoadmapRow(''+yr+'')">+ Row</button>' +
       '</div>' +
-      '<table class="data-table" style="font-size:.78rem">' +
-      '<thead><tr><th style="width:45%">Milestone</th><th style="width:22%">Target Date</th><th style="width:22%">Status</th><th style="width:11%"></th></tr></thead>' +
+      '<table class="data-table" style="font-size:.78rem"><thead><tr><th style="width:45%">Milestone</th><th style="width:22%">Target Date</th><th style="width:22%">Status</th><th style="width:11%"></th></tr></thead>' +
       '<tbody id="roadmap-tbody-'+yr+'">'+rows+'</tbody></table></div>';
   }).join('');
 }
@@ -1093,40 +1088,26 @@ function renderAdminRoadmapRows(milestones) {
 function addRoadmapYear() {
   var sel = document.getElementById('new-roadmap-year');
   var yr = sel ? sel.value : String(new Date().getFullYear());
-  if (document.getElementById('roadmap-tbody-' + yr)) { showToastAdmin('Year ' + yr + ' already exists.', 'error'); return; }
+  if (document.getElementById('roadmap-tbody-'+yr)) { showToastAdmin('Year '+yr+' already exists.','error'); return; }
   var area = document.getElementById('roadmap-milestones-area');
   if (!area) return;
-  var sopts = ['planned','in-progress','done','deferred'].map(function(s){
-    return '<option value="'+s+'"'+(s==='planned'?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
-  }).join('');
   var div = document.createElement('div');
   div.style.cssText = 'background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.5);border-radius:10px;padding:14px;margin-bottom:12px';
-  div.innerHTML =
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
-    '<strong style="font-size:.88rem;color:#e8edf8">&#128197; '+yr+'</strong>' +
-    '<button class="btn-sm btn-ghost" style="padding:2px 10px;font-size:.72rem" onclick="addRoadmapRow(''+yr+'')">+ Row</button>' +
-    '</div>' +
-    '<table class="data-table" style="font-size:.78rem">' +
-    '<thead><tr><th style="width:45%">Milestone</th><th style="width:22%">Target Date</th><th style="width:22%">Status</th><th style="width:11%"></th></tr></thead>' +
-    '<tbody id="roadmap-tbody-'+yr+'"></tbody></table>';
+  div.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong style="font-size:.88rem;color:#e8edf8">&#128197; '+yr+'</strong><button class="btn-sm btn-ghost" style="padding:2px 10px;font-size:.72rem" onclick="addRoadmapRow(''+yr+'')">+ Row</button></div><table class="data-table" style="font-size:.78rem"><thead><tr><th style="width:45%">Milestone</th><th style="width:22%">Target Date</th><th style="width:22%">Status</th><th style="width:11%"></th></tr></thead><tbody id="roadmap-tbody-'+yr+'"></tbody></table>';
   area.appendChild(div);
   addRoadmapRow(yr);
 }
 
 function addRoadmapRow(yr) {
-  var tbody = document.getElementById('roadmap-tbody-' + yr);
+  var tbody = document.getElementById('roadmap-tbody-'+yr);
   if (!tbody) return;
   var sopts = ['planned','in-progress','done','deferred'].map(function(s){
     return '<option value="'+s+'"'+(s==='planned'?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
   }).join('');
   var tr = document.createElement('tr');
-  tr.setAttribute('data-rid', 'new-' + Date.now());
-  tr.setAttribute('data-year', yr);
-  tr.innerHTML =
-    '<td><input class="finput" style="padding:4px 6px;font-size:.78rem;width:100%" placeholder="Milestone title" aria-label="Milestone"></td>' +
-    '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.78rem" aria-label="Target date"></td>' +
-    '<td><select class="finput" style="padding:4px 6px;font-size:.78rem">'+sopts+'</select></td>' +
-    '<td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeRoadmapRow(this)" aria-label="Delete">&#10005;</button></td>';
+  tr.setAttribute('data-rid','new-'+Date.now());
+  tr.setAttribute('data-year',yr);
+  tr.innerHTML = '<td><input class="finput" style="padding:4px 6px;font-size:.78rem;width:100%" placeholder="Milestone title"></td><td><input class="finput" type="date" style="padding:4px 6px;font-size:.78rem"></td><td><select class="finput" style="padding:4px 6px;font-size:.78rem">'+sopts+'</select></td><td><button class="btn-sm btn-ghost" style="padding:2px 8px;font-size:.7rem;color:#f05f5f" onclick="removeRoadmapRow(this)">&#10005;</button></td>';
   tbody.appendChild(tr);
 }
 
@@ -1134,14 +1115,11 @@ function removeRoadmapRow(btn) {
   var row = btn.closest('tr');
   var rid = row && row.getAttribute('data-rid');
   if (rid && !rid.startsWith('new-') && _editingClientId) {
-    _sb.from('roadmap').update({ deleted_at: new Date().toISOString() })
-      .eq('id', rid).eq('client_id', _editingClientId)
-      .then(function(r){ if (r.error) console.warn('roadmap delete:', r.error); });
+    _sb.from('roadmap').update({deleted_at:new Date().toISOString()}).eq('id',rid).eq('client_id',_editingClientId).then(function(r){ if(r.error) console.warn('roadmap delete:',r.error); });
   }
   if (row) row.remove();
 }
 
-// Legacy aliases
 function addMilestoneRow(tbodyId) { addRoadmapRow(tbodyId.replace('milestones-','')); }
 function removeMilestoneRow(btn)  { removeRoadmapRow(btn); }
 
@@ -1153,22 +1131,18 @@ async function saveRoadmap() {
     var rows = document.querySelectorAll('#ctab-panel-roadmap tr[data-rid]');
     var inserts = [], updates = [];
     rows.forEach(function(row) {
-      var rid   = row.getAttribute('data-rid');
-      var yr    = parseInt(row.getAttribute('data-year')) || new Date().getFullYear();
-      var inputs = row.querySelectorAll('input');
-      var sel   = row.querySelector('select');
-      var title = inputs[0] ? inputs[0].value.trim() : '';
-      var tdate = inputs[1] ? (inputs[1].value || null) : null;
+      var rid = row.getAttribute('data-rid');
+      var yr  = parseInt(row.getAttribute('data-year')) || new Date().getFullYear();
+      var inp = row.querySelectorAll('input');
+      var sel = row.querySelector('select');
+      var title = inp[0] ? inp[0].value.trim() : '';
+      var tdate = inp[1] ? (inp[1].value || null) : null;
       var status = sel ? sel.value : 'planned';
       if (!title) return;
       if (rid && rid.startsWith('new-')) {
-        inserts.push({ client_id: _editingClientId, title: title, milestone: title,
-          target_date: tdate, status: status, year: yr });
+        inserts.push({client_id:_editingClientId,title:title,milestone:title,target_date:tdate,status:status,year:yr});
       } else if (rid) {
-        updates.push(_sb.from('roadmap').update({
-          title: title, milestone: title, target_date: tdate, status: status,
-          year: yr, updated_at: new Date().toISOString()
-        }).eq('id', rid).eq('client_id', _editingClientId));
+        updates.push(_sb.from('roadmap').update({title:title,milestone:title,target_date:tdate,status:status,year:yr,updated_at:new Date().toISOString()}).eq('id',rid).eq('client_id',_editingClientId));
       }
     });
     var ops = [];
@@ -1179,13 +1153,11 @@ async function saveRoadmap() {
       var errs = results.filter(function(r){ return r.error; });
       if (errs.length) throw errs[0].error;
     }
-    // Reload from DB to refresh IDs on new rows
-    var rr = await _sb.from('roadmap').select('*').eq('client_id', _editingClientId)
-      .is('deleted_at', null).order('year').order('target_date');
-    if (!rr.error) renderAdminRoadmapRows(rr.data || []);
-    showToastAdmin('Roadmap saved — live on client dashboard.', 'success');
+    var rr = await _sb.from('roadmap').select('*').eq('client_id',_editingClientId).is('deleted_at',null).order('year').order('target_date');
+    if (!rr.error) renderAdminRoadmapRows(rr.data||[]);
+    showToastAdmin('Roadmap saved.','success');
   } catch(e) {
-    showToastAdmin('Error saving roadmap: ' + (e.message || e), 'error');
+    showToastAdmin('Error: '+(e.message||e),'error');
   } finally {
     if (btn) { btn.textContent = '✓ Save Roadmap'; btn.disabled = false; }
   }
@@ -1595,13 +1567,7 @@ async function openClientEditor(btn) {
 
 
 
-function renderStatusSelect(current) {
-  var opts = ['planned','in-progress','done','deferred'];
-  var labels = {'planned':'Planned','in-progress':'In Progress','done':'Done','deferred':'Deferred'};
-  return '<select class="finput" style="padding:4px 6px;font-size:.78rem">' +
-    opts.map(function(o){ return '<option value="'+o+'"'+(o===current?' selected':'')+'>'+labels[o]+'</option>'; }).join('') +
-    '</select>';
-}
+
 
 // ── Save client info (writes to Supabase) ────────────────
 async function saveClientInfo() {

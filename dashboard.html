@@ -577,7 +577,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <div id="client-reports-list">
           <div style="color:#8a9bbf;font-size:.82rem;padding:12px 0">Loading reports…</div>
         </div>
-        <div id="client-reports-history" style="margin-top:8px"></div>
       </div>
       <div class="card">
         <h2>&#128270; Real-Time Monitor</h2>
@@ -647,10 +646,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h1>&#128506; 3-Year Compliance Roadmap</h1>
         <p>Your personalized AODA compliance roadmap covering 2026–2028 milestones.</p>
       </div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-          <button id="client-roadmap-save" class="btn-sm btn-primary" style="display:none" onclick="saveClientRoadmap()">&#10003; Save Roadmap</button>
-        </div>
-        <div id="roadmap-year-cards">
+      <div id="roadmap-year-cards">
         <div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">Loading roadmap…</div>
       </div>
     </div>
@@ -661,7 +657,13 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h1>&#128203; Template Standards</h1>
         <p>All 11 AODA filing requirements. Each template is branded with the ACC logo and WCAG 2.1 AA footer. Your Compliance Readiness Letter and signed Scope Acknowledgment are retained by ACC as legal records &mdash; they are <strong style="color:#38d9a9">not included in your Evidence Binder</strong> (they are ACC&rsquo;s documentation, not yours). The Binder contains all deliverables ACC provided <em>to you</em>.</p>
       </div>
-
+      <div class="card">
+        <h2>&#128196; Your Template Files</h2>
+        <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:12px">PDF templates uploaded by your ACC admin.</p>
+        <div id="client-templates-list">
+          <div style="color:#8a9bbf;font-size:.82rem;padding:8px 0">Loading…</div>
+        </div>
+      </div>
       <div class="card">
         <h2>&#128196; AODA Templates — All 11 Requirements + Extras</h2>
         <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:16px">
@@ -677,37 +679,33 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
                 <th style="min-width:180px">Template</th>
                 <th style="min-width:160px">&#9989; ACC Delivers</th>
                 <th style="min-width:150px">&#128100; Your Duty</th>
+                <th>Format</th>
                 <th>Download</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td>1</td><td><strong>Accessibility Policy + Statement of Commitment</strong></td><td>Draft policy aligned to AODA</td><td>Approve &amp; adopt as company bylaw</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessibility-policy')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-accessibility-policy')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr data-template-key="multi-year-accessibility-plan"><td>2</td><td><strong>Multi-Year Accessibility Plan</strong></td><td>Create 3-year roadmap</td><td>Review annually with leadership</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-myap')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-myap')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr data-template-key="staff-training-registry-template"><td>3</td><td><strong>Staff Training Registry</strong></td><td>Provide modules, maintain registry</td><td>Ensure all employees complete training</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-training-registry')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-training-registry')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr data-template-key="customer-feedback-form"><td>4</td><td><strong>Accessible Feedback Process</strong></td><td>Build WCAG-compliant feedback form</td><td>Respond to accessibility inquiries</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-feedback-process')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-feedback-process')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr data-template-key="accessible-formats-request-procedure"><td>5</td><td><strong>Accessible Formats Request Procedure</strong></td><td>Available as an additional service from ACC — contact us for pricing</td><td>Notify ACC when print materials need conversion</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessible-formats')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-accessible-formats')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr data-template-key="accessibility-statement-template"><td>6</td><td><strong>Accessibility Statement (Web)</strong></td><td>Full AI remediation + monthly audits</td><td>Notify ACC before major site changes</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-a11y-statement')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-a11y-statement')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr><td>7</td><td><strong>Accommodation Clause — Job Postings</strong></td><td>Provide mandatory legal clause text</td><td>Paste into all job advertisements</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-job')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-accommodation-job')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr><td>8</td><td><strong>Accessibility Clause — Offer Letters</strong></td><td>Provide clause for offer letters</td><td>Include in all new employment contracts</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-offer')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-accommodation-offer')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr data-template-key="emergency-response-plan"><td>9</td><td><strong>HR Accommodation Policy</strong></td><td>Provide template &amp; guide</td><td>Complete for each employee with a disability</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-hr-policy')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-hr-policy')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr data-template-key="service-animal-and-support-person-policy"><td>10</td><td><strong>Service Animals &amp; Support Persons Policy</strong></td><td>Include protocols in training manual</td><td>Ensure staff do not bar entry</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-service-animals')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-service-animals')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr data-template-key="disruption-of-services-notice"><td>11</td><td><strong>Notice of Temporary Disruption of Services</strong></td><td>Provide digital &amp; printable signage</td><td>Post when lift or power-door fails</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-disruption-notice')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-disruption-notice')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr style="border-top:2px solid rgba(79,142,247,.2)"><td>+</td><td><strong>AODA Filing Checklist</strong><div style="font-size:.72rem;color:#8a9bbf">All 11 questions pre-submission</div></td><td>Provide pre-filled checklist</td><td>Submit via Ontario government portal by Dec 31</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-aoda-checklist')" title="Download PDF">&#8659; PDF</a>&nbsp;<a class="dl-btn" href="#" onclick="downloadTemplateDocx('template-aoda-checklist')" style="background:rgba(56,217,169,.1);border-color:#38d9a9;color:#38d9a9" title="Download Editable DOCX">&#8659; DOCX</a></td></tr>
-              <tr><td>+</td><td><strong>Compliance Readiness Letter</strong><div style="font-size:.72rem;color:#8a9bbf">Auto-generated Dec 1 — covers your service period</div></td><td>Issue letter confirming ACC services delivered</td><td>Include in filing binder</td><td><a class="dl-btn" href="#" onclick="generateReadinessLetter()">&#8659; Generate</a></td></tr>
-              
+              <tr><td>1</td><td><strong>Accessibility Policy + Statement of Commitment</strong></td><td>Draft policy aligned to AODA</td><td>Approve &amp; adopt as company bylaw</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessibility-policy')">&#8659;</a></td></tr>
+              <tr data-template-key="multi-year-accessibility-plan"><td>2</td><td><strong>Multi-Year Accessibility Plan</strong></td><td>Create 3-year roadmap</td><td>Review annually with leadership</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-myap')">&#8659;</a></td></tr>
+              <tr data-template-key="staff-training-registry-template"><td>3</td><td><strong>Staff Training Registry</strong></td><td>Provide modules, maintain registry</td><td>Ensure all employees complete training</td><td>XLSX / PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-training-registry')">&#8659;</a></td></tr>
+              <tr data-template-key="customer-feedback-form"><td>4</td><td><strong>Accessible Feedback Process</strong></td><td>Build WCAG-compliant feedback form</td><td>Respond to accessibility inquiries</td><td>DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-feedback-process')">&#8659;</a></td></tr>
+              <tr data-template-key="accessible-formats-request-procedure"><td>5</td><td><strong>Accessible Formats Request Procedure</strong></td><td>Available as an additional service from ACC — contact us for pricing</td><td>Notify ACC when print materials need conversion</td><td>DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accessible-formats')">&#8659;</a></td></tr>
+              <tr data-template-key="accessibility-statement-template"><td>6</td><td><strong>Accessibility Statement (Web)</strong></td><td>Full AI remediation + monthly audits</td><td>Notify ACC before major site changes</td><td>HTML / DOCX</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-a11y-statement')">&#8659;</a></td></tr>
+              <tr><td>7</td><td><strong>Accommodation Clause — Job Postings</strong></td><td>Provide mandatory legal clause text</td><td>Paste into all job advertisements</td><td>DOCX / TXT</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-job')">&#8659;</a></td></tr>
+              <tr><td>8</td><td><strong>Accessibility Clause — Offer Letters</strong></td><td>Provide clause for offer letters</td><td>Include in all new employment contracts</td><td>DOCX / TXT</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-accommodation-offer')">&#8659;</a></td></tr>
+              <tr data-template-key="emergency-response-plan"><td>9</td><td><strong>Employee Emergency Response Plan</strong></td><td>Provide template &amp; guide</td><td>Complete for each employee with a disability</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-emergency-response.html')">&#8659;</a></td></tr>
+              <tr data-template-key="service-animal-and-support-person-policy"><td>10</td><td><strong>Service Animal &amp; Support Person Policy</strong></td><td>Include protocols in training manual</td><td>Ensure staff do not bar entry</td><td>DOCX / PDF</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-service-animal.html')">&#8659;</a></td></tr>
+              <tr data-template-key="disruption-of-services-notice"><td>11</td><td><strong>Notice of Temporary Disruption</strong></td><td>Provide digital &amp; printable signage</td><td>Post when lift or power-door fails</td><td>PDF / PNG</td><td><a class="dl-btn" href="#" onclick="openTemplate('template-disruption.html')">&#8659;</a></td></tr>
+              <tr style="border-top:2px solid rgba(79,142,247,.2)"><td>+</td><td><strong>AODA Filing Checklist</strong><div style="font-size:.72rem;color:#8a9bbf">All 11 questions pre-submission</div></td><td>Provide pre-filled checklist</td><td>Submit via Ontario government portal by Dec 31</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="downloadTemplate('template-aoda-checklist')">&#8659;</a></td></tr>
+              <tr><td>+</td><td><strong>Compliance Readiness Letter</strong><div style="font-size:.72rem;color:#8a9bbf">Auto-generated Dec 1 — covers your service period</div></td><td>Issue letter confirming ACC services delivered</td><td>Include in filing binder</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="generateReadinessLetter()">&#8659; Generate</a></td></tr>
+              <tr><td>+</td><td><strong>Scope of Responsibility Acknowledgment</strong><div style="font-size:.72rem;color:#8a9bbf">Sign annually — protects both parties legally</div></td><td>Prepare acknowledgment document</td><td>&#9989; Sign below to confirm your duties</td><td>PDF</td><td><a class="dl-btn" href="#" onclick="generateScopeAcknowledgment()">&#8659; Generate</a></td></tr>
             </tbody>
           </table>
         </div>
 
         <!-- Annual Sign-off -->
-        <!-- Annual renewal banner -->
-        <div id="scope-renewal-banner" style="display:none;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.3);border-radius:10px;padding:12px 16px;margin-bottom:14px">
-          <strong style="color:#f5a623;font-size:.85rem">&#9888; Annual Re-sign Required</strong>
-          <p style="color:#8a9bbf;font-size:.8rem;margin:4px 0 0">You signed the Scope Acknowledgment in <span id="scope-banner-year">—</span>. Please sign again for <strong style="color:#e8edf8">2026</strong> to keep your compliance record current.</p>
-        </div>
         <div style="background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.2);border-radius:10px;padding:18px;margin-top:20px" id="scope-signoff">
-          <strong style="font-size:.88rem;color:#38d9a9;display:block;margin-bottom:8px">&#9998; Annual Scope Acknowledgment — <span class="scope-year"></span></strong>
-          <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:14px">By signing below, <strong style="color:#e8edf8" id="signoff-company2">your organization</strong> confirms it has reviewed the Scope of Responsibility table and understands its operational duties for the <span class="scope-year"></span> AODA filing period.</p>
+          <strong style="font-size:.88rem;color:#38d9a9;display:block;margin-bottom:8px">&#9998; Annual Scope Acknowledgment — 2026</strong>
+          <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:14px">By signing below, <strong style="color:#e8edf8" id="signoff-company2">your organization</strong> confirms it has reviewed the Scope of Responsibility table and understands its operational duties for the 2026 AODA filing period.</p>
           <div id="signoff-unsigned">
             <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px">
               <input type="checkbox" id="scope-chk" style="margin-top:3px;accent-color:#4f8ef7;width:16px;height:16px"/>
@@ -715,15 +713,11 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
                 I, <strong style="color:#e8edf8" id="signoff-name">—</strong> (authorized representative of <span id="signoff-company">your organization</span>), confirm that I have read and understood the Scope of Responsibility. I acknowledge that Accessibility Compliance Canada Inc. is responsible only for the deliverables listed, and that operational implementation is the responsibility of our organization.
               </label>
             </div>
-            <button class="btn-sm btn-primary" onclick="signScopeAck()">&#9989; Sign &amp; Confirm — <span class="scope-year"></span></button>
+            <button class="btn-sm btn-primary" onclick="signScopeAck()">&#9989; Sign &amp; Confirm — 2026</button>
           </div>
           <div id="signoff-signed" style="display:none">
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">
-              <span class="pill green" style="font-size:.8rem">&#9989; Signed by <span id="signoff-signer">—</span> on <span id="signoff-date"></span></span>
-              <button class="btn-sm btn-ghost" style="font-size:.75rem" onclick="resignScopeAck()">&#8635; Re-sign &amp; Update</button>
-            </div>
-            <button class="btn-sm" onclick="downloadLatestScopeAck()" style="background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:6px 14px;font-size:.78rem;cursor:pointer">&#8659; Download PDF</button>
-            
+            <span class="pill green" style="font-size:.8rem">&#9989; Signed by <span id="signoff-signer">—</span> — <span id="signoff-date"></span></span>
+            <p style="font-size:.78rem;color:#8a9bbf;margin-top:8px">A copy has been added to your 2026 Evidence Binder.</p>
           </div>
         </div>
 
@@ -733,7 +727,119 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </div>
 
       <!-- Annual reminder info -->
-      
+      <div class="card">
+        <h2>&#128197; Annual Compliance Calendar</h2>
+        <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:16px">Automated compliance reminder emails are sent annually from <a href="/cdn-cgi/l/email-protection#ea8b89898f999983888386839e93aab193859f988e85878b8384b7c4898b" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a>. No action required — ACC manages your filing deadline notifications.</p>
+        <table class="data-table" aria-label="Compliance calendar">
+          <thead><tr><th>Date</th><th>Event</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Dec 1, 2026</td><td>AODA Filing Reminder — First Notice</td><td><span class="pill blue">Scheduled</span></td></tr>
+            <tr><td>Dec 15, 2026</td><td>AODA Filing Reminder — Deadline Approaching</td><td><span class="pill blue">Scheduled</span></td></tr>
+            <tr><td>Dec 28, 2026</td><td>AODA Filing Reminder — Final Notice</td><td><span class="pill blue">Scheduled</span></td></tr>
+            <tr><td>Dec 31, 2026</td><td>AODA Accessibility Report Filing Deadline</td><td><span class="pill yellow">Upcoming</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- TRAINING PORTAL -->
+    <div class="panel" id="panel-training">
+      <div class="page-header">
+        <h1>&#127891; Training Portal</h1>
+        <p>Assign AODA training modules to your team. Each employee completes the training independently and receives a certificate on passing the quiz.</p>
+      </div>
+
+      <div class="card">
+        <h2>&#128279; Your Organization Training Link</h2>
+        <p style="font-size:.83rem;color:var(--muted);margin-bottom:12px">Share this unique link with your employees. They can complete training on any device.</p>
+        <div class="code-block">
+          <button class="code-copy" onclick="copyCode('training-link')" aria-label="Copy training link">Copy</button>
+          <pre id="training-link">https://accessibilitycompliance.ca/training.html?org=…&token=…</pre>
+        </div>
+        <div class="btn-row" style="margin-top:12px">
+          <a class="dl-btn" href="#" id="preview-mod1-link" target="_blank">&#9654; Preview Module 1</a>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px">
+        <div class="card" style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:8px">&#127891;</div>
+          <h3 style="font-size:.95rem;margin-bottom:6px">Module 1</h3>
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">AODA Overview &amp; Legal Requirements</p>
+          <span class="pill green" id="mod1-count" style="font-size:.72rem;display:block;margin-bottom:10px">Loading…</span>
+          <a href="#" id="mod1-preview-link" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
+          <button class="btn-sm btn-ghost" onclick="shareModule(1,'AODA Overview')" style="margin-left:4px">&#128101; Assign</button>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:8px">&#127891;</div>
+          <h3 style="font-size:.95rem;margin-bottom:6px">Module 2</h3>
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">WCAG 2.1 AA — Digital Accessibility</p>
+          <span class="pill yellow" id="mod2-count" style="font-size:.72rem;display:block;margin-bottom:10px">Loading…</span>
+          <a href="#" id="mod2-preview-link" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
+          <button class="btn-sm btn-ghost" onclick="shareModule(2,'WCAG 2.1 AA')" style="margin-left:4px">&#128101; Assign</button>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:8px">&#127891;</div>
+          <h3 style="font-size:.95rem;margin-bottom:6px">Module 3</h3>
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Customer Service &amp; Inclusion</p>
+          <span class="pill blue" id="mod3-count" style="font-size:.72rem;display:block;margin-bottom:10px">Not started</span>
+          <a href="#" id="mod3-preview-link" target="_blank" class="btn-sm btn-ghost" style="text-decoration:none;display:inline-block">&#9654; Preview</a>
+          <button class="btn-sm btn-ghost" onclick="shareModule(3,'Customer Service')" style="margin-left:4px">&#128101; Assign</button>
+        </div>
+      </div>
+
+      <!-- Staff Training Registry -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+          <h2 style="margin:0">&#128203; Staff Training Registry</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input class="finput" type="search" id="training-search" placeholder="Search employee…"
+              oninput="filterTraining()" style="height:34px;min-width:160px"/>
+            <button class="btn-sm btn-primary" onclick="openModal('add-training-modal')">&#43; Add Employee</button>
+            <a class="dl-btn" href="#" onclick="exportTableCSV('training-table', 'ACC_Training_Registry.csv')">&#8659; Export CSV</a>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="training-table" aria-label="Staff training registry" style="min-width:560px">
+            <thead>
+              <tr><th>Employee</th><th>Module</th><th>Status</th><th>Date</th><th>Cert</th></tr>
+            </thead>
+            <tbody id="training-tbody">
+              <tr data-name="sarah chen">
+                <td><strong>Sarah Chen</strong><div style="font-size:.72rem;color:#8a9bbf">Manager</div></td>
+                <td>Module 1 — AODA Overview</td>
+                                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
+                <td style="font-size:.78rem;color:#8a9bbf">Feb 14, 2026</td>
+                <td><button class="btn-sm btn-ghost" onclick="generateCertificate('Sarah Chen','Module 1 — AODA Overview','2026-02-14')">&#8659; PDF</button></td>
+              </tr>
+              <tr data-name="james kowalski">
+                <td><strong>James Kowalski</strong><div style="font-size:.72rem;color:#8a9bbf">HR Director</div></td>
+                <td>Module 1 — AODA Overview</td>
+                                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
+                <td style="font-size:.78rem;color:#8a9bbf">Feb 18, 2026</td>
+                <td><button class="btn-sm btn-ghost" onclick="generateCertificate('James Kowalski','Module 1 — AODA Overview','2026-02-18')">&#8659; PDF</button></td>
+              </tr>
+              <tr data-name="priya nair">
+                <td><strong>Priya Nair</strong><div style="font-size:.72rem;color:#8a9bbf">Customer Service</div></td>
+                <td>Module 1 — AODA Overview</td>
+                                <td><span class="pill green" style="font-size:.72rem">&#10003; Passed</span></td>
+                <td style="font-size:.78rem;color:#8a9bbf">Mar 2, 2026</td>
+                <td><button class="btn-sm btn-ghost" onclick="generateCertificate('Priya Nair','Module 1 — AODA Overview','2026-03-02')">&#8659; PDF</button></td>
+              </tr>
+              <tr data-name="derek osei">
+                <td><strong>Derek Osei</strong><div style="font-size:.72rem;color:#8a9bbf">IT Lead</div></td>
+                <td>Module 2 — WCAG 2.1 AA</td>
+                                <td><span class="pill yellow" style="font-size:.72rem">&#9654; In Progress</span></td>
+                <td style="font-size:.78rem;color:#8a9bbf">Started Mar 5, 2026</td>
+                <td style="color:#8a9bbf;font-size:.75rem">—</td>
+              </tr>
+              <tr id="training-no-results" style="display:none">
+                <td colspan="6" style="text-align:center;padding:24px;color:#8a9bbf">No matching employees.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
 
     </div>
 
@@ -796,7 +902,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             <span class="pill green" id="acc-status">Active</span>
           </div>
           <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px"><span id="acc-price">$69</span> <span style="font-size:.85rem;font-weight:400;color:var(--muted)">CAD / month</span></div>
-          <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Next billing: <span id="acc-renewal">—</span></div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:6px">Next billing: <span id="acc-renewal">—</span></div>
           <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Service start: <strong id="acc-start-date" style="color:#e8edf8">—</strong></div>
           <div class="btn-row">
             <button class="btn-sm btn-ghost" onclick="alert('Upgrade options coming soon.')">Upgrade to Tier 2</button>
@@ -2266,108 +2372,44 @@ function populateRoadmap(milestones) {
   if (!container) return;
 
   if (!milestones || !milestones.length) {
-    container.innerHTML = '<div class="card"><p style="color:#8a9bbf;font-size:.85rem">No roadmap milestones yet. Your ACC admin will configure these.</p></div>';
+    container.innerHTML = '<div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">No roadmap milestones yet. Your ACC admin will configure these.</div>';
     return;
   }
 
+  // Group by year
   var years = {};
   milestones.forEach(function(m) {
-    var yr = String(m.year || (m.target_date ? m.target_date.substring(0,4) : '2026'));
+    var yr = m.year || (m.target_date ? m.target_date.substring(0,4) : '2026');
     if (!years[yr]) years[yr] = [];
     years[yr].push(m);
   });
 
-  var sopts = ['planned','in-progress','done','deferred'];
+  var statusPill = {
+    'done':        '<span class="pill green">Done</span>',
+    'complete':    '<span class="pill green">Done</span>',
+    'in-progress': '<span class="pill yellow">In Progress</span>',
+    'planned':     '<span class="pill blue">Planned</span>',
+    'deferred':    '<span class="pill" style="background:rgba(138,155,191,.15);color:#8a9bbf">Deferred</span>',
+  };
 
   container.innerHTML = Object.keys(years).sort().map(function(yr) {
     var rows = years[yr].map(function(m) {
-      var opts = sopts.map(function(s){
-        return '<option value="'+s+'"'+(s===(m.status||'planned')?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
-      }).join('');
-      return '<tr data-rid="'+esc(m.id||'')+'" data-year="'+yr+'">' +
-        '<td><input class="finput" style="padding:4px 6px;font-size:.85rem;width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" value="'+esc(m.title||m.milestone||'')+'" aria-label="Milestone"></td>' +
-        '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" value="'+esc(m.target_date||'')+'" aria-label="Target date"></td>' +
-        '<td><select class="finput" style="padding:4px 6px;font-size:.85rem;background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);color:#e8edf8">'+opts+'</select></td>' +
+      var title = m.title || m.milestone || '';
+      var pill  = statusPill[m.status] || statusPill['planned'];
+      var date  = m.target_date ? fmtDate(m.target_date) : (m.target_date || '');
+      return '<tr>' +
+        '<td>' + esc(title) + '</td>' +
+        '<td style="white-space:nowrap">' + date + '</td>' +
+        '<td>' + pill + '</td>' +
         '</tr>';
     }).join('');
     return '<div class="card">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
-      '<h2 style="margin:0">&#128197; '+yr+'</h2>' +
-      '<button class="btn-sm btn-ghost" style="font-size:.75rem" onclick="addClientRoadmapRow(\'' + yr + '\')">+ Add Row</button>' +
-      '</div>' +
-      '<table class="data-table" aria-label="'+yr+' roadmap milestones">' +
-      '<thead><tr><th>Milestone</th><th>Target Date</th><th>Status</th></tr></thead>' +
-      '<tbody id="client-roadmap-tbody-'+yr+'">'+rows+'</tbody></table>' +
+      '<h2>&#128197; ' + yr + '</h2>' +
+      '<table class="data-table" aria-label="' + yr + ' roadmap milestones">' +
+      '<thead><tr><th>Milestone</th><th>Target</th><th>Status</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>' +
       '</div>';
   }).join('');
-
-  // Show save button
-  var saveBtn = document.getElementById('client-roadmap-save');
-  if (saveBtn) saveBtn.style.display = 'inline-flex';
-}
-
-function addClientRoadmapRow(yr) {
-  var tbody = document.getElementById('client-roadmap-tbody-' + yr);
-  if (!tbody) return;
-  var sopts = ['planned','in-progress','done','deferred'].map(function(s){
-    return '<option value="'+s+'"'+(s==='planned'?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
-  }).join('');
-  var tr = document.createElement('tr');
-  tr.setAttribute('data-rid', 'new-' + Date.now());
-  tr.setAttribute('data-year', yr);
-  tr.innerHTML =
-    '<td><input class="finput" style="padding:4px 6px;font-size:.85rem;width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" placeholder="Milestone title" aria-label="Milestone"></td>' +
-    '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" aria-label="Target date"></td>' +
-    '<td><select class="finput" style="padding:4px 6px;font-size:.85rem;background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);color:#e8edf8">'+sopts+'</select></td>';
-  tbody.appendChild(tr);
-  var saveBtn = document.getElementById('client-roadmap-save');
-  if (saveBtn) saveBtn.style.display = 'inline-flex';
-}
-
-async function saveClientRoadmap() {
-  if (!window._clientData) return;
-  var btn = document.getElementById('client-roadmap-save');
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
-  try {
-    var rows = document.querySelectorAll('#roadmap-year-cards tr[data-rid]');
-    var inserts = [], updates = [];
-    rows.forEach(function(row) {
-      var rid   = row.getAttribute('data-rid');
-      var yr    = parseInt(row.getAttribute('data-year')) || new Date().getFullYear();
-      var inputs = row.querySelectorAll('input');
-      var sel   = row.querySelector('select');
-      var title = inputs[0] ? inputs[0].value.trim() : '';
-      var tdate = inputs[1] ? (inputs[1].value || null) : null;
-      var status = sel ? sel.value : 'planned';
-      if (!title) return;
-      if (rid && rid.startsWith('new-')) {
-        inserts.push({ client_id: _clientData.id, title: title, milestone: title,
-          target_date: tdate, status: status, year: yr });
-      } else if (rid) {
-        updates.push(_sb_client.from('roadmap').update({
-          title: title, milestone: title, target_date: tdate,
-          status: status, year: yr, updated_at: new Date().toISOString()
-        }).eq('id', rid).eq('client_id', _clientData.id));
-      }
-    });
-    var ops = [];
-    if (inserts.length) ops.push(_sb_client.from('roadmap').insert(inserts));
-    updates.forEach(function(u){ ops.push(u); });
-    if (ops.length) {
-      var results = await Promise.all(ops);
-      var errs = results.filter(function(r){ return r.error; });
-      if (errs.length) throw errs[0].error;
-    }
-    // Reload
-    var rr = await _sb_client.from('roadmap').select('*').eq('client_id', _clientData.id)
-      .is('deleted_at', null).order('year').order('target_date');
-    if (!rr.error) populateRoadmap(rr.data || []);
-    showToast('✅ Roadmap saved.');
-  } catch(e) {
-    alert('Could not save roadmap: ' + (e.message || e));
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '✓ Save Roadmap'; }
-  }
 }
 
 async function populateTraining(c) {
@@ -2473,7 +2515,7 @@ async function populateClientFiles(clientCode) {
     { bucket: 'reports',  containerId: 'client-reports-list',  label: 'audit report',    path: clientCode },
     { bucket: 'evidence', containerId: 'client-evidence-list', label: 'evidence binder', path: clientCode },
     // invoices shown via populateBillingHistory from DB instead of storage listing
-
+    { bucket: 'templates', containerId: 'client-templates-list', label: 'template',         path: 'shared' },
   ];
 
   buckets.forEach(function(b) {
@@ -2514,51 +2556,6 @@ async function populateClientFiles(clientCode) {
   }
 }
 
-// ── Populate report history based on start_date ──────────
-async function populateReportHistory(startDate) {
-  var container = document.getElementById('client-reports-history');
-  if (!container || !startDate) return;
-
-  var start = new Date(startDate);
-  var now   = new Date();
-  var months = [];
-
-  // Build list of months from start_date to last month
-  var cur = new Date(start.getFullYear(), start.getMonth(), 1);
-  var lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  while (cur <= lastMonth) {
-    months.push(new Date(cur));
-    cur.setMonth(cur.getMonth() + 1);
-  }
-
-  if (!months.length) {
-    container.innerHTML = '<p style="color:#8a9bbf;font-size:.82rem">Reports will appear here after your first month of service.</p>';
-    return;
-  }
-
-  // Reverse so newest first
-  months.reverse();
-
-  var code = window._clientData ? window._clientData.client_code : '';
-  container.innerHTML = months.map(function(m) {
-    var yr  = m.getFullYear();
-    var mo  = String(m.getMonth() + 1).padStart(2, '0');
-    var label = m.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' });
-    var filePath = code + '/' + yr + '-' + mo + '.pdf';
-    var isNewest = (m.getTime() === months[months.length - 1].getTime()); // last in reversed = oldest
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(30,58,107,.4)">' +
-      '<div>' +
-        '<div style="font-size:.85rem;font-weight:600;color:#e8edf8">&#128202; ' + label + '</div>' +
-        '<div style="font-size:.73rem;color:#8a9bbf">Generated ' + yr + '-' + mo + '-01</div>' +
-      '</div>' +
-      '<div style="display:flex;gap:8px;align-items:center">' +
-        '<span class="pill ' + (m === months[0] ? 'green' : 'blue') + '" style="font-size:.72rem">' + (m === months[0] ? 'Latest' : 'Archived') + '</span>' +
-        '<a class="dl-btn" href="#" onclick="clientDownloadFile('reports','' + filePath + '');return false">&#8659; Download</a>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-}
-
 async function clientDownloadFile(bucket, path) {
   try {
     var r = await _sb_client.storage.from(bucket).createSignedUrl(path, 3600);
@@ -2587,8 +2584,8 @@ function populateAccount(c, billingRows) {
   set('acc-tier',    tierName(c.tier));
   set('acc-price',   tierPrice(c.tier));
   set('acc-renewal', fmtDateLong(c.renewal_date));
-  set('acc-status',  (c.status || 'active').charAt(0).toUpperCase() + (c.status || 'active').slice(1));
   set('acc-start-date', c.start_date ? fmtDate(c.start_date) : '—');
+  set('acc-status',  (c.status || 'active').charAt(0).toUpperCase() + (c.status || 'active').slice(1));
 
   // Pre-fill billing address modal fields from DB
   if (c.billing_address) setVal('bill-addr',   c.billing_address);
@@ -2969,6 +2966,20 @@ async function generateAndDownloadInvoice(yearMonth) {
 }
 
 // Generate the AODA Compliance Readiness Letter and download it.
+async function generateScopeAcknowledgment() {
+  if (!window._clientData) { alert('Please log in first.'); return; }
+  var btn = (window.event && window.event.target) || null;
+  var orig = btn ? btn.innerHTML : null;
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating…'; }
+  try {
+    var result = await callEdgeFunction('generate-compliance-letter', {
+      client_id: _clientData.id, letter_type: 'scope_acknowledgment',
+    });
+    await downloadSigned('reports', result.file, 'ACC_Scope_Acknowledgment_' + _clientData.client_code + '.pdf');
+  } catch(e) { alert('Could not generate: ' + (e.message || e)); }
+  finally { if (btn) { btn.disabled = false; if (orig) btn.innerHTML = orig; } }
+}
+
 async function generateReadinessLetter() {
   if (!window._clientData) { alert('Please log in first.'); return; }
   var btn = (window.event && window.event.target) || null;
@@ -2987,26 +2998,6 @@ async function generateReadinessLetter() {
     alert('Could not generate letter: ' + e.message);
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = orig; }
-  }
-}
-
-// ── Scope of Responsibility Acknowledgment PDF ────────────
-async function generateScopeAcknowledgment() {
-  if (!window._clientData) { alert('Please log in first.'); return; }
-  var btn = (window.event && window.event.target) || null;
-  var orig = btn ? btn.innerHTML : null;
-  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating…'; }
-  try {
-    var result = await callEdgeFunction('generate-compliance-letter', {
-      client_id:   _clientData.id,
-      letter_type: 'scope_acknowledgment',
-    });
-    await downloadSigned('reports', result.file,
-      'ACC_Scope_Acknowledgment_' + _clientData.client_code + '.pdf');
-  } catch(e) {
-    alert('Could not generate document: ' + (e.message || e));
-  } finally {
-    if (btn) { btn.disabled = false; if (orig) btn.innerHTML = orig; }
   }
 }
 
@@ -3189,69 +3180,49 @@ async function runScanNow(btn) {
 }
 
 // ── Item 3: signScopeAck — save to DB + show signed state ──
-async function signScopeAck() {
-  var chk = document.getElementById('scope-chk');
-  if (!chk || !chk.checked) { alert('Please check the box to confirm before signing.'); return; }
-  if (!window._clientData) { alert('Please log in first.'); return; }
-  var btn = (window.event && window.event.target) || null;
-  if (btn) { btn.disabled = true; btn.textContent = 'Signing & generating PDF…'; }
+async function loadScopeAckStatus() {
+  if (!window._clientData) return;
   try {
-    var now = new Date();
-    var yr  = now.getFullYear();
-
-    // 1. Save to DB
-    var r = await _sb_client.from('scope_acknowledgments').upsert({
-      client_id:   _clientData.id,
-      client_name: _clientData.name,
-      signed_at:   now.toISOString(),
-      year:        yr,
-    }, { onConflict: 'client_id,year' });
-    if (r.error) throw r.error;
-
-    // 2. Generate PDF via edge function
-    var result = await callEdgeFunction('generate-compliance-letter', {
-      client_id:   _clientData.id,
-      letter_type: 'scope_acknowledgment',
-    });
-
-    // 3. Update UI to signed state
+    var yr = new Date().getFullYear();
+    var r  = await _sb_client.from('scope_acknowledgments')
+      .select('signed_at,year,client_name').eq('client_id', _clientData.id)
+      .order('year', {ascending:false}).limit(1).maybeSingle();
+    if (r.error || !r.data) return;
+    var signedYr = r.data.year;
+    var signedAt = new Date(r.data.signed_at);
+    if (signedYr < yr) {
+      var banner = document.getElementById('scope-renewal-banner');
+      if (banner) {
+        banner.style.display = 'block';
+        var bannerYr = document.getElementById('scope-banner-year');
+        if (bannerYr) bannerYr.textContent = signedYr;
+      }
+      return;
+    }
     var unsigned = document.getElementById('signoff-unsigned');
     var signed   = document.getElementById('signoff-signed');
     var signerEl = document.getElementById('signoff-signer');
     var dateEl   = document.getElementById('signoff-date');
     if (unsigned) unsigned.style.display = 'none';
     if (signed)   signed.style.display   = 'block';
-    if (signerEl) signerEl.textContent = _clientData.name || '—';
-    if (dateEl)   dateEl.textContent = now.toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
-
-    // Store file path for later download
-    window._scopeAckFile = result.file;
-
-    showToast('✅ Scope Acknowledgment signed and PDF saved to your portal.');
-  } catch(e) {
-    console.error('signScopeAck:', e);
-    alert('Could not save acknowledgment: ' + (e.message || e));
-    if (btn) { btn.disabled = false; btn.textContent = '✅ Sign & Confirm — ' + new Date().getFullYear(); }
-  }
+    if (signerEl) signerEl.textContent = r.data.client_name || (_clientData && _clientData.name) || '—';
+    if (dateEl)   dateEl.textContent   = signedAt.toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
+  } catch(e) { console.warn('loadScopeAckStatus:', e.message); }
 }
 
 async function downloadLatestScopeAck() {
   if (!window._clientData) return;
   try {
-    // Try stored path first, otherwise construct it
     var path = window._scopeAckFile;
     if (!path) {
       var yr = new Date().getFullYear();
       path = _clientData.client_code + '/' + yr + '-' + String(new Date().getMonth()+1).padStart(2,'0') + '-scope_acknowledgment.pdf';
     }
     await downloadSigned('reports', path, 'ACC_Scope_Acknowledgment_' + _clientData.client_code + '.pdf');
-  } catch(e) {
-    alert('Could not download: ' + (e.message || e));
-  }
+  } catch(e) { alert('Could not download: ' + (e.message || e)); }
 }
 
-async function resignScopeAck() {
-  // Reset UI to unsigned state so client can re-sign
+function resignScopeAck() {
   var unsigned = document.getElementById('signoff-unsigned');
   var signed   = document.getElementById('signoff-signed');
   var chk      = document.getElementById('scope-chk');
@@ -3260,47 +3231,35 @@ async function resignScopeAck() {
   if (chk)      chk.checked = false;
 }
 
-// ── Load scope acknowledgment status on dashboard load ──────
-async function loadScopeAckStatus() {
-  if (!window._clientData) return;
+async function signScopeAck() {
+  var chk = document.getElementById('scope-chk');
+  if (!chk || !chk.checked) { alert('Please check the box to confirm before signing.'); return; }
+  if (!window._clientData) { alert('Please log in first.'); return; }
+  var btn = (window.event && window.event.target) || null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
   try {
-    var yr  = new Date().getFullYear();
-    var r   = await _sb_client.from('scope_acknowledgments')
-      .select('signed_at, year, client_name')
-      .eq('client_id', _clientData.id)
-      .order('year', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    var now = new Date();
+    var { error } = await _sb_client.from('scope_acknowledgments').upsert({
+      client_id: _clientData.id,
+      client_name: _clientData.name,
+      signed_at: now.toISOString(),
+      year: now.getFullYear(),
+    }, { onConflict: 'client_id,year' });
+    if (error) throw error;
 
-    if (r.error) { console.warn('loadScopeAckStatus:', r.error.message); return; }
-
-    if (!r.data) return; // Never signed — leave unsigned state
-
-    var signedYr = r.data.year;
-    var signedAt = new Date(r.data.signed_at);
-
-    if (signedYr < yr) {
-      // Signed in a prior year — show renewal banner
-      var banner = document.getElementById('scope-renewal-banner');
-      if (banner) {
-        banner.style.display = 'block';
-        var bannerYr = document.getElementById('scope-banner-year');
-        if (bannerYr) bannerYr.textContent = signedYr;
-      }
-      // Leave as unsigned so they sign again
-      return;
-    }
-
-    // Signed this year — show signed state
+    // Show signed state
     var unsigned = document.getElementById('signoff-unsigned');
     var signed   = document.getElementById('signoff-signed');
-    var signerEl = document.getElementById('signoff-signer');
     var dateEl   = document.getElementById('signoff-date');
     if (unsigned) unsigned.style.display = 'none';
     if (signed)   signed.style.display   = 'block';
-    if (signerEl) signerEl.textContent = r.data.client_name || _clientData.name || '—';
-    if (dateEl)   dateEl.textContent   = signedAt.toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
-  } catch(e) { console.warn('loadScopeAckStatus:', e.message); }
+    if (dateEl)   dateEl.textContent = now.toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
+
+    showToast('Scope Acknowledgment signed and saved.');
+  } catch(e) {
+    alert('Could not save acknowledgment: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '\u2705 Sign & Confirm \u2014 ' + new Date().getFullYear(); }
+  }
 }
 
 // ── Item 3: Download All Templates ZIP ──
@@ -3773,13 +3732,8 @@ function openStmtModal() {
     populateRoadmap(rr.data || []);
     populateTraining(_clientData);
     populateAccount(_clientData, br.data || []);
-    if (_clientData.client_code) populateClientFiles(_clientData.client_code);
-    if (_clientData.start_date) populateReportHistory(_clientData.start_date);
-    loadScopeAckStatus();
-    // Populate dynamic year spans
-    var yr = new Date().getFullYear();
-    document.querySelectorAll('.scope-year').forEach(function(el){ el.textContent = yr; });
-    if (_clientData.client_co
+    if (_clientData.client_code) {
+      populateClientFiles(_clientData.client_code);
       populateScanData(_clientData.client_code);
     }
     applyDashboardAccess(_clientData.dashboard_access);
