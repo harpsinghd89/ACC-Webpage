@@ -657,13 +657,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h1>&#128203; Template Standards</h1>
         <p>All 11 AODA filing requirements. Each template is branded with the ACC logo and WCAG 2.1 AA footer. Your Compliance Readiness Letter and signed Scope Acknowledgment are retained by ACC as legal records &mdash; they are <strong style="color:#38d9a9">not included in your Evidence Binder</strong> (they are ACC&rsquo;s documentation, not yours). The Binder contains all deliverables ACC provided <em>to you</em>.</p>
       </div>
-      <div class="card">
-        <h2>&#128196; Your Template Files</h2>
-        <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:12px">PDF templates uploaded by your ACC admin.</p>
-        <div id="client-templates-list">
-          <div style="color:#8a9bbf;font-size:.82rem;padding:8px 0">Loading…</div>
-        </div>
-      </div>
+
       <div class="card">
         <h2>&#128196; AODA Templates — All 11 Requirements + Extras</h2>
         <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:16px">
@@ -729,7 +723,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <!-- Annual reminder info -->
       <div class="card">
         <h2>&#128197; Annual Compliance Calendar</h2>
-        <p style="font-size:.82rem;color:#8a9bbf;margin-bottom:16px">Automated compliance reminder emails are sent annually from <a href="/cdn-cgi/l/email-protection#ea8b89898f999983888386839e93aab193859f988e85878b8384b7c4898b" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a>. No action required — ACC manages your filing deadline notifications.</p>
+        
         <table class="data-table" aria-label="Compliance calendar">
           <thead><tr><th>Date</th><th>Event</th><th>Status</th></tr></thead>
           <tbody>
@@ -2514,7 +2508,7 @@ async function populateClientFiles(clientCode) {
     { bucket: 'reports',  containerId: 'client-reports-list',  label: 'audit report',    path: clientCode },
     { bucket: 'evidence', containerId: 'client-evidence-list', label: 'evidence binder', path: clientCode },
     // invoices shown via populateBillingHistory from DB instead of storage listing
-    { bucket: 'templates', containerId: 'client-templates-list', label: 'template',         path: 'shared' },
+
   ];
 
   buckets.forEach(function(b) {
