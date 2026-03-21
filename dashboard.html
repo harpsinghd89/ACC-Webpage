@@ -796,7 +796,8 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             <span class="pill green" id="acc-status">Active</span>
           </div>
           <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px"><span id="acc-price">$69</span> <span style="font-size:.85rem;font-weight:400;color:var(--muted)">CAD / month</span></div>
-          <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Next billing: <span id="acc-renewal">—</span></div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Next billing: <span id="acc-renewal">—</span></div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Service start: <strong id="acc-start-date" style="color:#e8edf8">—</strong></div>
           <div class="btn-row">
             <button class="btn-sm btn-ghost" onclick="alert('Upgrade options coming soon.')">Upgrade to Tier 2</button>
             <button class="btn-sm btn-danger" onclick="confirmCancel()">Cancel Subscription</button>
@@ -2292,7 +2293,7 @@ function populateRoadmap(milestones) {
     return '<div class="card">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
       '<h2 style="margin:0">&#128197; '+yr+'</h2>' +
-      '<button class="btn-sm btn-ghost" style="font-size:.75rem" onclick="addClientRoadmapRow(''+yr+'')">+ Add Row</button>' +
+      '<button class="btn-sm btn-ghost" style="font-size:.75rem" onclick="addClientRoadmapRow(\'' + yr + '\')">+ Add Row</button>' +
       '</div>' +
       '<table class="data-table" aria-label="'+yr+' roadmap milestones">' +
       '<thead><tr><th>Milestone</th><th>Target Date</th><th>Status</th></tr></thead>' +
@@ -2986,6 +2987,26 @@ async function generateReadinessLetter() {
     alert('Could not generate letter: ' + e.message);
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+  }
+}
+
+// ── Scope of Responsibility Acknowledgment PDF ────────────
+async function generateScopeAcknowledgment() {
+  if (!window._clientData) { alert('Please log in first.'); return; }
+  var btn = (window.event && window.event.target) || null;
+  var orig = btn ? btn.innerHTML : null;
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating…'; }
+  try {
+    var result = await callEdgeFunction('generate-compliance-letter', {
+      client_id:   _clientData.id,
+      letter_type: 'scope_acknowledgment',
+    });
+    await downloadSigned('reports', result.file,
+      'ACC_Scope_Acknowledgment_' + _clientData.client_code + '.pdf');
+  } catch(e) {
+    alert('Could not generate document: ' + (e.message || e));
+  } finally {
+    if (btn) { btn.disabled = false; if (orig) btn.innerHTML = orig; }
   }
 }
 
