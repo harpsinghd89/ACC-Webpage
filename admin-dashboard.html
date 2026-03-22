@@ -682,28 +682,26 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <!-- BILLING TAB -->
     <div id="ctab-panel-billing" style="display:none">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        <div class="fgroup"><label>Monthly Rate ($)</label><input class="finput" id="ce-rate" type="number" value="69"></div>
         <div class="fgroup"><label>Billing Cycle</label>
           <select class="finput" id="ce-cycle"><option selected>Monthly</option><option>Annual</option></select>
         </div>
-        <div class="fgroup"><label>Discount Code Applied</label><input class="finput" id="ce-discount" placeholder="e.g. SPRING25 or blank"></div>
         <div class="fgroup"><label>Payment Method</label>
           <select class="finput" id="ce-payment"><option selected>Stripe</option><option>Invoice</option><option>Cheque</option></select>
         </div>
+        <div class="fgroup"><label>Discount Code Applied</label><input class="finput" id="ce-discount" placeholder="e.g. SPRING25 or blank"></div>
+        <div class="fgroup"><label>Monthly Rate Override ($)</label><input class="finput" id="ce-rate" type="number" value="69"></div>
         <div class="fgroup" style="grid-column:1/-1"><label>Custom Invoice Notes</label><textarea class="finput" id="ce-inv-notes" rows="2" placeholder="Notes that appear on invoices"></textarea></div>
       </div>
+      <h3 style="font-size:.88rem;margin-bottom:10px">&#128179; Card on File</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div class="fgroup"><label>Last 4 Digits</label><input class="finput" id="ce-card-last4" placeholder="e.g. 4242" maxlength="4" style="font-family:var(--mono)"></div>
+        <div class="fgroup"><label>Expiry (MM/YY)</label><input class="finput" id="ce-card-expiry" placeholder="e.g. 08/28"></div>
+        <div class="fgroup" style="grid-column:1/-1"><label>Cardholder Name</label><input class="finput" id="ce-card-name" placeholder="As shown on card"></div>
+      </div>
       <h3 style="font-size:.88rem;margin-bottom:10px">&#128203; Payment History</h3>
-      <table class="data-table" style="font-size:.8rem">
-        <thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-        <tbody>
-          <tr><td>Mar 10, 2026</td><td>$69.00</td><td><span class="pill green">Paid</span></td><td><button class="btn-sm btn-ghost" style="padding:3px 8px;font-size:.7rem">Receipt</button></td></tr>
-          <tr><td>Feb 10, 2026</td><td>$69.00</td><td><span class="pill green">Paid</span></td><td><button class="btn-sm btn-ghost" style="padding:3px 8px;font-size:.7rem">Receipt</button></td></tr>
-          <tr><td>Jan 10, 2026</td><td>$69.00</td><td><span class="pill green">Paid</span></td><td><button class="btn-sm btn-ghost" style="padding:3px 8px;font-size:.7rem">Receipt</button></td></tr>
-        </tbody>
-      </table>
+      <div id="admin-billing-history" style="font-size:.8rem;color:#8a9bbf">Loading…</div>
       <div class="btn-row" style="margin-top:12px">
         <button class="btn-sm btn-primary" onclick="saveBilling()">&#10003; Save Billing</button>
-        <button class="btn-sm btn-ghost" onclick="alert('Invoice sent via Stripe!')">&#128228; Send Invoice</button>
       </div>
     </div>
 
@@ -1533,8 +1531,32 @@ async function openClientEditor(btn) {
     }
 
     // ── Billing tab ──
-    f('ce-inv-notes', c.billing_notes || '');
-    f('ce-discount',  c.discount_code || '');
+    f('ce-inv-notes',    c.billing_notes  || '');
+    f('ce-discount',     c.discount_code  || '');
+    f('ce-card-last4',   c.card_last4     || '');
+    f('ce-card-expiry',  c.card_expiry    || '');
+    f('ce-card-name',    c.card_name      || '');
+    // Load billing history
+    (async function() {
+      var bh = document.getElementById('admin-billing-history');
+      if (!bh) return;
+      try {
+        var br = await _sb.from('billing').select('*').eq('client_id', _editingClientId).order('created_at', {ascending:false}).limit(12);
+        if (br.error || !br.data || !br.data.length) {
+          bh.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem;padding:8px 0">No billing records yet.</div>';
+        } else {
+          bh.innerHTML = '<table class="data-table" style="font-size:.8rem"><thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>PDF</th></tr></thead><tbody>' +
+            br.data.map(function(b) {
+              var ym = (b.paid_at||b.created_at||'').substring(0,7);
+              return '<tr><td>' + fmtDate(b.paid_at||b.created_at) + '</td>' +
+                '<td>' + (b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) : '—') + '</td>' +
+                '<td><span class="pill ' + (b.status==='paid'?'green':'yellow') + '">' + esc(b.status||'pending') + '</span></td>' +
+                '<td><button class="btn-sm btn-ghost" style="padding:3px 8px;font-size:.7rem" onclick="downloadAdminFile('invoices','' + (window._editingClientCode||'') + '/' + ym + '-invoice.pdf')">&#8659;</button></td>' +
+                '</tr>';
+            }).join('') + '</tbody></table>';
+        }
+      } catch(e) { bh.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem">Could not load billing.</div>'; }
+    })();
     var cycleSel = document.getElementById('ce-cycle');
     if (cycleSel && c.billing_cycle) {
       for (var ci=0; ci<cycleSel.options.length; ci++) {
@@ -1785,10 +1807,16 @@ async function saveBilling() {
     var inv   = (document.getElementById('ce-inv-notes')||{}).value||'';
     var disc  = (document.getElementById('ce-discount')||{}).value||'';
     var pay   = document.getElementById('ce-payment');
+    var cardLast4  = (document.getElementById('ce-card-last4')  ||{}).value.trim();
+    var cardExpiry = (document.getElementById('ce-card-expiry') ||{}).value.trim();
+    var cardName   = (document.getElementById('ce-card-name')   ||{}).value.trim();
     var r = await _sb.from('clients').update({
       billing_cycle:  cycle ? cycle.options[cycle.selectedIndex].text.toLowerCase() : 'monthly',
       billing_notes:  inv||null, discount_code: disc||null,
       payment_method: pay ? pay.options[pay.selectedIndex].text.toLowerCase() : 'stripe',
+      card_last4:     cardLast4  || null,
+      card_expiry:    cardExpiry || null,
+      card_name:      cardName   || null,
       updated_at: new Date().toISOString()
     }).eq('id', _editingClientId);
     if (r.error) throw r.error;

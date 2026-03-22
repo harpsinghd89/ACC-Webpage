@@ -610,13 +610,13 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div class="panel" id="panel-evidence">
       <div class="page-header">
         <h1>&#128218; Evidence Binder</h1>
-        <p>Your annual Evidence Binder is automatically compiled on December 1st, aggregating all monthly reports, training logs, and feedback records for the calendar year.</p>
+        <p>Your annual Evidence Binder is auto-generated on <strong style="color:#38d9a9">December 1st</strong> each year. You can also generate it manually at any time using the button below.</p>
       </div>
       <div class="card">
-        <h2>&#128197; <span id="evidence-binder-year">2026</span> Evidence Binder</h2>
+        <h2>&#128197; <span id="evidence-binder-year"></span> Evidence Binder</h2>
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
           <span class="pill yellow">In Progress</span>
-          <span style="font-size:.82rem;color:var(--muted)">Compiling automatically &mdash; Ready December 1, <span id="evidence-binder-year2">2026</span></span>
+          <span style="font-size:.82rem;color:var(--muted)">Compiling automatically &mdash; Ready December 1, <span id="evidence-binder-year2"></span></span>
         </div>
         <div style="margin-bottom:20px">
           <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px">
@@ -625,10 +625,11 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div class="progress-bar" style="height:10px"><div class="progress-fill" id="evidence-progress-bar" style="width:0%"></div></div>
         </div>
         <h3>Document Checklist</h3>
+        <p style="font-size:.78rem;color:#8a9bbf;margin-bottom:10px">Update each item's status as you complete it. Your ACC admin can also update these on your behalf.</p>
         <div id="evidence-binder-list" style="display:grid;gap:6px;margin-bottom:12px">
           <p style="color:#8a9bbf;font-size:.82rem">Loading checklist…</p>
         </div>
-        <button id="binder-save-btn" class="btn-sm btn-primary" style="display:none;margin-bottom:4px" onclick="saveClientBinder()">&#10003; Save Checklist</button>
+        <button id="binder-save-btn" class="btn-sm btn-primary" style="margin-bottom:4px" onclick="saveClientBinder()">&#10003; Save Checklist</button>
       </div>
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -795,18 +796,18 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             </div>
             <span class="pill green" id="acc-status">Active</span>
           </div>
-          <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px"><span id="acc-price">$69</span> <span style="font-size:.85rem;font-weight:400;color:var(--muted)">CAD / month</span></div>
+          <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px"><span id="acc-price">$69</span> <span style="font-size:.85rem;font-weight:400;color:var(--muted)" id="acc-billing-cadence">CAD</span></div>
           <div style="font-size:.78rem;color:var(--muted);margin-bottom:6px">Service start: <strong id="acc-start-date" style="color:#e8edf8">—</strong></div>
-          <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Next billing: <span id="acc-renewal">—</span></div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px"><span id="acc-renewal-label">Next billing:</span> <span id="acc-renewal">—</span></div>
           <div class="btn-row">
-            <button class="btn-sm btn-ghost" onclick="alert('Upgrade options coming soon.')">Upgrade to Tier 2</button>
+            <button class="btn-sm btn-ghost" id="btn-upgrade-tier" onclick="requestTierUpgrade()">Upgrade Plan</button>
             <button class="btn-sm btn-danger" onclick="confirmCancel()">Cancel Subscription</button>
           </div>
         </div>
         <div class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
             <h2 style="margin:0">&#128179; Invoices &amp; Receipts</h2>
-            <button class="btn-sm btn-primary" onclick="generateAndDownloadInvoice()">&#128196; Generate This Month's Invoice</button>
+            
           </div>
           <div id="client-invoices-list">
             <table class="data-table" id="billing-history-table" aria-label="Invoice history">
@@ -1817,9 +1818,40 @@ function sendInstallEmail(client) {
   alert('Installation email sent to ' + client + ' with their embed code and instructions.');
 }
 
-function confirmCancel() {
-  if (confirm('Are you sure you want to cancel your subscription? Your access will continue until the end of your current billing period.')) {
-    alert('Cancellation request submitted. You will receive a confirmation email. Access continues until April 10, 2026.');
+async function confirmCancel() {
+  if (!window._clientData) return;
+  var renewalDate = _clientData.renewal_date ? fmtDateLong(_clientData.renewal_date) : 'the end of your billing period';
+  if (!confirm('Cancel your subscription?\n\nYour access to all dashboard features will continue until ' + renewalDate + '.\n\nAfter that, only your Account & Billing page will remain accessible.')) return;
+
+  var btn = (window.event && window.event.target) || null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Cancelling…'; }
+  try {
+    var r = await _sb_client.from('clients').update({
+      status: 'cancelled',
+      updated_at: new Date().toISOString()
+    }).eq('id', _clientData.id);
+    if (r.error) throw r.error;
+
+    _clientData.status = 'cancelled';
+    window._clientData = _clientData;
+
+    // Refresh status display
+    set('acc-status', 'Cancelled');
+    var statusPill = document.getElementById('acc-status');
+    if (statusPill) { statusPill.className = 'pill red'; statusPill.textContent = 'Cancelled'; }
+
+    // Restrict nav — hide all tabs except account & billing
+    document.querySelectorAll('#client-nav .nav-item').forEach(function(btn) {
+      var access = btn.getAttribute('data-access');
+      if (access && access !== 'account_billing') {
+        btn.style.display = 'none';
+      }
+    });
+
+    showToast('✅ Cancellation submitted. Access continues until ' + renewalDate + '.');
+  } catch(e) {
+    alert('Could not process cancellation: ' + (e.message || e));
+    if (btn) { btn.disabled = false; btn.textContent = 'Cancel Subscription'; }
   }
 }
 
@@ -2648,10 +2680,36 @@ function populateAccount(c, billingRows) {
   });
   // Update display spans
   set('acc-tier',    tierName(c.tier));
-  set('acc-price',   tierPrice(c.tier));
-  set('acc-renewal',    fmtDateLong(c.renewal_date));
+  // Show billing cycle label + next date
+  var cycleLabel = (c.billing_cycle === 'annual' || c.billing_cycle === 'yearly') ? 'Annual' : 'Monthly';
+  var renewalEl = document.getElementById('acc-renewal-label');
+  if (renewalEl) renewalEl.textContent = 'Next ' + cycleLabel + ' billing:';
+  var cadenceEl = document.getElementById('acc-billing-cadence');
+  if (cadenceEl) cadenceEl.textContent = 'CAD / ' + cycleLabel.toLowerCase();
+  set('acc-price',    tierPrice(c.tier) + (cycleLabel === 'Annual' ? ' / yr' : ' / mo'));
+  set('acc-renewal',  fmtDateLong(c.renewal_date));
   set('acc-start-date', c.start_date ? fmtDate(c.start_date) : '—');
   set('acc-status',  (c.status || 'active').charAt(0).toUpperCase() + (c.status || 'active').slice(1));
+  // Dynamic upgrade button label
+  var upgradeBtn = document.getElementById('btn-upgrade-tier');
+  if (upgradeBtn) {
+    var tier = parseInt(c.tier) || 1;
+    if (tier >= 3) {
+      upgradeBtn.style.display = 'none';
+    } else {
+      var nextTierNames = { 1: 'Upgrade to Tier 2', 2: 'Upgrade to Tier 3 (Enterprise)' };
+      upgradeBtn.textContent = nextTierNames[tier] || 'Upgrade Plan';
+      upgradeBtn.style.display = '';
+      upgradeBtn.disabled = false;
+    }
+  }
+  // If cancelled — restrict nav to account only
+  if ((c.status||'').toLowerCase() === 'cancelled') {
+    document.querySelectorAll('#client-nav .nav-item').forEach(function(b) {
+      var access = b.getAttribute('data-access');
+      if (access && access !== 'account_billing') b.style.display = 'none';
+    });
+  }
 
   // Pre-fill billing address modal fields from DB
   if (c.billing_address) setVal('bill-addr',   c.billing_address);
@@ -2686,7 +2744,7 @@ function populateBillingHistory(rows) {
       '<td>' + fmtDate(b.paid_at||b.created_at) + '</td>' +
       '<td>' + (b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) : '—') + '</td>' +
       '<td><span class="pill ' + (b.status==='paid'?'green':'yellow') + '">' + esc(b.status) + '</span></td>' +
-      '<td><button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="generateAndDownloadInvoice(\'' + ym + '\')">&#8659; PDF</button></td>' +
+      '<td>' + (ym ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="downloadInvoice(\'' + ym + '-invoice\')">&#8659; PDF</button>' : '—') + '</td>' +
       '</tr>';
   }).join('');
 }
@@ -2807,16 +2865,45 @@ function populateEvidence(c, milestones) {
         '</div>';
     }).join('');
 
-    // Show save button
-    var saveBtn = document.getElementById('binder-save-btn');
-    if (saveBtn) saveBtn.style.display = 'inline-flex';
   }
 
-  var done = (milestones||[]).filter(function(m){ return m.status==='complete' || m.status==='done'; }).length;
+  var done = (milestones||[]).filter(function(m){ var s=(m.status||'').toLowerCase().replace(/[-_\s]/g,''); return s==='done'||s==='complete'||s==='completed'; }).length;
   set('evidence-done-count', done + ' milestones complete');
   var pct = milestones && milestones.length ? Math.round(done/milestones.length*100) : 0;
   var bar = document.getElementById('evidence-progress-bar');
   if (bar) bar.style.width = pct + '%';
+
+  // Set dynamic year
+  var yr = new Date().getFullYear();
+  var y1 = document.getElementById('evidence-binder-year');
+  var y2 = document.getElementById('evidence-binder-year2');
+  if (y1) y1.textContent = yr;
+  if (y2) y2.textContent = yr;
+
+  // Check if binder PDF exists for this year and update status pill
+  if (window._clientData && _clientData.client_code) {
+    var binderPath = _clientData.client_code + '/' + yr + '-binder.pdf';
+    _sb_client.storage.from('evidence').list(_clientData.client_code, { limit: 50 })
+      .then(function(r) {
+        var files = r.data || [];
+        var exists = files.some(function(f){ return f.name === yr + '-binder.pdf'; });
+        var pill  = document.querySelector('#panel-evidence .pill.yellow');
+        var label = document.querySelector('#panel-evidence .pill.yellow + span');
+        if (exists && pill) {
+          pill.className = 'pill green';
+          pill.textContent = 'Available';
+          if (label) label.textContent = yr + ' Evidence Binder is ready for download.';
+        } else if (!exists && pill) {
+          var now = new Date();
+          var isDec1OrLater = now.getMonth() === 11 && now.getDate() >= 1;
+          if (isDec1OrLater) {
+            if (label) label.textContent = 'Auto-generation failed — click Generate to create manually.';
+          } else {
+            if (label) label.textContent = 'Compiling automatically — Ready December 1, ' + yr;
+          }
+        }
+      }).catch(function() {});
+  }
 }
 
 function onBinderStatusChange(sel) {
@@ -2825,9 +2912,6 @@ function onBinderStatusChange(sel) {
   var col = statColors[sel.value] || '#8a9bbf';
   sel.style.borderColor = col;
   sel.style.color = col;
-  // Show save button
-  var saveBtn = document.getElementById('binder-save-btn');
-  if (saveBtn) saveBtn.style.display = 'inline-flex';
 }
 
 async function saveClientBinder() {
@@ -3066,6 +3150,28 @@ async function downloadReport(monthKey) {
 // Calls a Supabase Edge Function with a guaranteed-fresh user JWT.
 // Uses functions.invoke() for correct apikey/CORS handling, but explicitly
 // passes the session access_token so we never accidentally send the anon key.
+
+
+function requestTierUpgrade() {
+  if (!window._clientData) return;
+  var current = parseInt(_clientData.tier) || 1;
+  var next    = current + 1;
+  if (next > 3) { showToast('You are already on our highest tier.'); return; }
+  var tierNames = { 1:'Tier 1 — Essential', 2:'Tier 2 — Professional', 3:'Tier 3 — Enterprise (Custom)' };
+  var msg = 'Request upgrade from ' + (tierNames[current]||'Tier '+current) + ' to ' + (tierNames[next]||'Tier '+next) + '?\n\nACC will contact you to confirm pricing and activate the upgrade.';
+  if (confirm(msg)) {
+    // Set upgrade button and fire email-like notification via DB flag
+    _sb_client.from('clients').update({
+      billing_notes: (_clientData.billing_notes ? _clientData.billing_notes + '\n' : '') + '[UPGRADE REQUEST] Tier ' + current + ' → ' + next + ' requested on ' + new Date().toLocaleDateString('en-CA'),
+      updated_at: new Date().toISOString()
+    }).eq('id', _clientData.id).then(function(r) {
+      if (r.error) console.warn('upgrade flag:', r.error);
+    });
+    showToast('✅ Upgrade request submitted. ACC will contact you within 1 business day.');
+    var upgradeBtn = document.getElementById('btn-upgrade-tier');
+    if (upgradeBtn) { upgradeBtn.textContent = '⏳ Upgrade Requested'; upgradeBtn.disabled = true; }
+  }
+}
 
 
 async function generateAndDownloadBinder(year) {
