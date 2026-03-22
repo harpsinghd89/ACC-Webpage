@@ -792,7 +792,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div>
               <strong style="font-size:1rem;color:var(--white)" id="acc-tier">—</strong>
-              <div style="font-size:.8rem;color:var(--muted)">1–19 Employees</div>
+              <div style="font-size:.8rem;color:var(--muted)" id="acc-tier-desc">—</div>
             </div>
             <span class="pill green" id="acc-status">Active</span>
           </div>
@@ -1840,15 +1840,7 @@ async function confirmCancel() {
     var statusPill = document.getElementById('acc-status');
     if (statusPill) { statusPill.className = 'pill red'; statusPill.textContent = 'Cancelled'; }
 
-    // Restrict nav — hide all tabs except account & billing
-    document.querySelectorAll('#client-nav .nav-item').forEach(function(btn) {
-      var access = btn.getAttribute('data-access');
-      if (access && access !== 'account_billing') {
-        btn.style.display = 'none';
-      }
-    });
-
-    showToast('✅ Cancellation submitted. Access continues until ' + renewalDate + '.');
+    showToast('✅ Cancellation submitted. Access continues until ' + renewalDate + '. All features remain available until then.');
   } catch(e) {
     alert('Could not process cancellation: ' + (e.message || e));
     if (btn) { btn.disabled = false; btn.textContent = 'Cancel Subscription'; }
@@ -2680,6 +2672,8 @@ function populateAccount(c, billingRows) {
   });
   // Update display spans
   set('acc-tier',    tierName(c.tier));
+  var tierDescs = { 1: '1–19 Employees', 2: '20–199 Employees', 3: 'Enterprise / Custom' };
+  set('acc-tier-desc', tierDescs[parseInt(c.tier)] || '');
   // Show billing cycle label + next date
   var cycleLabel = (c.billing_cycle === 'annual' || c.billing_cycle === 'yearly') ? 'Annual' : 'Monthly';
   var renewalEl = document.getElementById('acc-renewal-label');
@@ -2703,12 +2697,15 @@ function populateAccount(c, billingRows) {
       upgradeBtn.disabled = false;
     }
   }
-  // If cancelled — restrict nav to account only
+  // If cancelled AND renewal has passed — restrict nav to account only
   if ((c.status||'').toLowerCase() === 'cancelled') {
-    document.querySelectorAll('#client-nav .nav-item').forEach(function(b) {
-      var access = b.getAttribute('data-access');
-      if (access && access !== 'account_billing') b.style.display = 'none';
-    });
+    var renewalPassed = !c.renewal_date || new Date(c.renewal_date) < new Date();
+    if (renewalPassed) {
+      document.querySelectorAll('#client-nav .nav-item').forEach(function(b) {
+        var access = b.getAttribute('data-access');
+        if (access && access !== 'account_billing') b.style.display = 'none';
+      });
+    }
   }
 
   // Pre-fill billing address modal fields from DB
@@ -2728,7 +2725,74 @@ function populateAccount(c, billingRows) {
       '<span class="pill green" style="font-size:.72rem">Default</span>';
   }
 
-  populateBillingHistory(billingRows);
+  populateInvoicesFromStartDate(c);
+}
+
+async function populateInvoicesFromStartDate(c) {
+  // Generate invoice rows from start_date to now based on billing cycle
+  var container = document.getElementById('billing-history-tbody');
+  if (!container) return;
+
+  // First try to load from billing table
+  try {
+    var br = await _sb_client.from('billing').select('*').eq('client_id', c.id)
+      .order('created_at', { ascending: false }).limit(24);
+    if (!br.error && br.data && br.data.length) {
+      populateBillingHistory(br.data);
+      return;
+    }
+  } catch(_) {}
+
+  // No billing rows — generate expected invoice list from start_date
+  if (!c.start_date) {
+    container.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No billing records yet.</td></tr>';
+    return;
+  }
+
+  var isAnnual = (c.billing_cycle === 'annual' || c.billing_cycle === 'yearly');
+  var start    = new Date(c.start_date);
+  start.setDate(1);
+  var now      = new Date();
+  var months   = [];
+  var cur      = new Date(start);
+
+  if (isAnnual) {
+    while (cur <= now) {
+      months.push(new Date(cur));
+      cur.setFullYear(cur.getFullYear() + 1);
+    }
+  } else {
+    while (cur <= now) {
+      months.push(new Date(cur));
+      cur.setMonth(cur.getMonth() + 1);
+    }
+  }
+  months.reverse();
+
+  // Check which invoice PDFs exist in storage
+  var existingFiles = new Set();
+  try {
+    var r = await _sb_client.storage.from('invoices').list(c.client_code || '', { limit: 100 });
+    (r.data || []).forEach(function(f){ existingFiles.add(f.name); });
+  } catch(_) {}
+
+  var amount = isAnnual ? tierPrice(c.tier).replace('$','') * 10 : tierPrice(c.tier).replace('$','');
+  container.innerHTML = months.map(function(m) {
+    var ym    = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0');
+    var label = m.toLocaleDateString('en-CA', { year:'numeric', month:'long' });
+    var fname = ym + '-invoice.pdf';
+    var hasPdf = existingFiles.has(fname);
+    var isPast = m < now;
+    return '<tr>' +
+      '<td>' + label + '</td>' +
+      '<td>' + (amount ? '$' + parseFloat(amount).toFixed(2) : '—') + '</td>' +
+      '<td><span class="pill ' + (isPast ? 'green' : 'blue') + '">' + (isPast ? 'Paid' : 'Scheduled') + '</span></td>' +
+      '<td>' + (hasPdf
+        ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="downloadInvoice(\'' + ym + '-invoice\')">&#8659; PDF</button>'
+        : (isPast ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px;opacity:.5" onclick="generateAndDownloadInvoice(\'' + ym + '\')">&#9654; Generate</button>' : '—')) +
+      '</td>' +
+      '</tr>';
+  }).join('') || '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No invoices yet.</td></tr>';
 }
 
 function populateBillingHistory(rows) {
@@ -2867,9 +2931,13 @@ function populateEvidence(c, milestones) {
 
   }
 
-  var done = (milestones||[]).filter(function(m){ var s=(m.status||'').toLowerCase().replace(/[-_\s]/g,''); return s==='done'||s==='complete'||s==='completed'; }).length;
-  set('evidence-done-count', done + ' milestones complete');
-  var pct = milestones && milestones.length ? Math.round(done/milestones.length*100) : 0;
+  // Progress = Verified binder items (not roadmap milestones)
+  var verifiedCount = items.filter(function(item){ return item.status === 'Verified'; }).length;
+  var onFileCount   = items.filter(function(item){ return item.status === 'On File'; }).length;
+  var doneCount = verifiedCount + onFileCount;
+  var totalCount = items.length;
+  var pct = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
+  set('evidence-done-count', doneCount + ' of ' + totalCount + ' items complete');
   var bar = document.getElementById('evidence-progress-bar');
   if (bar) bar.style.width = pct + '%';
 
