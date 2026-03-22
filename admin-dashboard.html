@@ -1224,9 +1224,9 @@ var _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     var ar = await _sb.from('admins').select('id,name').eq('email', s.data.session.user.email).single();
     if (ar.error || !ar.data) { await _sb.auth.signOut(); window.location.replace('admin-login.html'); return; }
     // Personalise topbar
-    var nameEl = document.getElementById('user-name');
+    var nameEl = document.getElementById('topbar-user-name');
     if (nameEl) nameEl.textContent = ar.data.name || s.data.session.user.email;
-    var avatarEl = document.getElementById('user-avatar');
+    var avatarEl = document.getElementById('topbar-avatar');
     if (avatarEl) avatarEl.textContent = (ar.data.name || 'AD').substring(0,2).toUpperCase();
     // Load client list
     loadClients();

@@ -293,4 +293,22 @@ async function forgotPassword() {
   if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
 
   var r = await _sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '
+    redirectTo: window.location.origin + '/dashboard.html'
+  });
+
+  if (btn) { btn.textContent = 'Forgot password?'; btn.disabled = false; }
+
+  if (r.error) {
+    err.textContent = 'Error: ' + r.error.message;
+    err.style.display = 'block';
+  } else {
+    err.style.color = '#38d9a9';
+    err.style.background = 'rgba(56,217,169,.08)';
+    err.style.border = '1px solid rgba(56,217,169,.3)';
+    err.textContent = '\u2713 Reset link sent to ' + email + '. Check your inbox.';
+    err.style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>
