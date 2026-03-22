@@ -2732,11 +2732,10 @@ function populateAccount(c, billingRows) {
 }
 
 async function populateInvoicesFromStartDate(c) {
-  // Generate invoice rows from start_date to now based on billing cycle
   var container = document.getElementById('billing-history-tbody');
   if (!container) return;
 
-  // First try to load from billing table
+  // First try real billing rows from DB
   try {
     var br = await _sb_client.from('billing').select('*').eq('client_id', c.id)
       .order('created_at', { ascending: false }).limit(24);
@@ -2746,58 +2745,59 @@ async function populateInvoicesFromStartDate(c) {
     }
   } catch(_) {}
 
-  // No billing rows — generate expected invoice list from start_date
+  // No DB rows — build expected list from start_date + billing_cycle
   if (!c.start_date) {
     container.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No billing records yet.</td></tr>';
     return;
   }
 
   var isAnnual = (c.billing_cycle === 'annual' || c.billing_cycle === 'yearly');
-  var start    = new Date(c.start_date);
+  var start = new Date(c.start_date);
   start.setDate(1);
-  var now      = new Date();
-  var months   = [];
-  var cur      = new Date(start);
-
+  var now   = new Date();
+  var cur   = new Date(start);
+  var months = [];
   if (isAnnual) {
-    while (cur <= now) {
-      months.push(new Date(cur));
-      cur.setFullYear(cur.getFullYear() + 1);
-    }
+    while (cur <= now) { months.push(new Date(cur)); cur.setFullYear(cur.getFullYear() + 1); }
   } else {
-    while (cur <= now) {
-      months.push(new Date(cur));
-      cur.setMonth(cur.getMonth() + 1);
-    }
+    while (cur <= now) { months.push(new Date(cur)); cur.setMonth(cur.getMonth() + 1); }
   }
   months.reverse();
 
-  // Check which invoice PDFs exist in storage
+  // Check which PDFs exist in invoices storage
   var existingFiles = new Set();
   try {
-    var r = await _sb_client.storage.from('invoices').list(c.client_code || '', { limit: 100 });
-    (r.data || []).forEach(function(f){ existingFiles.add(f.name); });
+    var lr = await _sb_client.storage.from('invoices').list(c.client_code || '', { limit: 100 });
+    (lr.data || []).forEach(function(f){ existingFiles.add(f.name); });
   } catch(_) {}
 
-  var rawPrice = parseInt((tierPrice(c.tier)||'0').replace(/[^0-9]/g,'')) || 0;
-  var amount = isAnnual ? rawPrice * 10 : rawPrice;
+  var rawPrice = parseInt((tierPrice(c.tier) || '0').replace(/[^0-9]/g, '')) || 0;
+  var amount   = isAnnual ? rawPrice * 10 : rawPrice;
+
+  if (!months.length) {
+    container.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No invoices yet.</td></tr>';
+    return;
+  }
+
+  // Use data attributes to avoid all quote-escaping in onclick handlers
   container.innerHTML = months.map(function(m) {
-    var ym    = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0');
-    var label = m.toLocaleDateString('en-CA', { year:'numeric', month:'long' });
-    var fname = ym + '-invoice.pdf';
+    var ym     = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0');
+    var label  = m.toLocaleDateString('en-CA', { year:'numeric', month:'long' });
+    var fname  = ym + '-invoice.pdf';
     var hasPdf = existingFiles.has(fname);
     var isPast = m < now;
+    var dlBtn  = hasPdf
+      ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" data-ym="' + ym + '-invoice" onclick="downloadInvoice(this.dataset.ym)">↓ PDF</button>'
+      : (isPast ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px;opacity:.6" data-ym="' + ym + '" onclick="generateAndDownloadInvoice(this.dataset.ym)">▶ Generate</button>' : '—');
     return '<tr>' +
       '<td>' + label + '</td>' +
       '<td>' + (amount ? '$' + parseFloat(amount).toFixed(2) : '—') + '</td>' +
       '<td><span class="pill ' + (isPast ? 'green' : 'blue') + '">' + (isPast ? 'Paid' : 'Scheduled') + '</span></td>' +
-      '<td>' + (hasPdf
-        ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="downloadInvoice(\'' + ym + '-invoice\')">&#8659; PDF</button>'
-        : (isPast ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px;opacity:.5" onclick="generateAndDownloadInvoice(\'' + ym + '\')">&#9654; Generate</button>' : '—')) +
-      '</td>' +
+      '<td>' + dlBtn + '</td>' +
       '</tr>';
-  }).join('') || '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No invoices yet.</td></tr>';
+  }).join('');
 }
+
 
 function populateBillingHistory(rows) {
   var tbody = document.getElementById('billing-history-tbody');

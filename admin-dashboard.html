@@ -1545,15 +1545,19 @@ async function openClientEditor(btn) {
         if (br.error || !br.data || !br.data.length) {
           bh.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem;padding:8px 0">No billing records yet.</div>';
         } else {
-          bh.innerHTML = '<table class="data-table" style="font-size:.8rem"><thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>PDF</th></tr></thead><tbody>' +
-            br.data.map(function(b) {
-              var ym = (b.paid_at||b.created_at||'').substring(0,7);
-              return '<tr><td>' + fmtDate(b.paid_at||b.created_at) + '</td>' +
-                '<td>' + (b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) : '—') + '</td>' +
-                '<td><span class="pill ' + (b.status==='paid'?'green':'yellow') + '">' + esc(b.status||'pending') + '</span></td>' +
-                '<td><button class="btn-sm btn-ghost" style="padding:3px 8px;font-size:.7rem" onclick="downloadAdminFile('invoices','' + (window._editingClientCode||'') + '/' + ym + '-invoice.pdf')">&#8659;</button></td>' +
-                '</tr>';
-            }).join('') + '</tbody></table>';
+          var code = window._editingClientCode || '';
+          var rows = br.data.map(function(b) {
+            var ym       = (b.paid_at||b.created_at||'').substring(0,7);
+            var filePath = code + '/' + ym + '-invoice.pdf';
+            var dlBtn    = ym ? '<button class="btn-sm btn-ghost" style="padding:3px 8px;font-size:.7rem" data-bucket="invoices" data-path="' + filePath + '" onclick="downloadAdminFile(this.dataset.bucket,this.dataset.path)">&#8659;</button>' : '';
+            return '<tr>' +
+              '<td>' + fmtDate(b.paid_at||b.created_at) + '</td>' +
+              '<td>' + (b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) : '—') + '</td>' +
+              '<td><span class="pill ' + (b.status==='paid'?'green':'yellow') + '">' + esc(b.status||'pending') + '</span></td>' +
+              '<td>' + dlBtn + '</td>' +
+              '</tr>';
+          }).join('');
+          bh.innerHTML = '<table class="data-table" style="font-size:.8rem"><thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>PDF</th></tr></thead><tbody>' + rows + '</tbody></table>';
         }
       } catch(e) { bh.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem">Could not load billing.</div>'; }
     })();
