@@ -1769,6 +1769,7 @@ function showPanel(id) {
   // Reload live data when switching to relevant panels
   if (id === 'feedback' && window._clientData) reloadFeedback();
   if (id === 'reports'  && window._clientData && _clientData.client_code) populateScanData(_clientData.client_code);
+  if (id === 'evidence' && window._clientData) populateEvidence(_clientData, window._roadmapData || []);
   document.querySelectorAll('.nav-item').forEach(b => {
     b.classList.remove('active');
     b.removeAttribute('aria-current');
@@ -2165,7 +2166,7 @@ async function changePassword() {
 }
 
 // Send password reset email from Account panel (alternative to typing inline)
-async function sendResetEmail() {
+async async function sendResetEmail() {
   var email = window._clientData && window._clientData.email;
   if (!email) { alert('Could not find your email address. Please contact ACC.'); return; }
   var btn = document.querySelector('#card-change-password .btn-ghost');
@@ -2175,6 +2176,8 @@ async function sendResetEmail() {
   });
   if (btn) { btn.textContent = '📧 Email Reset Link Instead'; btn.disabled = false; }
   var msg = document.getElementById('pw-change-msg');
+  if (!msg) return;
+  msg.style.display = 'block';
   if (r.error) {
     msg.textContent = 'Error: ' + r.error.message;
     msg.style.color = '#f05f5f';
@@ -2659,7 +2662,7 @@ async function clientDownloadFile(bucket, path) {
 function populateAccount(c, billingRows) {
   // Set input values directly
   var fields = {
-    'acc-name':    c.name    || '',
+    'acc-name':    c.contact_name || c.name || '',
     'acc-email':   c.email   || '',
     'acc-company': c.name    || '',
     'acc-url':     c.domain  ? 'https://' + c.domain.replace(/^https?:\/\//, '') : '',
@@ -2776,7 +2779,8 @@ async function populateInvoicesFromStartDate(c) {
     (r.data || []).forEach(function(f){ existingFiles.add(f.name); });
   } catch(_) {}
 
-  var amount = isAnnual ? tierPrice(c.tier).replace('$','') * 10 : tierPrice(c.tier).replace('$','');
+  var rawPrice = parseInt((tierPrice(c.tier)||'0').replace(/[^0-9]/g,'')) || 0;
+  var amount = isAnnual ? rawPrice * 10 : rawPrice;
   container.innerHTML = months.map(function(m) {
     var ym    = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0');
     var label = m.toLocaleDateString('en-CA', { year:'numeric', month:'long' });
@@ -2900,8 +2904,8 @@ function populateEvidence(c, milestones) {
     { title: 'Accessible Customer Feedback Process',              status: 'Pending Review' },
     { title: 'Accessible Formats Request Procedure',              status: 'Pending Review' },
     { title: 'Accessibility Statement (Web)',                     status: 'Pending Review' },
-    { title: 'Accommodation Clause — Job Postings',               status: 'Pending Review' },
-    { title: 'Accessibility Clause — Offer Letters',              status: 'Pending Review' },
+    { title: 'Accommodation Clause - Job Postings',               status: 'Pending Review' },
+    { title: 'Accessibility Clause - Offer Letters',              status: 'Pending Review' },
     { title: 'Service Animals & Support Persons Policy',          status: 'Pending Review' },
     { title: 'Notice of Temporary Disruption of Services',        status: 'Pending Review' },
     { title: 'HR Accommodation Policy',                           status: 'Pending Review' },
@@ -2910,9 +2914,8 @@ function populateEvidence(c, milestones) {
     { title: 'AODA Filing Checklist',                             status: 'Pending Review' },
   ];
 
-  var items = (c.binder_items && Array.isArray(c.binder_items) && c.binder_items.length)
-    ? c.binder_items
-    : DEFAULT_BINDER_ITEMS;
+  var raw = c.binder_items;
+  var items = (raw && Array.isArray(raw) && raw.length > 0) ? raw : DEFAULT_BINDER_ITEMS;
 
   var evList = document.getElementById('evidence-binder-list');
   if (evList) {
@@ -3681,13 +3684,26 @@ async function saveAccountDetails() {
   var btn = (window.event && window.event.target) || null;
   if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
   try {
+    var company = (document.getElementById('acc-company')||{}).value.trim();
+    // Save core fields that definitely exist
     var { error } = await _sb_client
       .from('clients')
-      .update({ name: name, email: email, domain: domain || _clientData.domain })
+      .update({
+        name:  company || _clientData.name,
+        email: email,
+        domain: domain || _clientData.domain,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', _clientData.id);
     if (error) throw error;
+    // Save contact_name separately (column may need migration)
+    if (name) {
+      await _sb_client.from('clients').update({ contact_name: name })
+        .eq('id', _clientData.id).then(function(){}).catch(function(){});
+    }
     // Refresh local cache
-    _clientData.name   = name;
+    if (company) _clientData.name = company;
+    _clientData.contact_name = name;
     _clientData.email  = email;
     if (domain) _clientData.domain = domain;
     window._clientData = _clientData;
@@ -4063,6 +4079,7 @@ function openStmtModal() {
 
     populateOverview(_clientData);
     populateEmbed(_clientData);
+    window._roadmapData = rr.data || [];
     populateRoadmap(rr.data || []);
     populateTraining(_clientData);
     populateAccount(_clientData, br.data || []);

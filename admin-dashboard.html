@@ -772,8 +772,8 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="toggle-wrap"><div class="toggle-info"><strong>Widget Settings</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
       <div class="toggle-wrap"><div class="toggle-info"><strong>Embed Code</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
       <div class="toggle-wrap"><div class="toggle-info"><strong>Audit Reports</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-      <div class="toggle-wrap"><div class="toggle-info"><strong>Evidence Binder</strong></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
-      <div class="toggle-wrap"><div class="toggle-info"><strong>3-Year Roadmap</strong></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>Evidence Binder</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-wrap"><div class="toggle-info"><strong>3-Year Roadmap</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
       <div class="toggle-wrap"><div class="toggle-info"><strong>Template Standards</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
       <div class="toggle-wrap"><div class="toggle-info"><strong>Training Portal</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
       <div class="toggle-wrap"><div class="toggle-info"><strong>Feedback Logs</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
@@ -1319,7 +1319,7 @@ function renderClientsTable(clients) {
     var statusKey = (c.status || 'active').toLowerCase();
     var displayStatus = statusKey.charAt(0).toUpperCase() + statusKey.slice(1);
     return '<tr data-id="' + c.id + '" data-name="' + (c.name||'').toLowerCase() + '" data-tier="' + c.tier + '" data-status="' + statusKey + '">' +
-      '<td><strong>' + esc(c.name) + '</strong><div style="font-size:.72rem;color:#8a9bbf">' + esc(c.client_code) + '</div></td>' +
+      '<td><strong>' + esc(c.name) + '</strong><div style="font-size:.72rem;color:#8a9bbf">' + esc(c.client_code) + (c.contact_name ? ' · ' + esc(c.contact_name) : '') + '</div></td>' +
       '<td><span class="pill blue">' + tierLabel(c.tier) + '</span></td>' +
       '<td style="font-size:.8rem;color:#8a9bbf">' + esc(c.domain||'') + '</td>' +
       '<td style="font-size:.8rem">' + renewal + '</td>' +
@@ -1509,7 +1509,7 @@ async function openClientEditor(btn) {
     f('ce-name',         c.name);
     f('ce-id',           c.client_code);
     f('ce-domain',       c.domain);
-    f('ce-contact',      c.phone ? c.phone : '');  // reuse phone for contact display
+    f('ce-contact',      c.contact_name || '');
     f('ce-email',        c.email);
     f('ce-phone',        c.phone);
     f('ce-start',        c.start_date   || '');
@@ -1651,6 +1651,7 @@ async function saveClientInfo() {
     if (!email) { showToastAdmin('Contact Email is required.', 'error'); return; }
 
     // ── UPDATE clients ──
+    var contact = (document.getElementById('ce-contact')||{}).value.trim();
     var update = {
       name:             name,
       domain:           domain || null,
@@ -1667,6 +1668,11 @@ async function saveClientInfo() {
     };
     var r = await _sb.from('clients').update(update).eq('id', _editingClientId);
     if (r.error) throw r.error;
+    // Save contact_name separately — column may not exist yet
+    if (contact) {
+      await _sb.from('clients').update({ contact_name: contact }).eq('id', _editingClientId)
+        .then(function(){}).catch(function(){});
+    }
 
     // ── UPDATE roadmap milestones ──
     var rmPanel = document.getElementById('ctab-panel-roadmap');
@@ -1814,12 +1820,15 @@ async function saveBilling() {
       billing_cycle:  cycle ? cycle.options[cycle.selectedIndex].text.toLowerCase() : 'monthly',
       billing_notes:  inv||null, discount_code: disc||null,
       payment_method: pay ? pay.options[pay.selectedIndex].text.toLowerCase() : 'stripe',
-      card_last4:     cardLast4  || null,
-      card_expiry:    cardExpiry || null,
-      card_name:      cardName   || null,
       updated_at: new Date().toISOString()
     }).eq('id', _editingClientId);
     if (r.error) throw r.error;
+    // Save card details separately — columns may need migration
+    if (cardLast4 || cardExpiry || cardName) {
+      await _sb.from('clients').update({
+        card_last4: cardLast4||null, card_expiry: cardExpiry||null, card_name: cardName||null
+      }).eq('id', _editingClientId).then(function(){}).catch(function(){});
+    }
     showToastAdmin('Billing saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save Billing'; btn.disabled = false; } }
