@@ -390,6 +390,11 @@ async function doLogin() {
       }
       // Renewal still in future — allow login, access restricted inside dashboard
     }
+    // Clear any stale redirect flag from the previous dashboard visit.
+    // If we don't do this, dashboard.html sees redirected='1' + brief
+    // getSession() null and immediately shows "Session expired".
+    sessionStorage.removeItem('_acc_redirected');
+    sessionStorage.setItem('_acc_just_logged_in', '1');
     window.location.href = 'dashboard.html';
   } catch(e) {
     err.textContent = e.message || 'Sign in failed. Please try again.';

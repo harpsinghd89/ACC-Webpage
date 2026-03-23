@@ -656,7 +656,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <input class="finput" type="text" id="training-search" placeholder="Search staff…" style="width:170px;padding:7px 12px;font-size:.8rem" oninput="filterTraining()">
             <a id="training-link" href="#" target="_blank" class="btn-sm btn-ghost" style="font-size:.78rem">&#128279; Training Portal</a>
-            <button class="btn-sm btn-primary" style="font-size:.78rem" onclick="openModal('log-training-modal')">+ Log Training</button>
+            <button class="btn-sm btn-primary" style="font-size:.78rem" onclick="openModal('add-training-modal')">+ Log Training</button>
           </div>
         </div>
         <table class="data-table" style="font-size:.8rem" aria-label="Training log">
@@ -774,7 +774,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="card">
         <h2>&#128172; Feedback Entries</h2>
         <div class="btn-row" style="margin-bottom:16px">
-          <a class="dl-btn" href="#" onclick="exportTableCSV('feedback-table', 'ACC_Feedback_Log.csv')">&#8659; Export CSV</a>
+          <a class="dl-btn" href="#" onclick="exportTableCSV('feedback-table', 'ACC_Feedback_Log.csv');return false">&#8659; Export CSV</a>
         </div>
         <table class="data-table" id="feedback-table" aria-label="Accessibility feedback entries">
           <thead><tr><th>Date</th><th>Type</th><th>Summary</th><th>Status</th></tr></thead>
@@ -815,21 +815,21 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div>
               <strong style="font-size:1rem;color:var(--white)" id="acc-tier">—</strong>
-              <div style="font-size:.8rem;color:var(--muted)">1–19 Employees</div>
+              <div style="font-size:.8rem;color:var(--muted)" id="acc-tier-desc">—</div>
             </div>
             <span class="pill green" id="acc-status">Active</span>
           </div>
-          <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px"><span id="acc-price">$69</span> <span style="font-size:.85rem;font-weight:400;color:var(--muted)">CAD / month</span></div>
-          <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Next billing: <span id="acc-renewal">—</span></div>
+          <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px"><span id="acc-price">—</span> <span style="font-size:.85rem;font-weight:400;color:var(--muted)" id="acc-billing-cadence">CAD / month</span></div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:4px"><span id="acc-renewal-label">Next billing:</span> <span id="acc-renewal">—</span></div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Start date: <span id="acc-start-date">—</span></div>
           <div class="btn-row">
-            <button class="btn-sm btn-ghost" onclick="alert('Upgrade options coming soon.')">Upgrade to Tier 2</button>
+            <button class="btn-sm btn-ghost" id="btn-upgrade-tier" onclick="requestTierUpgrade()">Upgrade Plan</button>
             <button class="btn-sm btn-danger" onclick="confirmCancel()">Cancel Subscription</button>
           </div>
         </div>
         <div class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
             <h2 style="margin:0">&#128179; Invoices &amp; Receipts</h2>
-            <button class="btn-sm btn-primary" onclick="generateAndDownloadInvoice()">&#128196; Generate This Month's Invoice</button>
           </div>
           <div id="client-invoices-list">
             <table class="data-table" id="billing-history-table" aria-label="Invoice history">
@@ -2108,29 +2108,40 @@ async function changePassword() {
 
 // Send password reset email from Account panel (alternative to typing inline)
 async function sendResetEmail() {
-  var email = window._clientData && window._clientData.email;
-  if (!email) { alert('Could not find your email address. Please contact ACC.'); return; }
   var btn = document.querySelector('#card-change-password .btn-ghost');
   if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
-  var r = await _sb_client.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/dashboard.html'
-  });
-  if (btn) { btn.textContent = '📧 Email Reset Link Instead'; btn.disabled = false; }
   var msg = document.getElementById('pw-change-msg');
-  if (!msg) return;
-  msg.style.display = 'block';
-  if (r.error) {
-    msg.textContent = 'Error: ' + r.error.message;
-    msg.style.color = '#f05f5f';
-  } else {
-    msg.textContent = '✓ Reset link sent to ' + email + '. Check your inbox.';
-    msg.style.color = '#38d9a9';
-    msg.style.background = 'rgba(56,217,169,.08)';
-    msg.style.border = '1px solid rgba(56,217,169,.3)';
-    msg.style.padding = '10px 14px';
-    msg.style.borderRadius = '8px';
+
+  try {
+    // Always use the actual Supabase auth email (may differ from clients table)
+    var sessionRes = await _sb_client.auth.getSession();
+    var authEmail = sessionRes.data && sessionRes.data.session && sessionRes.data.session.user && sessionRes.data.session.user.email;
+    if (!authEmail) throw new Error('Could not read your email from session. Please contact ACC.');
+
+    var r = await _sb_client.auth.resetPasswordForEmail(authEmail, {
+      redirectTo: window.location.origin + '/dashboard.html'
+    });
+
+    if (r.error) throw r.error;
+
+    if (msg) {
+      msg.textContent = '✓ Reset link sent to ' + authEmail + '. Check your inbox.';
+      msg.style.color = '#38d9a9';
+      msg.style.background = 'rgba(56,217,169,.08)';
+      msg.style.border = '1px solid rgba(56,217,169,.3)';
+      msg.style.padding = '10px 14px';
+      msg.style.borderRadius = '8px';
+      msg.style.display = 'block';
+    }
+  } catch(e) {
+    if (msg) {
+      msg.textContent = 'Error: ' + e.message;
+      msg.style.color = '#f05f5f';
+      msg.style.display = 'block';
+    }
+  } finally {
+    if (btn) { btn.textContent = '📧 Email Reset Link Instead'; btn.disabled = false; }
   }
-  msg.style.display = 'block';
 }
 
 // Set password modal — submit handler
@@ -2274,8 +2285,7 @@ function populateOverview(c) {
   var greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   var firstName = (c.name || 'there').split(' ')[0];
   set('overview-domain', c.domain || '—');
-  var days = daysUntil(c.renewal_date);
-  set('days-left', days !== null ? String(days) : '—');
+  // days-left is the AODA Dec 31 countdown — set by initDashboard, not overwritten here
   // overview-tier displayed in account panel
   // Update nav
   var unEl = document.getElementById('user-name');
@@ -2302,45 +2312,74 @@ function populateRoadmap(milestones) {
   var container = document.getElementById('roadmap-year-cards');
   if (!container) return;
 
-  if (!milestones || !milestones.length) {
-    container.innerHTML = '<div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">No roadmap milestones yet. Your ACC admin will configure these.</div>';
-    return;
+  var currentYear = new Date().getFullYear();
+  var years = {};
+
+  if (milestones && milestones.length) {
+    milestones.forEach(function(m) {
+      var yr = m.year || (m.target_date ? parseInt(m.target_date.substring(0,4)) : currentYear);
+      if (!years[yr]) years[yr] = [];
+      years[yr].push(m);
+    });
   }
 
-  // Group by year
-  var years = {};
-  milestones.forEach(function(m) {
-    var yr = m.year || (m.target_date ? m.target_date.substring(0,4) : '2026');
+  // Always show at least 3 years (current, +1, +2)
+  [currentYear, currentYear+1, currentYear+2].forEach(function(yr){
     if (!years[yr]) years[yr] = [];
-    years[yr].push(m);
   });
 
-  var statusPill = {
-    'done':        '<span class="pill green">Done</span>',
-    'complete':    '<span class="pill green">Done</span>',
-    'in-progress': '<span class="pill yellow">In Progress</span>',
-    'planned':     '<span class="pill blue">Planned</span>',
-    'deferred':    '<span class="pill" style="background:rgba(138,155,191,.15);color:#8a9bbf">Deferred</span>',
+  var sopts = function(cur) {
+    return ['planned','in-progress','done','deferred'].map(function(s){
+      return '<option value="'+s+'"'+(s===(cur||'planned')?' selected':'')+'>'+
+        s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
+    }).join('');
   };
 
   container.innerHTML = Object.keys(years).sort().map(function(yr) {
     var rows = years[yr].map(function(m) {
-      var title = m.title || m.milestone || '';
-      var pill  = statusPill[m.status] || statusPill['planned'];
-      var date  = m.target_date ? fmtDate(m.target_date) : (m.target_date || '');
-      return '<tr>' +
-        '<td>' + esc(title) + '</td>' +
-        '<td style="white-space:nowrap">' + date + '</td>' +
-        '<td>' + pill + '</td>' +
+      var title  = esc(m.title || m.milestone || '');
+      var tdate  = (m.target_date || '').substring(0,10);
+      var rid    = m.id || '';
+      return '<tr data-rid="'+rid+'" data-year="'+yr+'">' +
+        '<td><input class="finput" style="padding:4px 8px;font-size:.8rem;width:100%" value="'+title+'" placeholder="Milestone title"></td>' +
+        '<td><input class="finput" type="date" style="padding:4px 8px;font-size:.8rem;width:100%" value="'+tdate+'"></td>' +
+        '<td><select class="finput" style="padding:4px 8px;font-size:.78rem">'+sopts(m.status)+'</select></td>' +
+        '<td><button type="button" class="btn-sm btn-danger" style="padding:4px 8px;font-size:.72rem" onclick="deleteRoadmapRow(this)">&#10005;</button></td>' +
         '</tr>';
     }).join('');
     return '<div class="card">' +
-      '<h2>&#128197; ' + yr + '</h2>' +
-      '<table class="data-table" aria-label="' + yr + ' roadmap milestones">' +
-      '<thead><tr><th>Milestone</th><th>Target</th><th>Status</th></tr></thead>' +
-      '<tbody>' + rows + '</tbody></table>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
+        '<h2 style="margin:0">&#128197; '+yr+'</h2>' +
+        '<button type="button" class="btn-sm btn-ghost" style="font-size:.78rem" onclick="addClientRoadmapRow('+yr+')">+ Add Row</button>' +
+      '</div>' +
+      '<div style="overflow-x:auto"><table class="data-table" aria-label="'+yr+' roadmap milestones">' +
+      '<thead><tr><th style="min-width:200px">Milestone</th><th style="min-width:120px">Target Date</th><th style="min-width:110px">Status</th><th style="width:40px"></th></tr></thead>' +
+      '<tbody id="roadmap-tbody-'+yr+'">' + rows + '</tbody></table></div>' +
       '</div>';
-  }).join('');
+  }).join('') +
+  '<div class="btn-row" style="margin-top:8px">' +
+    '<button class="btn-sm btn-primary" id="client-roadmap-save" onclick="saveClientRoadmap()">&#10003; Save Roadmap</button>' +
+  '</div>';
+}
+
+async function deleteRoadmapRow(btn) {
+  var row = btn.closest('tr');
+  if (!row) return;
+  var rid = row.getAttribute('data-rid');
+  // New unsaved rows — just remove from DOM
+  if (!rid || rid.startsWith('new-')) { row.remove(); return; }
+  if (!confirm('Delete this milestone?')) return;
+  try {
+    var r = await _sb_client.from('roadmap')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', rid)
+      .eq('client_id', _clientData.id);
+    if (r.error) throw r.error;
+    row.remove();
+    showToast('Milestone deleted.');
+  } catch(e) {
+    alert('Could not delete: ' + (e.message || e));
+  }
 }
 
 async function saveClientRoadmap() {
@@ -2500,10 +2539,9 @@ function applyDashboardAccess(access) {
 // ── Client file lists from Supabase Storage ──────────────
 async function populateClientFiles(clientCode) {
   var buckets = [
-    { bucket: 'reports',  containerId: 'client-reports-list',  label: 'audit report',    path: clientCode },
+    // reports panel is handled exclusively by populateReports() — filtered to YYYY-MM.pdf only
     { bucket: 'evidence', containerId: 'client-evidence-list', label: 'evidence binder', path: clientCode },
     // invoices shown via populateBillingHistory from DB instead of storage listing
-
   ];
 
   buckets.forEach(function(b) {
@@ -2579,6 +2617,7 @@ function populateAccount(c, billingRows) {
   if (cadenceEl) cadenceEl.textContent = 'CAD / ' + cycleLabel.toLowerCase();
   set('acc-price', tierPrice(c.tier));
   set('acc-renewal', fmtDateLong(c.renewal_date));
+  set('acc-start-date', c.start_date ? fmtDateLong(c.start_date) : '—');
   set('acc-status', (c.status || 'active').charAt(0).toUpperCase() + (c.status || 'active').slice(1));
   // Dynamic upgrade button
   var upgradeBtn = document.getElementById('btn-upgrade-tier');
@@ -3840,6 +3879,10 @@ function openStmtModal() {
 // Runs once on page load. Redirects to login if no valid session.
 // Uses replace() so back button cannot loop back to dashboard.
 // Errors show a visible message instead of silently looping.
+// ── Auth guard ────────────────────────────────────────────
+// Runs once on page load. Redirects to login if no valid session.
+// Uses replace() so back button cannot loop back to dashboard.
+// Errors show a visible message instead of silently looping.
 (async function() {
   // Prevent redirect loop: if we arrived via a signOut redirect,
   // don't redirect again on error — show an error card instead.
@@ -3852,20 +3895,41 @@ function openStmtModal() {
     var s = await _sb_client.auth.getSession();
 
     if (!s.data || !s.data.session) {
-      if (redirected) {
-        // Already tried redirecting — stop looping, show error
+      var justLoggedIn = sessionStorage.getItem('_acc_just_logged_in');
+      sessionStorage.removeItem('_acc_just_logged_in');
+
+      if (justLoggedIn) {
+        // We just came from a successful login but getSession() returned null.
+        // Supabase occasionally needs a moment to finish writing to localStorage.
+        // Retry up to 3 times with 600ms gaps before giving up.
+        var retries = 0;
+        while (retries < 3 && (!s.data || !s.data.session)) {
+          await new Promise(function(r){ setTimeout(r, 600); });
+          s = await _sb_client.auth.getSession();
+          retries++;
+        }
+      }
+
+      if (!s.data || !s.data.session) {
+        // Still no session — send back to login (or show error if in a loop)
         sessionStorage.removeItem('_acc_redirected');
-        var errEl = document.getElementById('auth-error-msg');
-        if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Session expired. Please log in again.'; }
+        if (redirected) {
+          var errEl = document.getElementById('auth-error-msg');
+          if (errEl) {
+            errEl.style.display = 'block';
+            errEl.innerHTML = 'Could not restore session. <a href="login.html" style="color:#fff;font-weight:700;text-decoration:underline">Click here to log in again</a>.';
+          }
+        } else {
+          sessionStorage.setItem('_acc_redirected', '1');
+          window.location.replace('login.html');
+        }
         return;
       }
-      sessionStorage.setItem('_acc_redirected', '1');
-      window.location.replace('login.html');
-      return;
     }
 
-    // Session exists — clear any redirect flag
+    // Session confirmed — clear all auth flags
     sessionStorage.removeItem('_acc_redirected');
+    sessionStorage.removeItem('_acc_just_logged_in');
 
     var uid = s.data.session.user.id;
     var cr = await _sb_client.from('clients')
