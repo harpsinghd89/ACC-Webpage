@@ -781,16 +781,66 @@ function updateOrderSummary(){
   else if(ar)ar.classList.add('hidden-row');
 }
 
-var DISCOUNT_CODES={'AODA2026':0.10,'ACC20':0.20,'LAUNCH15':0.15};
+var DISCOUNT_CODES={};  // populated from Supabase on page load
+var _discountCodesLoaded = false;
+
+// Load active discount codes from Supabase on page load
+(function loadDiscountCodesFromDB() {
+  var ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
+  var SB_URL = 'https://wfyzvmfvlukawidowuym.supabase.co';
+  fetch(SB_URL + '/rest/v1/discount_codes?status=eq.active&select=code,discount_pct,max_uses,uses_count,expires_at', {
+    headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(rows){
+    if (!Array.isArray(rows)) return;
+    var now = new Date();
+    rows.forEach(function(dc) {
+      // Skip expired
+      if (dc.expires_at && new Date(dc.expires_at) < now) return;
+      // Skip maxed out
+      if (dc.max_uses && dc.uses_count >= dc.max_uses) return;
+      DISCOUNT_CODES[dc.code.toUpperCase()] = dc.discount_pct / 100;
+    });
+    _discountCodesLoaded = true;
+  })
+  .catch(function(e){ console.warn('discount codes load:', e); _discountCodesLoaded = true; });
+})();
+
 function applyDiscount(){
-  var code=document.getElementById('f-discount').value.trim().toUpperCase();
-  var msg=document.getElementById('discount-msg'),txt=document.getElementById('discount-text');
-  if(!msg||!txt)return;
-  if(DISCOUNT_CODES[code]){
-    discountPct=DISCOUNT_CODES[code];txt.textContent=(discountPct*100)+'% discount applied!';
-    msg.style.color='var(--teal)';msg.classList.add('show');
-  }else{discountPct=0;txt.textContent='Invalid code. Try AODA2026 for 10% off.';
-    msg.style.color='var(--err)';msg.classList.add('show');}
+  var code = document.getElementById('f-discount').value.trim().toUpperCase();
+  var msg  = document.getElementById('discount-msg');
+  var txt  = document.getElementById('discount-text');
+  if (!msg || !txt) return;
+
+  if (!code) {
+    msg.classList.remove('show');
+    discountPct = 0;
+    updateOrderSummary();
+    return;
+  }
+
+  if (DISCOUNT_CODES[code] !== undefined) {
+    discountPct = DISCOUNT_CODES[code];
+    txt.textContent = (discountPct * 100) + '% discount applied! \u2713';
+    msg.style.color = 'var(--teal)';
+    msg.classList.add('show');
+    // Increment uses_count in DB (fire and forget)
+    (function(){
+      var ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
+      var SB_URL = 'https://wfyzvmfvlukawidowuym.supabase.co';
+      fetch(SB_URL + '/rest/v1/rpc/increment_discount_uses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON, 'Authorization': 'Bearer ' + ANON },
+        body: JSON.stringify({ p_code: code })
+      }).catch(function(){});
+    })();
+  } else {
+    discountPct = 0;
+    txt.textContent = 'Invalid discount code.';
+    msg.style.color = 'var(--err)';
+    msg.classList.add('show');
+  }
   updateOrderSummary();
 }
 

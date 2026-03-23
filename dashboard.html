@@ -610,13 +610,13 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div class="panel" id="panel-evidence">
       <div class="page-header">
         <h1>&#128218; Evidence Binder</h1>
-        <p>Your annual Evidence Binder is auto-generated on <strong style="color:#38d9a9">December 1st</strong> each year. You can also generate it manually at any time using the button below.</p>
+        <p>Your annual Evidence Binder is auto-generated on <strong style="color:#38d9a9">December 1st</strong> each year. You can also generate it manually at any time., aggregating all monthly reports, training logs, and feedback records for the calendar year.</p>
       </div>
       <div class="card">
-        <h2>&#128197; <span id="evidence-binder-year"></span> Evidence Binder</h2>
+        <h2>&#128197; <span id="evidence-binder-year">2026</span> Evidence Binder</h2>
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
           <span class="pill yellow">In Progress</span>
-          <span style="font-size:.82rem;color:var(--muted)">Compiling automatically &mdash; Ready December 1, <span id="evidence-binder-year2"></span></span>
+          <span style="font-size:.82rem;color:var(--muted)">Compiling automatically &mdash; Ready December 1, <span id="evidence-binder-year2">2026</span></span>
         </div>
         <div style="margin-bottom:20px">
           <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px">
@@ -625,11 +625,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div class="progress-bar" style="height:10px"><div class="progress-fill" id="evidence-progress-bar" style="width:0%"></div></div>
         </div>
         <h3>Document Checklist</h3>
-        <p style="font-size:.78rem;color:#8a9bbf;margin-bottom:10px">Update each item's status as you complete it. Your ACC admin can also update these on your behalf.</p>
         <div id="evidence-binder-list" style="display:grid;gap:6px;margin-bottom:12px">
-          <p style="color:#8a9bbf;font-size:.82rem">Loading checklist…</p>
+          <p style="color:#8a9bbf;font-size:.82rem">No binder items configured yet. Your ACC admin will set these up.</p>
         </div>
-        <button id="binder-save-btn" class="btn-sm btn-primary" style="margin-bottom:4px" onclick="saveClientBinder()">&#10003; Save Checklist</button>
       </div>
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -642,14 +640,39 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </div>
     </div>
 
+    <!-- TRAINING -->
+    <div class="panel" id="panel-training">
+      <div class="page-header">
+        <h1>&#127891; Training Portal</h1>
+        <p>Track AODA staff training completions and download certificates.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#4f8ef7" id="mod1-count">—</div><div style="font-size:.72rem;color:#8a9bbf">AODA Awareness</div></div>
+            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#38d9a9" id="mod2-count">—</div><div style="font-size:.72rem;color:#8a9bbf">Customer Service</div></div>
+            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#f5a623" id="mod3-count">—</div><div style="font-size:.72rem;color:#8a9bbf">Employment Std.</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input class="finput" type="text" id="training-search" placeholder="Search staff…" style="width:170px;padding:7px 12px;font-size:.8rem" oninput="filterTraining()">
+            <a id="training-link" href="#" target="_blank" class="btn-sm btn-ghost" style="font-size:.78rem">&#128279; Training Portal</a>
+            <button class="btn-sm btn-primary" style="font-size:.78rem" onclick="openModal('log-training-modal')">+ Log Training</button>
+          </div>
+        </div>
+        <table class="data-table" style="font-size:.8rem" aria-label="Training log">
+          <thead><tr><th>Staff Member</th><th>Module</th><th>Status</th><th>Completed</th><th>Certificate</th></tr></thead>
+          <tbody id="training-tbody">
+            <tr id="training-no-results"><td colspan="5" style="text-align:center;color:#8a9bbf;padding:24px">No training records yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- 3-YEAR ROADMAP -->
     <div class="panel" id="panel-roadmap">
       <div class="page-header">
         <h1>&#128506; 3-Year Compliance Roadmap</h1>
         <p>Your personalized AODA compliance roadmap covering 2026–2028 milestones.</p>
-      </div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-        <button id="client-roadmap-save" class="btn-sm btn-primary" style="display:none" onclick="saveClientRoadmap()">&#10003; Save Roadmap</button>
       </div>
       <div id="roadmap-year-cards">
         <div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">Loading roadmap…</div>
@@ -751,7 +774,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="card">
         <h2>&#128172; Feedback Entries</h2>
         <div class="btn-row" style="margin-bottom:16px">
-          <a class="dl-btn" href="#" onclick="exportTableCSV('feedback-table','ACC_Feedback_Log.csv');return false">&#8659; Export CSV</a>
+          <a class="dl-btn" href="#" onclick="exportTableCSV('feedback-table', 'ACC_Feedback_Log.csv')">&#8659; Export CSV</a>
         </div>
         <table class="data-table" id="feedback-table" aria-label="Accessibility feedback entries">
           <thead><tr><th>Date</th><th>Type</th><th>Summary</th><th>Status</th></tr></thead>
@@ -792,22 +815,21 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
             <div>
               <strong style="font-size:1rem;color:var(--white)" id="acc-tier">—</strong>
-              <div style="font-size:.8rem;color:var(--muted)" id="acc-tier-desc">—</div>
+              <div style="font-size:.8rem;color:var(--muted)">1–19 Employees</div>
             </div>
             <span class="pill green" id="acc-status">Active</span>
           </div>
-          <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px"><span id="acc-price">$69</span> <span style="font-size:.85rem;font-weight:400;color:var(--muted)" id="acc-billing-cadence">CAD</span></div>
-          <div style="font-size:.78rem;color:var(--muted);margin-bottom:6px">Service start: <strong id="acc-start-date" style="color:#e8edf8">—</strong></div>
-          <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px"><span id="acc-renewal-label">Next billing:</span> <span id="acc-renewal">—</span></div>
+          <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:4px"><span id="acc-price">$69</span> <span style="font-size:.85rem;font-weight:400;color:var(--muted)">CAD / month</span></div>
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:20px">Next billing: <span id="acc-renewal">—</span></div>
           <div class="btn-row">
-            <button class="btn-sm btn-ghost" id="btn-upgrade-tier" onclick="requestTierUpgrade()">Upgrade Plan</button>
+            <button class="btn-sm btn-ghost" onclick="alert('Upgrade options coming soon.')">Upgrade to Tier 2</button>
             <button class="btn-sm btn-danger" onclick="confirmCancel()">Cancel Subscription</button>
           </div>
         </div>
         <div class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
             <h2 style="margin:0">&#128179; Invoices &amp; Receipts</h2>
-            
+            <button class="btn-sm btn-primary" onclick="generateAndDownloadInvoice()">&#128196; Generate This Month's Invoice</button>
           </div>
           <div id="client-invoices-list">
             <table class="data-table" id="billing-history-table" aria-label="Invoice history">
@@ -933,75 +955,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <button class="btn-sm btn-primary" onclick="saveBillingAddress()">Save Address</button>
           <button class="btn-sm btn-ghost" onclick="closeModal('billing-address-modal')">Cancel</button>
         </div>
-      </div>
-    </div>
-
-    <!-- ════════ TRAINING PANEL ════════ -->
-
-    <div class="panel" id="panel-training">
-      <div class="page-header">
-        <h1>&#127891; AODA Training</h1>
-        <p>Track staff accessibility training completion and download certificates.</p>
-      </div>
-
-      <!-- Training modules -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:20px">
-        <div class="card" style="margin:0">
-          <h2 style="font-size:.95rem;margin-bottom:8px">Module 1 — AODA Overview</h2>
-          <span id="mod1-count" class="pill blue" style="font-size:.72rem;display:block;margin-bottom:10px">Not started</span>
-          <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Introduction to AODA, compliance obligations, and client responsibilities under Ontario law.</p>
-          <a id="mod1-preview-link" href="#" target="_blank" class="btn-sm btn-ghost" style="font-size:.75rem">&#9654; Preview Module</a>
-        </div>
-        <div class="card" style="margin:0">
-          <h2 style="font-size:.95rem;margin-bottom:8px">Module 2 — WCAG 2.1 AA</h2>
-          <span id="mod2-count" class="pill blue" style="font-size:.72rem;display:block;margin-bottom:10px">Not started</span>
-          <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Web Content Accessibility Guidelines — what they require and how your website meets them.</p>
-          <a id="mod2-preview-link" href="#" target="_blank" class="btn-sm btn-ghost" style="font-size:.75rem">&#9654; Preview Module</a>
-        </div>
-        <div class="card" style="margin:0">
-          <h2 style="font-size:.95rem;margin-bottom:8px">Module 3 — Customer Service</h2>
-          <span id="mod3-count" class="pill blue" style="font-size:.72rem;display:block;margin-bottom:10px">Not started</span>
-          <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Accessible customer service standards — serving people with disabilities respectfully.</p>
-          <a id="mod3-preview-link" href="#" target="_blank" class="btn-sm btn-ghost" style="font-size:.75rem">&#9654; Preview Module</a>
-        </div>
-      </div>
-
-      <!-- Training registry -->
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-          <h2 style="margin:0">&#128203; Staff Training Registry</h2>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <input class="finput" id="training-search" type="search" placeholder="Search staff…" style="padding:6px 10px;font-size:.8rem;width:160px" oninput="filterTraining()">
-            <button class="btn-sm btn-primary" style="font-size:.75rem" onclick="openModal('add-training-modal')">+ Log Training</button>
-            <button class="btn-sm btn-ghost" style="font-size:.75rem" onclick="exportTableCSV('training-registry-table','ACC_Training_Registry.csv')">&#8659; Export CSV</button>
-          </div>
-        </div>
-        <div style="overflow-x:auto">
-          <table class="data-table" id="training-registry-table" aria-label="Staff training registry">
-            <thead>
-              <tr>
-                <th>Staff Member</th>
-                <th>Module</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Certificate</th>
-              </tr>
-            </thead>
-            <tbody id="training-tbody">
-              <tr id="training-no-results">
-                <td colspan="5" style="color:var(--muted);text-align:center;padding:20px">No training records yet. Use &ldquo;Log Training&rdquo; to add entries.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Training link -->
-      <div class="card">
-        <h2>&#128279; Training Portal Link</h2>
-        <p style="font-size:.82rem;color:var(--muted);margin-bottom:10px">Share this link with your team to access the ACC training modules directly.</p>
-        <pre id="training-link" style="background:rgba(10,22,40,.6);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:.78rem;color:#4f8ef7;overflow-x:auto;white-space:pre-wrap;word-break:break-all">Loading…</pre>
-        <button class="btn-sm btn-ghost" style="margin-top:8px;font-size:.75rem" onclick="navigator.clipboard.writeText(document.getElementById('training-link').textContent).then(function(){showToast('Link copied!')})">&#128203; Copy Link</button>
       </div>
     </div>
 
@@ -1822,29 +1775,17 @@ function sendInstallEmail(client) {
 async function confirmCancel() {
   if (!window._clientData) return;
   var renewalDate = _clientData.renewal_date ? fmtDateLong(_clientData.renewal_date) : 'the end of your billing period';
-  if (!confirm('Cancel your subscription?\n\nYour access to all dashboard features will continue until ' + renewalDate + '.\n\nAfter that, only your Account & Billing page will remain accessible.')) return;
-
-  var btn = (window.event && window.event.target) || null;
-  if (btn) { btn.disabled = true; btn.textContent = 'Cancelling…'; }
+  if (!confirm('Cancel your subscription?\n\nYour access continues until ' + renewalDate + '.')) return;
   try {
-    var r = await _sb_client.from('clients').update({
-      status: 'cancelled',
-      updated_at: new Date().toISOString()
-    }).eq('id', _clientData.id);
+    var r = await _sb_client.from('clients').update({ status: 'cancelled', updated_at: new Date().toISOString() }).eq('id', _clientData.id);
     if (r.error) throw r.error;
-
     _clientData.status = 'cancelled';
-    window._clientData = _clientData;
-
-    // Refresh status display
     set('acc-status', 'Cancelled');
     var statusPill = document.getElementById('acc-status');
     if (statusPill) { statusPill.className = 'pill red'; statusPill.textContent = 'Cancelled'; }
-
-    showToast('✅ Cancellation submitted. Access continues until ' + renewalDate + '. All features remain available until then.');
+    showToast('✓ Cancellation submitted. Access continues until ' + renewalDate + '.');
   } catch(e) {
-    alert('Could not process cancellation: ' + (e.message || e));
-    if (btn) { btn.disabled = false; btn.textContent = 'Cancel Subscription'; }
+    alert('Could not cancel: ' + (e.message || e));
   }
 }
 
@@ -2166,7 +2107,7 @@ async function changePassword() {
 }
 
 // Send password reset email from Account panel (alternative to typing inline)
-async async function sendResetEmail() {
+async function sendResetEmail() {
   var email = window._clientData && window._clientData.email;
   if (!email) { alert('Could not find your email address. Please contact ACC.'); return; }
   var btn = document.querySelector('#card-change-password .btn-ghost');
@@ -2284,37 +2225,6 @@ function fmtDate(iso) {
   return d.toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'});
 }
 
-// ── Date normalizer — converts any date string to YYYY-MM-DD for <input type="date"> ──
-function toIsoDate(val) {
-  if (!val) return '';
-  val = String(val).trim();
-  // Already YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
-  // ISO timestamp — strip time
-  if (/^\d{4}-\d{2}-\d{2}T/.test(val)) return val.substring(0, 10);
-  // Try native Date parse (handles "Jan 2026", "December 1, 2026", "Q1 2027" won't parse — fall back)
-  var d = new Date(val);
-  if (!isNaN(d.getTime())) {
-    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-  }
-  // Quarter format "Q1 2027" → first day of that quarter
-  var q = val.match(/^Q(\d)\s+(\d{4})$/i);
-  if (q) {
-    var month = (parseInt(q[1]) - 1) * 3 + 1;
-    return q[2] + '-' + String(month).padStart(2,'0') + '-01';
-  }
-  // "Jan 2026" or "March 2026" — first day of month
-  var mo = val.match(/^([A-Za-z]+)\s+(\d{4})$/);
-  if (mo) {
-    var d2 = new Date(mo[1] + ' 1, ' + mo[2]);
-    if (!isNaN(d2.getTime())) {
-      return d2.getFullYear() + '-' + String(d2.getMonth()+1).padStart(2,'0') + '-01';
-    }
-  }
-  return ''; // unparseable — blank the field
-}
-
-
 function fmtDateLong(iso) {
   if (!iso) return '—';
   var d = new Date(iso + (iso.length===10?'T00:00:00':''));
@@ -2393,76 +2303,44 @@ function populateRoadmap(milestones) {
   if (!container) return;
 
   if (!milestones || !milestones.length) {
-    container.innerHTML = '<div class="card"><p style="color:#8a9bbf;font-size:.85rem">No roadmap milestones yet. Your ACC admin will configure these.</p></div>';
+    container.innerHTML = '<div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">No roadmap milestones yet. Your ACC admin will configure these.</div>';
     return;
   }
 
+  // Group by year
   var years = {};
   milestones.forEach(function(m) {
-    var yr = String(m.year || (m.target_date ? m.target_date.substring(0,4) : '2026'));
+    var yr = m.year || (m.target_date ? m.target_date.substring(0,4) : '2026');
     if (!years[yr]) years[yr] = [];
     years[yr].push(m);
   });
 
-  var sopts = ['planned','in-progress','done','deferred'];
+  var statusPill = {
+    'done':        '<span class="pill green">Done</span>',
+    'complete':    '<span class="pill green">Done</span>',
+    'in-progress': '<span class="pill yellow">In Progress</span>',
+    'planned':     '<span class="pill blue">Planned</span>',
+    'deferred':    '<span class="pill" style="background:rgba(138,155,191,.15);color:#8a9bbf">Deferred</span>',
+  };
 
   container.innerHTML = Object.keys(years).sort().map(function(yr) {
     var rows = years[yr].map(function(m) {
-      var opts = sopts.map(function(s){
-        return '<option value="'+s+'"'+(s===(m.status||'planned')?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
-      }).join('');
-      return '<tr data-rid="'+esc(m.id||'')+'" data-year="'+yr+'">' +
-        '<td><input class="finput" style="padding:4px 6px;font-size:.85rem;width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" value="'+esc(m.title||m.milestone||'')+'" aria-label="Milestone"></td>' +
-        '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" value="'+toIsoDate(m.target_date)+'" aria-label="Target date"></td>' +
-        '<td><select class="finput" style="padding:4px 6px;font-size:.85rem;background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);color:#e8edf8" aria-label="Status">'+opts+'</select></td>' +
+      var title = m.title || m.milestone || '';
+      var pill  = statusPill[m.status] || statusPill['planned'];
+      var date  = m.target_date ? fmtDate(m.target_date) : (m.target_date || '');
+      return '<tr>' +
+        '<td>' + esc(title) + '</td>' +
+        '<td style="white-space:nowrap">' + date + '</td>' +
+        '<td>' + pill + '</td>' +
         '</tr>';
     }).join('');
     return '<div class="card">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
-      '<h2 style="margin:0">&#128197; '+yr+'</h2>' +
-      '<button class="btn-sm btn-ghost" style="font-size:.75rem" onclick="addClientRoadmapRow(\'' + yr + '\')">+ Add Row</button>' +
-      '</div>' +
-      '<table class="data-table" aria-label="'+yr+' roadmap milestones">' +
-      '<thead><tr><th>Milestone</th><th>Target Date</th><th>Status</th></tr></thead>' +
-      '<tbody id="client-roadmap-tbody-'+yr+'">'+rows+'</tbody></table>' +
+      '<h2>&#128197; ' + yr + '</h2>' +
+      '<table class="data-table" aria-label="' + yr + ' roadmap milestones">' +
+      '<thead><tr><th>Milestone</th><th>Target</th><th>Status</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>' +
       '</div>';
   }).join('');
-
-  var saveBtn = document.getElementById('client-roadmap-save');
-  if (saveBtn) saveBtn.style.display = 'inline-flex';
-  initRoadmapDatePickers();
-}
-
-function initRoadmapDatePickers() {
-  if (typeof flatpickr === 'undefined') return;
-  document.querySelectorAll('#roadmap-year-cards input[type="text"][placeholder="e.g. Jan 2026"]').forEach(function(el) {
-    if (!el._flatpickr) {
-      flatpickr(el, {
-        dateFormat: 'M Y',
-        allowInput: true,
-        disableMobile: false,
-      });
-    }
-  });
-}
-
-function addClientRoadmapRow(yr) {
-  var tbody = document.getElementById('client-roadmap-tbody-' + yr);
-  if (!tbody) return;
-  var sopts = ['planned','in-progress','done','deferred'].map(function(s){
-    return '<option value="'+s+'"'+(s==='planned'?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
-  }).join('');
-  var tr = document.createElement('tr');
-  tr.setAttribute('data-rid', 'new-' + Date.now());
-  tr.setAttribute('data-year', yr);
-  tr.innerHTML =
-    '<td><input class="finput" style="padding:4px 6px;font-size:.85rem;width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" placeholder="Milestone title" aria-label="Milestone"></td>' +
-    '<td><input class="finput" type="date" style="padding:4px 6px;font-size:.85rem;background:rgba(255,255,255,.03);border:1px solid rgba(30,58,107,.6);color:#e8edf8" aria-label="Target date"></td>' +
-    '<td><select class="finput" style="padding:4px 6px;font-size:.85rem;background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);color:#e8edf8" aria-label="Status">'+sopts+'</select></td>';
-  tbody.appendChild(tr);
-  var saveBtn = document.getElementById('client-roadmap-save');
-  if (saveBtn) saveBtn.style.display = 'inline-flex';
-  setTimeout(initRoadmapDatePickers, 50);
 }
 
 async function saveClientRoadmap() {
@@ -2473,37 +2351,54 @@ async function saveClientRoadmap() {
     var rows = document.querySelectorAll('#roadmap-year-cards tr[data-rid]');
     var inserts = [], updates = [];
     rows.forEach(function(row) {
-      var rid    = row.getAttribute('data-rid');
-      var yr     = parseInt(row.getAttribute('data-year')) || new Date().getFullYear();
-      var inputs = row.querySelectorAll('input');
-      var sel    = row.querySelector('select');
-      var title  = inputs[0] ? inputs[0].value.trim() : '';
-      var tdate  = inputs[1] ? (inputs[1].value || null) : null;
+      var rid   = row.getAttribute('data-rid');
+      var yr    = parseInt(row.getAttribute('data-year')) || new Date().getFullYear();
+      var inp   = row.querySelectorAll('input');
+      var sel   = row.querySelector('select');
+      var title = inp[0] ? inp[0].value.trim() : '';
+      var tdate = inp[1] ? (inp[1].value || null) : null;
       var status = sel ? sel.value : 'planned';
       if (!title) return;
       if (rid && rid.startsWith('new-')) {
-        inserts.push({client_id:_clientData.id, title:title, milestone:title, target_date:tdate, status:status, year:yr});
-      } else if (rid) {
-        updates.push(_sb_client.from('roadmap').update({title:title, milestone:title, target_date:tdate, status:status, year:yr, updated_at:new Date().toISOString()}).eq('id', rid).eq('client_id', _clientData.id));
+        inserts.push({ client_id: _clientData.id, title: title, milestone: title, target_date: tdate, status: status, year: yr });
+      } else {
+        updates.push(_sb_client.from('roadmap').update({ title: title, milestone: title, target_date: tdate, status: status, year: yr, updated_at: new Date().toISOString() }).eq('id', rid).eq('client_id', _clientData.id));
       }
     });
     var ops = [];
     if (inserts.length) ops.push(_sb_client.from('roadmap').insert(inserts));
     updates.forEach(function(u){ ops.push(u); });
     if (ops.length) {
-      var results = await Promise.all(ops);
-      var errs = results.filter(function(r){ return r.error; });
+      var res = await Promise.all(ops);
+      var errs = res.filter(function(r){ return r.error; });
       if (errs.length) throw errs[0].error;
     }
     var rr = await _sb_client.from('roadmap').select('*').eq('client_id', _clientData.id).is('deleted_at', null).order('year').order('target_date');
+    window._roadmapData = rr.data || [];
     if (!rr.error) populateRoadmap(rr.data || []);
-    showToast('✅ Roadmap saved.');
+    showToast('✓ Roadmap saved.');
   } catch(e) {
     alert('Could not save roadmap: ' + (e.message || e));
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '✓ Save Roadmap'; }
   }
 }
+
+function addClientRoadmapRow(yr) {
+  var tbody = document.getElementById('roadmap-tbody-' + yr);
+  if (!tbody) return;
+  var sopts = ['planned','in-progress','done','deferred'].map(function(s){
+    return '<option value="'+s+'"'+(s==='planned'?' selected':'')+'>'+s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
+  }).join('');
+  var tr = document.createElement('tr');
+  tr.setAttribute('data-rid', 'new-' + Date.now());
+  tr.setAttribute('data-year', yr);
+  tr.innerHTML = '<td><input class="finput" style="padding:4px 6px;font-size:.78rem;width:100%" placeholder="Milestone title"></td>' +
+    '<td><input class="finput" type="text" placeholder="e.g. Jun 2026" style="padding:4px 6px;font-size:.78rem"></td>' +
+    '<td><select class="finput" style="padding:4px 6px;font-size:.78rem">'+sopts+'</select></td>';
+  tbody.appendChild(tr);
+}
+
 
 async function populateTraining(c) {
   var code  = c.client_code || '';
@@ -2674,39 +2569,35 @@ function populateAccount(c, billingRows) {
     else el.textContent = fields[id] || '—';
   });
   // Update display spans
-  set('acc-tier',    tierName(c.tier));
+  set('acc-tier', tierName(c.tier));
   var tierDescs = { 1: '1–19 Employees', 2: '20–199 Employees', 3: 'Enterprise / Custom' };
   set('acc-tier-desc', tierDescs[parseInt(c.tier)] || '');
-  // Show billing cycle label + next date
   var cycleLabel = (c.billing_cycle === 'annual' || c.billing_cycle === 'yearly') ? 'Annual' : 'Monthly';
   var renewalEl = document.getElementById('acc-renewal-label');
   if (renewalEl) renewalEl.textContent = 'Next ' + cycleLabel + ' billing:';
   var cadenceEl = document.getElementById('acc-billing-cadence');
   if (cadenceEl) cadenceEl.textContent = 'CAD / ' + cycleLabel.toLowerCase();
-  set('acc-price',    tierPrice(c.tier) + (cycleLabel === 'Annual' ? ' / yr' : ' / mo'));
-  set('acc-renewal',  fmtDateLong(c.renewal_date));
-  set('acc-start-date', c.start_date ? fmtDate(c.start_date) : '—');
-  set('acc-status',  (c.status || 'active').charAt(0).toUpperCase() + (c.status || 'active').slice(1));
-  // Dynamic upgrade button label
+  set('acc-price', tierPrice(c.tier));
+  set('acc-renewal', fmtDateLong(c.renewal_date));
+  set('acc-status', (c.status || 'active').charAt(0).toUpperCase() + (c.status || 'active').slice(1));
+  // Dynamic upgrade button
   var upgradeBtn = document.getElementById('btn-upgrade-tier');
   if (upgradeBtn) {
-    var tier = parseInt(c.tier) || 1;
-    if (tier >= 3) {
-      upgradeBtn.style.display = 'none';
-    } else {
-      var nextTierNames = { 1: 'Upgrade to Tier 2', 2: 'Upgrade to Tier 3 (Enterprise)' };
-      upgradeBtn.textContent = nextTierNames[tier] || 'Upgrade Plan';
-      upgradeBtn.style.display = '';
-      upgradeBtn.disabled = false;
+    var t = parseInt(c.tier) || 1;
+    if (t >= 3) { upgradeBtn.style.display = 'none'; }
+    else {
+      var nextNames = { 1: 'Upgrade to Tier 2', 2: 'Upgrade to Tier 3 (Enterprise)' };
+      upgradeBtn.textContent = nextNames[t] || 'Upgrade Plan';
+      upgradeBtn.style.display = ''; upgradeBtn.disabled = false;
     }
   }
-  // If cancelled AND renewal has passed — restrict nav to account only
+  // Cancel restrict nav only after renewal passes
   if ((c.status||'').toLowerCase() === 'cancelled') {
-    var renewalPassed = !c.renewal_date || new Date(c.renewal_date) < new Date();
-    if (renewalPassed) {
+    var rp = !c.renewal_date || new Date(c.renewal_date) < new Date();
+    if (rp) {
       document.querySelectorAll('#client-nav .nav-item').forEach(function(b) {
-        var access = b.getAttribute('data-access');
-        if (access && access !== 'account_billing') b.style.display = 'none';
+        var acc = b.getAttribute('data-access');
+        if (acc && acc !== 'account_billing') b.style.display = 'none';
       });
     }
   }
@@ -2728,74 +2619,48 @@ function populateAccount(c, billingRows) {
       '<span class="pill green" style="font-size:.72rem">Default</span>';
   }
 
-  populateInvoicesFromStartDate(c);
+  loadInvoiceHistory(c);
 }
 
-async function populateInvoicesFromStartDate(c) {
-  var container = document.getElementById('billing-history-tbody');
-  if (!container) return;
-
-  // First try real billing rows from DB
+async function loadInvoiceHistory(c) {
+  var tbody = document.getElementById('billing-history-tbody');
+  if (!tbody) return;
   try {
     var br = await _sb_client.from('billing').select('*').eq('client_id', c.id)
       .order('created_at', { ascending: false }).limit(24);
     if (!br.error && br.data && br.data.length) {
-      populateBillingHistory(br.data);
-      return;
+      populateBillingHistory(br.data); return;
     }
   } catch(_) {}
-
-  // No DB rows — build expected list from start_date + billing_cycle
   if (!c.start_date) {
-    container.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No billing records yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No billing records yet.</td></tr>';
     return;
   }
-
   var isAnnual = (c.billing_cycle === 'annual' || c.billing_cycle === 'yearly');
-  var start = new Date(c.start_date);
-  start.setDate(1);
-  var now   = new Date();
-  var cur   = new Date(start);
+  var cur = new Date(c.start_date); cur.setDate(1);
+  var now = new Date();
   var months = [];
-  if (isAnnual) {
-    while (cur <= now) { months.push(new Date(cur)); cur.setFullYear(cur.getFullYear() + 1); }
-  } else {
-    while (cur <= now) { months.push(new Date(cur)); cur.setMonth(cur.getMonth() + 1); }
-  }
+  if (isAnnual) { while (cur <= now) { months.push(new Date(cur)); cur.setFullYear(cur.getFullYear()+1); } }
+  else          { while (cur <= now) { months.push(new Date(cur)); cur.setMonth(cur.getMonth()+1); } }
   months.reverse();
-
-  // Check which PDFs exist in invoices storage
   var existingFiles = new Set();
   try {
-    var lr = await _sb_client.storage.from('invoices').list(c.client_code || '', { limit: 100 });
-    (lr.data || []).forEach(function(f){ existingFiles.add(f.name); });
+    var lr = await _sb_client.storage.from('invoices').list(c.client_code||'', { limit:100 });
+    (lr.data||[]).forEach(function(f){ existingFiles.add(f.name); });
   } catch(_) {}
-
-  var rawPrice = parseInt((tierPrice(c.tier) || '0').replace(/[^0-9]/g, '')) || 0;
-  var amount   = isAnnual ? rawPrice * 10 : rawPrice;
-
-  if (!months.length) {
-    container.innerHTML = '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No invoices yet.</td></tr>';
-    return;
-  }
-
-  // Use data attributes to avoid all quote-escaping in onclick handlers
-  container.innerHTML = months.map(function(m) {
-    var ym     = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0');
-    var label  = m.toLocaleDateString('en-CA', { year:'numeric', month:'long' });
-    var fname  = ym + '-invoice.pdf';
+  var rawPrice = parseInt((tierPrice(c.tier)||'0').replace(/[^0-9]/g,'')) || 0;
+  var amount = isAnnual ? rawPrice * 10 : rawPrice;
+  tbody.innerHTML = months.map(function(m) {
+    var ym    = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0');
+    var label = m.toLocaleDateString('en-CA', { year:'numeric', month:'long' });
+    var fname = ym + '-invoice.pdf';
     var hasPdf = existingFiles.has(fname);
     var isPast = m < now;
-    var dlBtn  = hasPdf
-      ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" data-ym="' + ym + '-invoice" onclick="downloadInvoice(this.dataset.ym)">↓ PDF</button>'
-      : (isPast ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px;opacity:.6" data-ym="' + ym + '" onclick="generateAndDownloadInvoice(this.dataset.ym)">▶ Generate</button>' : '—');
-    return '<tr>' +
-      '<td>' + label + '</td>' +
-      '<td>' + (amount ? '$' + parseFloat(amount).toFixed(2) : '—') + '</td>' +
-      '<td><span class="pill ' + (isPast ? 'green' : 'blue') + '">' + (isPast ? 'Paid' : 'Scheduled') + '</span></td>' +
-      '<td>' + dlBtn + '</td>' +
-      '</tr>';
-  }).join('');
+    var dlBtn = hasPdf
+      ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" data-ym="'+ym+'-invoice" onclick="downloadInvoice(this.dataset.ym)">↓ PDF</button>'
+      : (isPast ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px;opacity:.6" data-ym="'+ym+'" onclick="generateAndDownloadInvoice(this.dataset.ym)">▶ Gen</button>' : '—');
+    return '<tr><td>'+label+'</td><td>'+(amount?'$'+parseFloat(amount).toFixed(2):'—')+'</td><td><span class="pill '+(isPast?'green':'blue')+'">'+(isPast?'Paid':'Scheduled')+'</span></td><td>'+dlBtn+'</td></tr>';
+  }).join('') || '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No invoices yet.</td></tr>';
 }
 
 
@@ -2812,7 +2677,7 @@ function populateBillingHistory(rows) {
       '<td>' + fmtDate(b.paid_at||b.created_at) + '</td>' +
       '<td>' + (b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) : '—') + '</td>' +
       '<td><span class="pill ' + (b.status==='paid'?'green':'yellow') + '">' + esc(b.status) + '</span></td>' +
-      '<td>' + (ym ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="downloadInvoice(\'' + ym + '-invoice\')">&#8659; PDF</button>' : '—') + '</td>' +
+      '<td><button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="generateAndDownloadInvoice(\'' + ym + '\')">&#8659; PDF</button></td>' +
       '</tr>';
   }).join('');
 }
@@ -2896,34 +2761,33 @@ function populateStandards(c, templateAccess) {
 }
 
 function populateEvidence(c, milestones) {
-  // Default AODA checklist if admin hasn't configured binder items yet
   var DEFAULT_BINDER_ITEMS = [
-    { title: 'Accessibility Policy & Statement of Commitment',   status: 'Pending Review' },
-    { title: 'Multi-Year Accessibility Plan (MYAP)',              status: 'Pending Review' },
-    { title: 'Staff AODA Training Registry',                      status: 'Pending Review' },
-    { title: 'Accessible Customer Feedback Process',              status: 'Pending Review' },
-    { title: 'Accessible Formats Request Procedure',              status: 'Pending Review' },
-    { title: 'Accessibility Statement (Web)',                     status: 'Pending Review' },
-    { title: 'Accommodation Clause - Job Postings',               status: 'Pending Review' },
-    { title: 'Accessibility Clause - Offer Letters',              status: 'Pending Review' },
-    { title: 'Service Animals & Support Persons Policy',          status: 'Pending Review' },
-    { title: 'Notice of Temporary Disruption of Services',        status: 'Pending Review' },
-    { title: 'HR Accommodation Policy',                           status: 'Pending Review' },
-    { title: 'Monthly Audit Reports (all months)',                status: 'Pending Review' },
-    { title: 'Scope of Responsibility Acknowledgment',            status: 'Pending Review' },
-    { title: 'AODA Filing Checklist',                             status: 'Pending Review' },
+    { title: 'Accessibility Policy & Statement of Commitment', status: 'Pending Review' },
+    { title: 'Multi-Year Accessibility Plan (MYAP)',           status: 'Pending Review' },
+    { title: 'Staff AODA Training Registry',                   status: 'Pending Review' },
+    { title: 'Accessible Customer Feedback Process',           status: 'Pending Review' },
+    { title: 'Accessible Formats Request Procedure',           status: 'Pending Review' },
+    { title: 'Accessibility Statement (Web)',                  status: 'Pending Review' },
+    { title: 'Accommodation Clause - Job Postings',            status: 'Pending Review' },
+    { title: 'Accessibility Clause - Offer Letters',           status: 'Pending Review' },
+    { title: 'Service Animals & Support Persons Policy',       status: 'Pending Review' },
+    { title: 'Notice of Temporary Disruption of Services',     status: 'Pending Review' },
+    { title: 'HR Accommodation Policy',                        status: 'Pending Review' },
+    { title: 'Monthly Audit Reports (all months)',             status: 'Pending Review' },
+    { title: 'Scope of Responsibility Acknowledgment',         status: 'Pending Review' },
+    { title: 'AODA Filing Checklist',                          status: 'Pending Review' },
   ];
 
-  var raw = c.binder_items;
+  var raw   = c.binder_items;
   var items = (raw && Array.isArray(raw) && raw.length > 0) ? raw : DEFAULT_BINDER_ITEMS;
 
   var evList = document.getElementById('evidence-binder-list');
   if (evList) {
-    var statColors = { 'Verified':'#38d9a9', 'On File':'#4f8ef7', 'Pending Review':'#f5a623', 'Missing':'#f05f5f' };
-    var statuses = ['Verified', 'On File', 'Pending Review', 'Missing'];
+    var statColors = { 'Verified':'#38d9a9','On File':'#4f8ef7','Pending Review':'#f5a623','Missing':'#f05f5f' };
+    var statuses   = ['Verified','On File','Pending Review','Missing'];
     evList.innerHTML = items.map(function(item, idx) {
       var col  = statColors[item.status] || '#8a9bbf';
-      var opts = statuses.map(function(s) {
+      var opts = statuses.map(function(s){
         return '<option value="'+s+'"'+(s===item.status?' selected':'')+'>'+s+'</option>';
       }).join('');
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(10,22,40,.5);border:1px solid rgba(30,58,107,.4);border-radius:8px;margin-bottom:6px;gap:10px">' +
@@ -2931,58 +2795,41 @@ function populateEvidence(c, milestones) {
         '<select class="finput binder-status-sel" data-idx="'+idx+'" style="padding:3px 8px;font-size:.72rem;width:130px;background:rgba(10,22,40,.8);border:1px solid '+col+';color:'+col+'" onchange="onBinderStatusChange(this)">'+opts+'</select>' +
         '</div>';
     }).join('');
-
   }
 
-  // Progress = Verified binder items (not roadmap milestones)
-  var verifiedCount = items.filter(function(item){ return item.status === 'Verified'; }).length;
-  var onFileCount   = items.filter(function(item){ return item.status === 'On File'; }).length;
-  var doneCount = verifiedCount + onFileCount;
-  var totalCount = items.length;
-  var pct = totalCount > 0 ? Math.round(doneCount / totalCount * 100) : 0;
-  set('evidence-done-count', doneCount + ' of ' + totalCount + ' items complete');
+  var verified  = items.filter(function(i){ return i.status === 'Verified'; }).length;
+  var onFile    = items.filter(function(i){ return i.status === 'On File'; }).length;
+  var doneCount = verified + onFile;
+  var pct       = items.length > 0 ? Math.round(doneCount / items.length * 100) : 0;
+  set('evidence-done-count', doneCount + ' of ' + items.length + ' items complete');
   var bar = document.getElementById('evidence-progress-bar');
   if (bar) bar.style.width = pct + '%';
 
-  // Set dynamic year
   var yr = new Date().getFullYear();
-  var y1 = document.getElementById('evidence-binder-year');
-  var y2 = document.getElementById('evidence-binder-year2');
-  if (y1) y1.textContent = yr;
-  if (y2) y2.textContent = yr;
+  set('evidence-binder-year',  yr);
+  set('evidence-binder-year2', yr);
 
-  // Check if binder PDF exists for this year and update status pill
+  // Check if binder PDF exists for this year
   if (window._clientData && _clientData.client_code) {
-    var binderPath = _clientData.client_code + '/' + yr + '-binder.pdf';
     _sb_client.storage.from('evidence').list(_clientData.client_code, { limit: 50 })
       .then(function(r) {
-        var files = r.data || [];
-        var exists = files.some(function(f){ return f.name === yr + '-binder.pdf'; });
+        var exists = (r.data||[]).some(function(f){ return f.name === yr + '-binder.pdf'; });
         var pill  = document.querySelector('#panel-evidence .pill.yellow');
         var label = document.querySelector('#panel-evidence .pill.yellow + span');
         if (exists && pill) {
-          pill.className = 'pill green';
-          pill.textContent = 'Available';
+          pill.className = 'pill green'; pill.textContent = 'Available';
           if (label) label.textContent = yr + ' Evidence Binder is ready for download.';
-        } else if (!exists && pill) {
-          var now = new Date();
-          var isDec1OrLater = now.getMonth() === 11 && now.getDate() >= 1;
-          if (isDec1OrLater) {
-            if (label) label.textContent = 'Auto-generation failed — click Generate to create manually.';
-          } else {
-            if (label) label.textContent = 'Compiling automatically — Ready December 1, ' + yr;
-          }
+        } else if (!exists && label) {
+          if (label) label.textContent = 'Compiling automatically — Ready December 1, ' + yr;
         }
-      }).catch(function() {});
+      }).catch(function(){});
   }
 }
 
 function onBinderStatusChange(sel) {
-  // Update border/color live
-  var statColors = { 'Verified':'#38d9a9', 'On File':'#4f8ef7', 'Pending Review':'#f5a623', 'Missing':'#f05f5f' };
+  var statColors = { 'Verified':'#38d9a9','On File':'#4f8ef7','Pending Review':'#f5a623','Missing':'#f05f5f' };
   var col = statColors[sel.value] || '#8a9bbf';
-  sel.style.borderColor = col;
-  sel.style.color = col;
+  sel.style.borderColor = col; sel.style.color = col;
 }
 
 async function saveClientBinder() {
@@ -2990,20 +2837,14 @@ async function saveClientBinder() {
   var btn = document.getElementById('binder-save-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
   try {
-    var sels = document.querySelectorAll('.binder-status-sel');
-    var items = Array.from(sels).map(function(sel) {
-      var row = sel.closest('div');
-      var titleEl = row ? row.querySelector('span') : null;
-      return { title: titleEl ? titleEl.textContent.trim() : '', status: sel.value };
+    var items = Array.from(document.querySelectorAll('.binder-status-sel')).map(function(sel) {
+      var span = sel.closest('div') && sel.closest('div').querySelector('span');
+      return { title: span ? span.textContent.trim() : '', status: sel.value };
     }).filter(function(i){ return i.title; });
-
-    var r = await _sb_client.from('clients').update({
-      binder_items: items, updated_at: new Date().toISOString()
-    }).eq('id', _clientData.id);
+    var r = await _sb_client.from('clients').update({ binder_items: items, updated_at: new Date().toISOString() }).eq('id', _clientData.id);
     if (r.error) throw r.error;
     _clientData.binder_items = items;
-    window._clientData = _clientData;
-    showToast('✅ Checklist saved.');
+    showToast('✓ Checklist saved.');
   } catch(e) {
     alert('Could not save checklist: ' + (e.message || e));
   } finally {
@@ -3114,6 +2955,12 @@ async function downloadSigned(bucket, path, filename) {
   }
 }
 
+async function downloadReport(monthKey) {
+  if (!window._clientData) { alert('Please log in to download reports.'); return; }
+  var code = _clientData.client_code;
+  var path = code + '/' + monthKey + '.pdf';
+  await downloadSigned('reports', path, 'ACC_Report_' + monthKey + '_' + code + '.pdf');
+}
 
 async function downloadTemplate(templateKey) {
   var key = templateKey.replace(/\.html$/, '');
@@ -3190,11 +3037,10 @@ async function generateAndDownloadReport(monthKey) {
     var code = _clientData.client_code;
     var result = await callEdgeFunction('generate-audit-report', {
       client_id:    _clientData.id,
-      target_month: ym,
+      target_month: ym
     });
     var filePath = (result && result.file) ? result.file : (code + '/' + ym + '.pdf');
     await downloadSigned('reports', filePath, 'ACC_Report_' + ym + '_' + code + '.pdf');
-    // Refresh list — rebuilds DOM, clearing all stacked event listeners
     await populateReports(_clientData);
   } catch(e) {
     console.error('generateAndDownloadReport:', e);
@@ -3204,43 +3050,20 @@ async function generateAndDownloadReport(monthKey) {
   }
 }
 
-async function downloadReport(monthKey) {
-  if (!window._clientData) { alert('Please log in to download reports.'); return; }
-  // monthKey is always YYYY-MM from data-ym attribute
-  var code = _clientData.client_code;
-  var path = code + '/' + monthKey + '.pdf';
-  await downloadSigned('reports', path, 'ACC_Report_' + monthKey + '_' + code + '.pdf');
-}
-
-
-
-
-
-
-// ── Edge Function Callers ─────────────────────────────────
-// Calls a Supabase Edge Function with a guaranteed-fresh user JWT.
-// Uses functions.invoke() for correct apikey/CORS handling, but explicitly
-// passes the session access_token so we never accidentally send the anon key.
-
-
+// Generate + download the annual evidence binder.
 function requestTierUpgrade() {
   if (!window._clientData) return;
   var current = parseInt(_clientData.tier) || 1;
-  var next    = current + 1;
-  if (next > 3) { showToast('You are already on our highest tier.'); return; }
-  var tierNames = { 1:'Tier 1 — Essential', 2:'Tier 2 — Professional', 3:'Tier 3 — Enterprise (Custom)' };
-  var msg = 'Request upgrade from ' + (tierNames[current]||'Tier '+current) + ' to ' + (tierNames[next]||'Tier '+next) + '?\n\nACC will contact you to confirm pricing and activate the upgrade.';
-  if (confirm(msg)) {
-    // Set upgrade button and fire email-like notification via DB flag
+  if (current >= 3) { showToast('You are already on our highest tier.'); return; }
+  var names = { 1: 'Tier 2 — Professional', 2: 'Tier 3 — Enterprise' };
+  if (confirm('Request upgrade to ' + (names[current] || 'next tier') + '?\n\nACC will contact you to confirm.')) {
     _sb_client.from('clients').update({
-      billing_notes: (_clientData.billing_notes ? _clientData.billing_notes + '\n' : '') + '[UPGRADE REQUEST] Tier ' + current + ' → ' + next + ' requested on ' + new Date().toLocaleDateString('en-CA'),
+      billing_notes: ((_clientData.billing_notes || '') + '\n[UPGRADE REQUEST] Tier ' + current + ' requested ' + new Date().toLocaleDateString('en-CA')).trim(),
       updated_at: new Date().toISOString()
-    }).eq('id', _clientData.id).then(function(r) {
-      if (r.error) console.warn('upgrade flag:', r.error);
-    });
-    showToast('✅ Upgrade request submitted. ACC will contact you within 1 business day.');
-    var upgradeBtn = document.getElementById('btn-upgrade-tier');
-    if (upgradeBtn) { upgradeBtn.textContent = '⏳ Upgrade Requested'; upgradeBtn.disabled = true; }
+    }).eq('id', _clientData.id).then(function(){}).catch(function(){});
+    showToast('✓ Upgrade request submitted. ACC will contact you within 1 business day.');
+    var btn = document.getElementById('btn-upgrade-tier');
+    if (btn) { btn.textContent = '⏳ Upgrade Requested'; btn.disabled = true; }
   }
 }
 
@@ -3685,25 +3508,17 @@ async function saveAccountDetails() {
   if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
   try {
     var company = (document.getElementById('acc-company')||{}).value.trim();
-    // Save core fields that definitely exist
     var { error } = await _sb_client
       .from('clients')
-      .update({
-        name:  company || _clientData.name,
-        email: email,
-        domain: domain || _clientData.domain,
-        updated_at: new Date().toISOString()
-      })
+      .update({ name: company || _clientData.name, email: email, domain: domain || _clientData.domain, updated_at: new Date().toISOString() })
       .eq('id', _clientData.id);
     if (error) throw error;
-    // Save contact_name separately (column may need migration)
     if (name) {
-      await _sb_client.from('clients').update({ contact_name: name })
-        .eq('id', _clientData.id).then(function(){}).catch(function(){});
+      await _sb_client.from('clients').update({ contact_name: name }).eq('id', _clientData.id)
+        .then(function(){}).catch(function(){});
     }
-    // Refresh local cache
-    if (company) _clientData.name = company;
     _clientData.contact_name = name;
+    if (company) _clientData.name = company;
     _clientData.email  = email;
     if (domain) _clientData.domain = domain;
     window._clientData = _clientData;
