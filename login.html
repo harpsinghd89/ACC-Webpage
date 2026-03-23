@@ -227,16 +227,137 @@ document.addEventListener('click', function(e) {
 <script>
 var _sb = window.supabase.createClient('https://wfyzvmfvlukawidowuym.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M');
 
+// ── Handle magic link / password recovery tokens in the URL hash ──
+// When Supabase redirects to this page with a token, exchange it and
+// forward immediately to dashboard. Covers: magiclink, recovery, invite.
 (async function() {
   try {
+    var hash = window.location.hash;
+    if (hash && hash.includes('access_token')) {
+      // Supabase puts tokens in the hash — let the SDK exchange them
+      var result = await _sb.auth.getSession();
+      if (result.data && result.data.session) {
+        // Already exchanged — go straight to dashboard
+        window.location.replace('dashboard.html');
+        return;
+      }
+      // Not exchanged yet — listen for the auth state change
+      var unsub = _sb.auth.onAuthStateChange(function(event, session) {
+        if (session && (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY')) {
+          if (unsub && unsub.data && unsub.data.subscription) {
+            unsub.data.subscription.unsubscribe();
+          }
+          if (event === 'PASSWORD_RECOVERY') {
+            // Show a reset password UI inline rather than redirecting
+            showResetPasswordUI();
+          } else {
+            window.location.replace('dashboard.html');
+          }
+        }
+      });
+      return; // Don't redirect to dashboard yet, wait for exchange
+    }
+    // No token in hash — check for existing session
     var s = await _sb.auth.getSession();
-    if (s.data && s.data.session) window.location.href = 'dashboard.html';
-  } catch(e) {}
+    if (s.data && s.data.session) window.location.replace('dashboard.html');
+  } catch(e) { console.warn('auth init:', e); }
 })();
+
+// ── Inline password reset (shown when arriving via recovery link) ──
+function showResetPasswordUI() {
+  var card = document.querySelector('.card');
+  if (!card) return;
+  card.innerHTML = '';
+
+  var h1 = document.createElement('h1');
+  h1.textContent = 'Reset Your Password';
+  card.appendChild(h1);
+
+  var sub = document.createElement('p');
+  sub.className = 'sub';
+  sub.textContent = 'Enter a new password for your account.';
+  card.appendChild(sub);
+
+  var errDiv = document.createElement('div');
+  errDiv.className = 'ferr';
+  errDiv.id = 'reset-err';
+  errDiv.setAttribute('role','alert');
+  card.appendChild(errDiv);
+
+  function makePwField(labelText, inputId) {
+    var grp = document.createElement('div');
+    grp.className = 'fgroup';
+    var lbl = document.createElement('label');
+    lbl.setAttribute('for', inputId);
+    lbl.textContent = labelText;
+    var wrap = document.createElement('div');
+    wrap.className = 'pw-wrap';
+    var inp = document.createElement('input');
+    inp.className = 'finput';
+    inp.type = 'password';
+    inp.id = inputId;
+    inp.placeholder = 'Min. 8 characters';
+    inp.autocomplete = 'new-password';
+    var eye = document.createElement('button');
+    eye.className = 'pw-eye';
+    eye.type = 'button';
+    eye.setAttribute('aria-label','Show or hide password');
+    eye.innerHTML = '&#128065;';
+    eye.addEventListener('click', function() { inp.type = inp.type === 'password' ? 'text' : 'password'; });
+    wrap.appendChild(inp);
+    wrap.appendChild(eye);
+    grp.appendChild(lbl);
+    grp.appendChild(wrap);
+    return grp;
+  }
+
+  card.appendChild(makePwField('New Password', 'new-pw'));
+  card.appendChild(makePwField('Confirm Password', 'confirm-pw'));
+
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = 'reset-btn';
+  btn.className = 'btn-signin';
+  btn.style.marginTop = '4px';
+  btn.textContent = 'Set New Password';
+  btn.addEventListener('click', doResetPassword);
+  card.appendChild(btn);
+}
+async function doResetPassword() {
+  var pw  = (document.getElementById('new-pw')     || {}).value || '';
+  var pw2 = (document.getElementById('confirm-pw') || {}).value || '';
+  var err = document.getElementById('reset-err');
+  if (pw.length < 8)  { showErr(err, 'Password must be at least 8 characters.'); return; }
+  if (pw !== pw2)     { showErr(err, 'Passwords do not match.'); return; }
+  var btn = document.getElementById('reset-btn');
+  if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
+  var r = await _sb.auth.updateUser({ password: pw });
+  if (r.error) {
+    if (btn) { btn.textContent = 'Set New Password'; btn.disabled = false; }
+    showErr(err, 'Error: ' + r.error.message);
+  } else {
+    // Password set — go to dashboard
+    window.location.replace('dashboard.html');
+  }
+}
+
+function showErr(el, msg) {
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.color = '';
+  el.style.background = '';
+  el.style.border = '';
+  el.classList.add('show');
+}
 
 function togglePw() {
   var i = document.getElementById('pw');
-  i.type = (i.type === 'password') ? 'text' : 'password';
+  if (i) i.type = (i.type === 'password') ? 'text' : 'password';
+}
+function togglePwById(id) {
+  var i = document.getElementById(id);
+  if (i) i.type = (i.type === 'password') ? 'text' : 'password';
 }
 
 async function doLogin() {
@@ -292,20 +413,23 @@ async function forgotPassword() {
   var btn = document.querySelector('.forgot-btn');
   if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
 
+  var redirectUrl = window.location.protocol + '//' + window.location.host + '/login.html';
   var r = await _sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/dashboard.html'
+    redirectTo: redirectUrl
   });
 
   if (btn) { btn.textContent = 'Forgot password?'; btn.disabled = false; }
 
   if (r.error) {
-    err.textContent = 'Error: ' + r.error.message;
+    // SMTP not configured in Supabase — show manual fallback
+    err.textContent = 'Could not send reset email automatically. Please email partner@accessibilitycompliance.ca with subject "Password Reset Request" and your email address — we will send you a reset link within 1 business hour.';
+    err.style.color = 'var(--error)';
     err.style.display = 'block';
   } else {
     err.style.color = '#38d9a9';
     err.style.background = 'rgba(56,217,169,.08)';
     err.style.border = '1px solid rgba(56,217,169,.3)';
-    err.textContent = '\u2713 Reset link sent to ' + email + '. Check your inbox.';
+    err.textContent = '\u2713 Reset link sent to ' + email + '. Check your inbox (including spam). The link will open this page — enter your new password there.';
     err.style.display = 'block';
   }
 }
