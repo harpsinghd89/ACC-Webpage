@@ -422,7 +422,7 @@ async function forgotPassword() {
 
   if (r.error) {
     // SMTP not configured in Supabase — show manual fallback
-    err.textContent = 'Could not send reset email automatically. Please email partner@accessibilitycompliance.ca with subject "Password Reset Request" and your email address — we will send you a reset link within 1 business hour.';
+    err.textContent = 'Could not send reset email automatically. Please email partner@accessibilitycompliance.ca with subject "Password Reset Request" and your email address.';
     err.style.color = 'var(--error)';
     err.style.display = 'block';
   } else {
