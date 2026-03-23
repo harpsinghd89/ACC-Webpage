@@ -215,17 +215,28 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     width:100% !important;
     max-width:100% !important;
     height:auto !important;
-    max-height:88vh !important;
+    max-height:92vh !important;
     border-radius:16px;
-    padding:20px 16px;
-    margin-top:8px;
+    padding:16px 12px 20px;
+    margin-top:4px;
     display:flex;
     flex-direction:column;
     overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
   }
   #client-detail-modal .modal-box .btn-sm{
     font-size:.65rem !important;
     padding:5px 6px !important;
+  }
+  /* Each ctab panel must be scrollable inside the modal on mobile */
+  #client-detail-modal [id^="ctab-panel-"] {
+    flex:1;
+    min-height:0;
+    overflow-y:visible;
+  }
+  /* 2-col grids collapse to 1 col inside modal on mobile */
+  #client-detail-modal [style*="grid-template-columns:1fr 1fr"]{
+    grid-template-columns:1fr !important;
   }
 }
 
@@ -284,7 +295,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </button>
       <button class="nav-item" id="nav-admin-clients" onclick="showPanel('admin-clients')">
         <span class="nav-icon">&#128101;</span> Clients
-        <span class="nav-badge">12</span>
+        <span class="nav-badge" id="sidebar-client-badge">—</span>
       </button>
       <button class="nav-item" id="nav-admin-billing" onclick="showPanel('admin-billing')">
         <span class="nav-icon">&#128180;</span> Billing
@@ -298,9 +309,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <button class="nav-item" id="nav-admin-widgets" onclick="showPanel('admin-widgets')">
         <span class="nav-icon">&#9881;</span> Widget Deploy
       </button>
-      <button class="nav-item" id="nav-admin-access" onclick="showPanel('admin-access')">
-        <span class="nav-icon">&#128274;</span> Access Control
-      </button>
+
     </div>
   </nav>
 
@@ -316,47 +325,38 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="stat-grid">
         <div class="stat-card teal">
           <div class="stat-label">Active Clients</div>
-          <div class="stat-value">12</div>
-          <div class="stat-sub">2 pending activation</div>
+          <div class="stat-value" id="stat-active-clients">—</div>
+          <div class="stat-sub" id="stat-active-clients-sub">Loading…</div>
         </div>
         <div class="stat-card warn">
           <div class="stat-label">MRR</div>
-          <div class="stat-value">$1,834</div>
-          <div class="stat-sub">↑ $199 this month</div>
+          <div class="stat-value" id="stat-mrr">—</div>
+          <div class="stat-sub" id="stat-mrr-sub">Loading…</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Tier 1 Clients</div>
-          <div class="stat-value">7</div>
+          <div class="stat-value" id="stat-tier1">—</div>
           <div class="stat-sub">$69/mo each</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Tier 2 Clients</div>
-          <div class="stat-value">4</div>
+          <div class="stat-value" id="stat-tier2">—</div>
           <div class="stat-sub">$199/mo each</div>
         </div>
         <div class="stat-card err">
           <div class="stat-label">Overdue</div>
-          <div class="stat-value">1</div>
-          <div class="stat-sub">Action required</div>
+          <div class="stat-value" id="stat-overdue-clients">—</div>
+          <div class="stat-sub" id="stat-overdue-sub">Action required</div>
         </div>
         <div class="stat-card teal">
-          <div class="stat-label">Widgets Live</div>
-          <div class="stat-value">10</div>
-          <div class="stat-sub">2 pending setup</div>
+          <div class="stat-label">Total Clients</div>
+          <div class="stat-value" id="stat-total-clients">—</div>
+          <div class="stat-sub" id="stat-pending-sub">Loading…</div>
         </div>
       </div>
       <div class="card">
         <h2>&#128202; Recent Activity</h2>
-        <table class="data-table">
-          <thead><tr><th>Client</th><th>Event</th><th>Date</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>Acme Corp Inc.</td><td>New subscription — Tier 1</td><td>Mar 10, 2026</td><td><span class="pill green">Active</span></td></tr>
-            <tr><td>Maple Health Clinic</td><td>Upgraded to Tier 2</td><td>Mar 8, 2026</td><td><span class="pill green">Active</span></td></tr>
-            <tr><td>Northern Plumbing Co.</td><td>Payment overdue</td><td>Mar 1, 2026</td><td><span class="pill red">Overdue</span></td></tr>
-            <tr><td>Sunrise Legal</td><td>Widget deployed</td><td>Feb 28, 2026</td><td><span class="pill green">Live</span></td></tr>
-            <tr><td>Hartwell Dental</td><td>Onboarding started</td><td>Feb 25, 2026</td><td><span class="pill yellow">Pending</span></td></tr>
-          </tbody>
-        </table>
+        <div id="overview-activity-wrap"><div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">Loading…</div></div>
       </div>
     </div>
 
@@ -396,37 +396,17 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div class="panel" id="panel-admin-billing">
       <div class="page-header">
         <h1>&#128180; Billing Overview</h1>
-        <p>Monthly recurring revenue and transaction history.</p>
+        <p>Monthly recurring revenue and transaction history — pulled live from Stripe &amp; Supabase.</p>
       </div>
-      <div class="stat-grid">
-        <div class="stat-card warn"><div class="stat-label">MRR</div><div class="stat-value">$1,834</div><div class="stat-sub">7× Tier 1 + 4× Tier 2</div></div>
-        <div class="stat-card teal"><div class="stat-label">Collected MTD</div><div class="stat-value">$1,635</div><div class="stat-sub">Missing 1 payment</div></div>
-        <div class="stat-card err"><div class="stat-label">Overdue</div><div class="stat-value">$69</div><div class="stat-sub">Northern Plumbing</div></div>
-        <div class="stat-card"><div class="stat-label">ARR (Projected)</div><div class="stat-value">$22k</div><div class="stat-sub">Based on current MRR</div></div>
+      <div class="stat-grid" id="billing-stats-grid">
+        <div class="stat-card warn"><div class="stat-label">MRR</div><div class="stat-value" id="billing-stat-mrr">—</div><div class="stat-sub" id="billing-stat-mrr-sub">Loading…</div></div>
+        <div class="stat-card teal"><div class="stat-label">Collected MTD</div><div class="stat-value" id="billing-stat-mtd">—</div><div class="stat-sub" id="billing-stat-mtd-sub">Loading…</div></div>
+        <div class="stat-card err"><div class="stat-label">Overdue</div><div class="stat-value" id="billing-stat-overdue">—</div><div class="stat-sub" id="billing-stat-overdue-sub"></div></div>
+        <div class="stat-card"><div class="stat-label">ARR (Projected)</div><div class="stat-value" id="billing-stat-arr">—</div><div class="stat-sub">Based on current MRR</div></div>
       </div>
       <div class="card">
         <h2>&#128203; Recent Transactions</h2>
-        <table class="data-table">
-          <thead><tr><th>Client</th><th>Amount</th><th>Date</th><th>Method</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>Acme Corp Inc.</td><td>$69.00</td><td>Mar 10, 2026</td><td>Stripe</td><td><span class="pill green">Paid</span></td></tr>
-            <tr><td>Maple Health Clinic</td><td>$199.00</td><td>Mar 8, 2026</td><td>Stripe</td><td><span class="pill green">Paid</span></td></tr>
-            <tr><td>Northern Plumbing Co.</td><td>$69.00</td><td>Mar 1, 2026</td><td>Stripe</td><td><span class="pill red">Failed</span></td></tr>
-            <tr><td>Sunrise Legal</td><td>$199.00</td><td>Feb 28, 2026</td><td>Stripe</td><td><span class="pill green">Paid</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card">
-        <h2>&#9993; Zoho Email Automation</h2>
-        <p style="font-size:.83rem;color:#8a9bbf;margin-bottom:16px">Automated AODA compliance reminders sent from <a href="/cdn-cgi/l/email-protection#7f1c10120f13161e111c1a3f1e1c1c1a0c0c161d1613160b061c10120f13161e111c1a511c1e" style="color:#4f8ef7"><span class="__cf_email__" data-cfemail="e4878b8994888d858a8781a48587878197978d868d888d909d878b8994888d858a8781ca8785">[email&#160;protected]</span></a></p>
-        <table class="data-table">
-          <thead><tr><th>Date</th><th>Template</th><th>Recipients</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>Dec 1, 2026</td><td>First Notice</td><td>All active clients</td><td><span class="pill blue">Scheduled</span></td></tr>
-            <tr><td>Dec 15, 2026</td><td>Deadline Approaching</td><td>All active clients</td><td><span class="pill blue">Scheduled</span></td></tr>
-            <tr><td>Dec 28, 2026</td><td>Final Notice</td><td>All active clients</td><td><span class="pill blue">Scheduled</span></td></tr>
-          </tbody>
-        </table>
+        <div id="billing-transactions-wrap"><div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">Loading…</div></div>
       </div>
     </div>
 
@@ -479,7 +459,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div class="panel" id="panel-admin-invoices">
       <div class="page-header">
         <h1>&#128196; Custom Invoices</h1>
-        <p>Generate one-off invoices for custom work or onboarding fees.</p>
+        <p>Generate one-off Stripe invoices for custom work or onboarding fees.</p>
       </div>
       <div class="card">
         <h2>&#10133; New Invoice</h2>
@@ -487,30 +467,46 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div class="fgroup">
             <label for="inv-client">Client</label>
             <select class="finput" id="inv-client">
-              <option>Acme Corp Inc.</option>
-              <option>Maple Health Clinic</option>
-              <option>Northern Plumbing Co.</option>
-              <option>Sunrise Legal</option>
+              <option value="">— Select a client —</option>
             </select>
           </div>
           <div class="fgroup">
             <label for="inv-amount">Amount ($)</label>
-            <input class="finput" id="inv-amount" type="number" placeholder="e.g. 250.00">
+            <input class="finput" id="inv-amount" type="number" step="0.01" min="1" placeholder="e.g. 250.00">
           </div>
           <div class="fgroup" style="grid-column:1/-1">
             <label for="inv-desc">Description</label>
             <input class="finput" id="inv-desc" placeholder="e.g. AODA Audit — Q1 2026">
           </div>
           <div class="fgroup">
-            <label for="inv-date">Invoice Date</label>
-            <input class="finput" id="inv-date" type="date">
+            <label for="inv-due-days">Due in (days)</label>
+            <select class="finput" id="inv-due-days">
+              <option value="7">7 days</option>
+              <option value="14">14 days</option>
+              <option value="30" selected>30 days</option>
+            </select>
           </div>
           <div class="fgroup">
-            <label for="inv-due">Due Date</label>
-            <input class="finput" id="inv-due" type="date">
+            <label for="inv-tax">Tax</label>
+            <select class="finput" id="inv-tax">
+              <option value="0">No Tax</option>
+              <option value="13" selected>HST 13% (Ontario)</option>
+            </select>
           </div>
         </div>
-        <button class="btn-sm btn-primary" onclick="alert('Invoice generated and sent via Stripe!')">&#128228; Generate &amp; Send</button>
+        <div id="inv-preview" style="display:none;background:#060d1a;border:1px solid #1e3a6b;border-radius:10px;padding:14px;margin-bottom:16px;font-size:.82rem">
+          <strong style="color:#e8edf8">Invoice Preview:</strong>
+          <div id="inv-preview-text" style="color:#8a9bbf;margin-top:6px"></div>
+        </div>
+        <div id="inv-error" style="display:none;background:#3d1515;border:1px solid #f05f5f;border-radius:8px;padding:10px 14px;color:#f05f5f;font-size:.85rem;margin-bottom:12px"></div>
+        <div class="btn-row">
+          <button class="btn-sm btn-primary" onclick="createStripeInvoice()">&#128228; Generate &amp; Send via Stripe</button>
+          <button class="btn-sm btn-ghost" onclick="previewInvoice()">&#128065; Preview</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>&#128203; Recent Custom Invoices</h2>
+        <div id="custom-invoices-list"><div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">Loading…</div></div>
       </div>
     </div>
 
@@ -522,16 +518,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </div>
       <div class="card">
         <h2>&#128202; Deployment Status</h2>
-        <table class="data-table">
-          <thead><tr><th>Client</th><th>Domain</th><th>Widget Version</th><th>Last Seen</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>Acme Corp Inc.</td><td>acmecorp.ca</td><td>v12</td><td>Today</td><td><span class="pill green">Live</span></td></tr>
-            <tr><td>Maple Health Clinic</td><td>maplehealth.ca</td><td>v12</td><td>Today</td><td><span class="pill green">Live</span></td></tr>
-            <tr><td>Northern Plumbing Co.</td><td>northernplumbing.ca</td><td>v11</td><td>Mar 1</td><td><span class="pill yellow">Outdated</span></td></tr>
-            <tr><td>Sunrise Legal</td><td>sunriselegal.ca</td><td>v12</td><td>Today</td><td><span class="pill green">Live</span></td></tr>
-            <tr><td>Hartwell Dental</td><td>hartwelldental.ca</td><td>—</td><td>—</td><td><span class="pill red">Not Deployed</span></td></tr>
-          </tbody>
-        </table>
+        <div id="widget-deploy-table-wrap"><div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">Loading…</div></div>
         <div style="margin-top:16px">
           <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:8px">CDN URL:</p>
           <code style="font-family:ui-monospace,'SF Mono','Courier New',monospace;font-size:.78rem;color:#38d9a9;background:#060d1a;padding:8px 12px;border-radius:8px;display:block;word-break:break-all">https://cdn.jsdelivr.net/gh/ACC-Widget.js</code>
@@ -539,12 +526,8 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       </div>
     </div>
 
-    <!-- ══ ACCESS CONTROL ══ -->
-    <div class="panel" id="panel-admin-access">
-      <div class="page-header">
-        <h1>&#128274; Access Control</h1>
-        <p>Control which dashboard tabs are visible per tier, with per-client overrides.</p>
-      </div>
+    <!-- ACCESS CONTROL REMOVED — managed per-client in Edit Client modal -->
+    <div class="panel" id="panel-admin-access" style="display:none">
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
         <button class="btn-sm btn-primary" onclick="showAccessTab('tier')" id="acc-tab-tier">&#127381; By Tier</button>
         <button class="btn-sm btn-ghost" onclick="showAccessTab('client')" id="acc-tab-client">&#128100; Per Client Override</button>
@@ -857,14 +840,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
   </div>
 </div>
 
-<!-- Roadmap Editor -->
->
-
-<!-- Template Editor -->
->
-
-<!-- Binder Editor -->
->
+<!-- Roadmap/Template/Binder editors are within the client modal -->
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 // ── Panel switching ──
@@ -891,6 +867,10 @@ function showPanel(id) {
   };
   var t = document.getElementById('topbar-title');
   if (t) t.textContent = titles[id] || id;
+
+  // Panel-specific loaders
+  if (id === 'admin-discounts') loadDiscountCodes();
+  if (id === 'admin-invoices')  loadCustomInvoicesList();
 
   // Scroll to top — reliable on iOS Safari
   document.body.scrollTop = 0;
@@ -952,12 +932,41 @@ function filterClients() {
 }
 
 function exportClients() {
-  alert('Client list exported as CSV.');
+  var rows = document.querySelectorAll('#client-tbody tr[data-id]');
+  if (!rows.length) { showToastAdmin('No clients to export.', 'error'); return; }
+  var headers = ['Client Name','Client ID','Domain','Tier','Status','Renewal Date'];
+  var lines = [headers.join(',')];
+  rows.forEach(function(row) {
+    if (row.style.display === 'none') return; // respect current filter
+    var cells = row.querySelectorAll('td');
+    var name   = cells[0] ? (cells[0].querySelector('strong') || {}).textContent || '' : '';
+    var code   = cells[0] ? (cells[0].querySelector('div') || {}).textContent || '' : '';
+    code = code.split('·')[0].trim();
+    var tier   = cells[1] ? cells[1].textContent.trim() : '';
+    var domain = cells[2] ? cells[2].textContent.trim() : '';
+    var renews = cells[3] ? cells[3].textContent.trim() : '';
+    var status = cells[4] ? cells[4].textContent.trim() : '';
+    var csvRow = [name, code, domain, tier, status, renews].map(function(v){
+      v = String(v).replace(/"/g, '""');
+      return '"' + v + '"';
+    });
+    lines.push(csvRow.join(','));
+  });
+  var blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href = url;
+  a.download = 'acc-clients-' + new Date().toISOString().substring(0,10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToastAdmin('CSV exported.', 'success');
 }
 
 
 
-// ── Discount codes ──
+// ── Discount codes — DB backed ──
 function generateCode() {
   var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   var code = '';
@@ -965,28 +974,80 @@ function generateCode() {
   document.getElementById('dc-code').value = code;
 }
 
-function createDiscountCode() {
-  var code = document.getElementById('dc-code').value.trim().toUpperCase();
-  var pct = document.getElementById('dc-pct').value;
-  var uses = document.getElementById('dc-uses').value || '∞';
-  var expiry = document.getElementById('dc-expiry').value;
-  if (!code) { alert('Please enter a code.'); return; }
-  var expDisplay = expiry ? new Date(expiry + 'T00:00:00').toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'}) : 'No expiry';
-  var tbody = document.getElementById('discount-tbody');
-  var tr = document.createElement('tr');
-  tr.innerHTML = '<td><strong>' + code + '</strong></td><td>' + pct + '%</td><td>0 / ' + uses + '</td><td>' + expDisplay + '</td><td><span class="pill green">Active</span></td><td><button class="btn-sm btn-danger" onclick="deactivateCode(this,\'' + code + '\')">Deactivate</button></td>';
-  tbody.insertBefore(tr, tbody.firstChild);
-  document.getElementById('dc-code').value = '';
-  document.getElementById('dc-uses').value = '';
-  document.getElementById('dc-expiry').value = '';
-  alert('Code ' + code + ' created!');
+async function createDiscountCode() {
+  var code   = (document.getElementById('dc-code').value || '').trim().toUpperCase();
+  var pct    = parseInt(document.getElementById('dc-pct').value || '25');
+  var maxUse = parseInt(document.getElementById('dc-uses').value || '0') || null;
+  var expiry = document.getElementById('dc-expiry').value || null;
+  if (!code) { showToastAdmin('Please enter or generate a code.', 'error'); return; }
+
+  var btn = document.querySelector('#panel-admin-discounts .btn-primary');
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+  try {
+    var r = await _sb.from('discount_codes').insert({
+      code:          code,
+      discount_pct:  pct,
+      max_uses:      maxUse,
+      uses_count:    0,
+      expires_at:    expiry ? expiry + 'T23:59:59Z' : null,
+      status:        'active'
+    });
+    if (r.error) throw r.error;
+    showToastAdmin('Code ' + code + ' created!', 'success');
+    document.getElementById('dc-code').value  = '';
+    document.getElementById('dc-uses').value  = '';
+    document.getElementById('dc-expiry').value = '';
+    loadDiscountCodes();
+  } catch(e) {
+    var msg = e.message || String(e);
+    if (msg.includes('unique') || msg.includes('duplicate')) msg = 'Code "' + code + '" already exists.';
+    showToastAdmin('Error: ' + msg, 'error');
+  } finally {
+    if (btn) { btn.textContent = '✓ Create Code'; btn.disabled = false; }
+  }
 }
 
-function deactivateCode(btn, code) {
-  if (confirm('Deactivate code ' + code + '?')) {
-    btn.closest('tr').style.opacity = '.4';
-    btn.disabled = true;
-    btn.textContent = 'Deactivated';
+async function deactivateCode(btn, code) {
+  if (!confirm('Deactivate code ' + code + '?')) return;
+  try {
+    var r = await _sb.from('discount_codes').update({ status: 'inactive' }).eq('code', code);
+    if (r.error) throw r.error;
+    showToastAdmin('Code ' + code + ' deactivated.', 'success');
+    loadDiscountCodes();
+  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
+}
+
+async function loadDiscountCodes() {
+  var tbody = document.getElementById('discount-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="color:#8a9bbf;padding:16px;text-align:center">Loading…</td></tr>';
+  try {
+    var r = await _sb.from('discount_codes').select('*').order('created_at',{ascending:false});
+    if (r.error) throw r.error;
+    var codes = r.data || [];
+    if (!codes.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color:#8a9bbf;padding:16px;text-align:center">No discount codes yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = codes.map(function(dc) {
+      var isActive = dc.status === 'active';
+      var expDisplay = dc.expires_at ? fmtDate(dc.expires_at) : 'No expiry';
+      var usesDisplay = (dc.uses_count||0) + ' / ' + (dc.max_uses || '∞');
+      var pill = isActive ? '<span class="pill green">Active</span>' : '<span class="pill red">Inactive</span>';
+      var deactivateBtn = isActive
+        ? '<button class="btn-sm btn-danger" onclick="deactivateCode(this,\''+esc(dc.code)+'\')">Deactivate</button>'
+        : '<span style="color:#8a9bbf;font-size:.75rem">—</span>';
+      return '<tr>' +
+        '<td><strong>'+esc(dc.code)+'</strong></td>' +
+        '<td>'+dc.discount_pct+'%</td>' +
+        '<td>'+usesDisplay+'</td>' +
+        '<td style="font-size:.8rem;color:#8a9bbf">'+expDisplay+'</td>' +
+        '<td>'+pill+'</td>' +
+        '<td>'+deactivateBtn+'</td>' +
+        '</tr>';
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:#f05f5f;padding:16px">Error: '+esc(e.message||String(e))+'</td></tr>';
   }
 }
 
@@ -1293,14 +1354,22 @@ function defaultMilestones(clientId, tier) {
 async function loadClients() {
   var tbody = document.getElementById('client-tbody');
   try {
+    console.log('[loadClients] starting query...');
     var r = await _sb.from('clients').select('*').order('name', { ascending: true });
+    console.log('[loadClients] result:', r.error ? 'ERROR: '+r.error.message : (r.data ? r.data.length+' rows' : 'no data'));
     if (r.error) {
       if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="color:#f05f5f;padding:20px;text-align:center">Error loading clients: ' + esc(r.error.message) + '</td></tr>';
       return;
     }
     var clients = (r.data || []).filter(function(c){ return !c.deleted_at; });
     renderClientsTable(clients);
-    updateOverviewStats(clients);
+    // Update client count display
+    var countEl = document.getElementById('client-count');
+    if (countEl) countEl.textContent = clients.length;
+    var badgeEl = document.getElementById('sidebar-client-badge');
+    if (badgeEl) badgeEl.textContent = clients.length;
+    // Run stats update separately so any error doesn't affect the table
+    try { updateOverviewStats(clients); } catch(se) { console.warn('updateOverviewStats error:', se); }
   } catch(e) {
     console.error('loadClients:', e);
     if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="color:#f05f5f;padding:20px;text-align:center">Exception: ' + (e.message||String(e)) + '</td></tr>';
@@ -1365,18 +1434,148 @@ function toIsoDate(val) {
 
 
 function updateOverviewStats(clients) {
-  var active = clients.filter(function(c){ return (c.status||'').toLowerCase() === 'active' || (c.status||'').toLowerCase() === 'current'; }).length;
-  var overdue = clients.filter(function(c){ return (c.status||'').toLowerCase() === 'overdue'; }).length;
-  // Update any stat cards that exist on overview panel
-  var els = {
-    'stat-total-clients': clients.length,
-    'stat-active-clients': active,
-    'stat-overdue-clients': overdue
-  };
-  Object.keys(els).forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = els[id];
-  });
+  var active  = clients.filter(function(c){ var s=(c.status||'').toLowerCase(); return s==='active'||s==='current'; });
+  var overdue = clients.filter(function(c){ return (c.status||'').toLowerCase()==='overdue'; });
+  var pending = clients.filter(function(c){ return (c.status||'').toLowerCase()==='pending'; });
+  var tier1   = clients.filter(function(c){ return c.tier==1; });
+  var tier2   = clients.filter(function(c){ return c.tier==2; });
+  var mrr     = tier1.length * 69 + tier2.length * 199;
+
+  // ── Overview panel ──
+  var set = function(id, val) { var el=document.getElementById(id); if(el) el.textContent=val; };
+  set('stat-active-clients',  active.length);
+  set('stat-active-clients-sub', pending.length + ' pending activation');
+  set('stat-mrr',             '$' + mrr.toLocaleString());
+  set('stat-mrr-sub',         tier1.length + '× T1 + ' + tier2.length + '× T2');
+  set('stat-tier1',           tier1.length);
+  set('stat-tier2',           tier2.length);
+  set('stat-overdue-clients', overdue.length);
+  set('stat-overdue-sub',     overdue.length ? overdue.map(function(c){return c.name;}).slice(0,2).join(', ') : 'None');
+  set('stat-total-clients',   clients.length);
+  set('stat-pending-sub',     pending.length + ' pending');
+
+  // ── Sidebar badge ──
+  set('sidebar-client-badge', clients.length);
+
+  // ── Recent Activity — last 8 clients by updated_at/created_at ──
+  var actWrap = document.getElementById('overview-activity-wrap');
+  if (actWrap) {
+    var sorted = clients.slice().sort(function(a,b){
+      return new Date(b.updated_at||b.created_at||0) - new Date(a.updated_at||a.created_at||0);
+    }).slice(0, 8);
+    if (!sorted.length) {
+      actWrap.innerHTML = '<div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">No clients yet.</div>';
+    } else {
+      actWrap.innerHTML =
+        '<table class="data-table"><thead><tr><th>Client</th><th>ID</th><th>Tier</th><th>Updated</th><th>Status</th></tr></thead><tbody>' +
+        sorted.map(function(c) {
+          var dt = c.updated_at||c.created_at ? fmtDate(c.updated_at||c.created_at) : '—';
+          var sc = statusColor(c.status||'active');
+          var disp = (c.status||'active'); disp = disp.charAt(0).toUpperCase()+disp.slice(1);
+          return '<tr>' +
+            '<td><strong>'+esc(c.name)+'</strong></td>' +
+            '<td style="color:#8a9bbf;font-size:.78rem">'+esc(c.client_code||'')+'</td>' +
+            '<td><span class="pill blue">'+tierLabel(c.tier)+'</span></td>' +
+            '<td style="color:#8a9bbf;font-size:.8rem">'+dt+'</td>' +
+            '<td><span class="pill '+sc+'">'+disp+'</span></td>' +
+            '</tr>';
+        }).join('') +
+        '</tbody></table>';
+    }
+  }
+
+  // ── Widget Deploy table ──
+  var wdWrap = document.getElementById('widget-deploy-table-wrap');
+  if (wdWrap) {
+    var deployed = clients.filter(function(c){ return c.widget_deployed; });
+    var notDeployed = clients.filter(function(c){ return !c.widget_deployed; });
+    wdWrap.innerHTML =
+      '<table class="data-table"><thead><tr><th>Client</th><th>Domain</th><th>Widget Version</th><th>Last Seen</th><th>Status</th></tr></thead><tbody>' +
+      clients.map(function(c) {
+        var live = !!c.widget_deployed;
+        var ver  = c.widget_version ? 'v' + c.widget_version : (live ? 'v12' : '—');
+        var seen = c.widget_last_seen ? fmtDate(c.widget_last_seen) : (live ? 'Today' : '—');
+        var pill = live ? '<span class="pill green">Live</span>' : '<span class="pill red">Not Deployed</span>';
+        return '<tr>' +
+          '<td>'+esc(c.name)+'</td>' +
+          '<td style="color:#8a9bbf;font-size:.8rem">'+esc(c.domain||'—')+'</td>' +
+          '<td style="font-family:var(--mono);font-size:.78rem;color:#38d9a9">'+ver+'</td>' +
+          '<td style="color:#8a9bbf;font-size:.8rem">'+seen+'</td>' +
+          '<td>'+pill+'</td>' +
+          '</tr>';
+      }).join('') +
+      '</tbody></table>' +
+      '<div style="margin-top:10px;font-size:.78rem;color:#8a9bbf">' +
+        deployed.length + ' live · ' + notDeployed.length + ' not deployed' +
+      '</div>';
+  }
+
+  // ── Invoice client dropdown ──
+  var invSel = document.getElementById('inv-client');
+  if (invSel && invSel.options.length <= 1) {
+    clients.forEach(function(c) {
+      var opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.name + ' (' + c.client_code + ')';
+      opt.dataset.email = c.email || '';
+      opt.dataset.name  = c.name  || '';
+      opt.dataset.code  = c.client_code || '';
+      invSel.appendChild(opt);
+    });
+  }
+
+  // ── Billing panel live stats ──
+  (async function() {
+    try {
+      var now = new Date();
+      var y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0');
+      var startOfMonth = y + '-' + m + '-01';
+
+      var br = await _sb.from('billing').select('*').gte('created_at', startOfMonth).order('created_at',{ascending:false});
+      var bills = br.error ? [] : (br.data || []);
+
+      var collected = bills.filter(function(b){return b.paid_at != null;}).reduce(function(s,b){return s+parseFloat(b.amount||0);},0);
+      var overdueAmt = clients.filter(function(c){return (c.status||'').toLowerCase()==='overdue';})
+                              .reduce(function(s,c){return s+(c.tier==2?199:69);}, 0);
+      var arr = mrr * 12;
+
+      var setB = function(id,val){var el=document.getElementById(id);if(el)el.textContent=val;};
+      setB('billing-stat-mrr',     '$' + mrr.toLocaleString());
+      setB('billing-stat-mrr-sub', tier1.length + '× T1 + ' + tier2.length + '× T2');
+      setB('billing-stat-mtd',     '$' + collected.toFixed(2));
+      setB('billing-stat-mtd-sub', bills.filter(function(b){return b.paid_at != null;}).length + ' payments collected');
+      setB('billing-stat-overdue', '$' + overdueAmt);
+      setB('billing-stat-overdue-sub', overdue.length + ' client' + (overdue.length!==1?'s':''));
+      setB('billing-stat-arr',     '$' + Math.round(arr/1000) + 'k');
+
+      // Billing transactions table
+      var txWrap = document.getElementById('billing-transactions-wrap');
+      if (txWrap) {
+        // Join with clients for name lookup
+        var clientMap = {};
+        clients.forEach(function(c){ clientMap[c.id] = c.name; });
+        if (!bills.length) {
+          txWrap.innerHTML = '<div style="color:#8a9bbf;font-size:.85rem;padding:12px 0">No transactions this month yet.</div>';
+        } else {
+          txWrap.innerHTML =
+            '<table class="data-table"><thead><tr><th>Client</th><th>Amount</th><th>Date</th><th>Method</th><th>Status</th></tr></thead><tbody>' +
+            bills.slice(0,20).map(function(b) {
+              var cname = clientMap[b.client_id] || '—';
+              var sc = b.status==='paid'?'green':(b.status==='failed'?'red':'yellow');
+              return '<tr>' +
+                '<td>'+esc(cname)+'</td>' +
+                '<td>$'+parseFloat(b.amount||0).toFixed(2)+'</td>' +
+                '<td style="color:#8a9bbf;font-size:.8rem">'+fmtDate(b.paid_at||b.created_at)+'</td>' +
+                '<td style="color:#8a9bbf;font-size:.8rem">'+esc(b.payment_method||'Stripe')+'</td>' +
+                '<td><span class="pill '+sc+'">'+esc(b.status||'pending')+'</span></td>' +
+                '</tr>';
+            }).join('') +
+            '</tbody></table>';
+        }
+      }
+
+    } catch(e) { console.warn('billing stats error:', e); }
+  })();
 }
 
 // ── Add Client ───────────────────────────────────────────
@@ -1417,6 +1616,7 @@ async function addClient() {
       client_code:      code,
       name:             name,
       email:            email,
+      contact_name:     contact || null,
       domain:           domain || null,
       phone:            phone  || null,
       tier:             tier,
@@ -1424,7 +1624,6 @@ async function addClient() {
       start_date:       start   || null,
       renewal_date:     renewal || null
     };
-    if (contact) payload.onboarding_notes = 'Contact: ' + contact;
 
     var r = await _sb.from('clients').insert(payload).select('id,client_code').single();
     if (r.error) throw r.error;
@@ -1533,6 +1732,7 @@ async function openClientEditor(btn) {
     // ── Billing tab ──
     f('ce-inv-notes',    c.billing_notes  || '');
     f('ce-discount',     c.discount_code  || '');
+    f('ce-rate',         c.monthly_rate != null ? c.monthly_rate : (c.tier==2 ? 199 : c.tier==3 ? '' : 69));
     f('ce-card-last4',   c.card_last4     || '');
     f('ce-card-expiry',  c.card_expiry    || '');
     f('ce-card-name',    c.card_name      || '');
@@ -1642,6 +1842,7 @@ async function saveClientInfo() {
     var start      = (document.getElementById('ce-start')        ||{}).value || null;
     var renewal    = (document.getElementById('ce-renewal')      ||{}).value || null;
     var billNotes  = (document.getElementById('ce-billing-note') ||{}).value.trim();
+    var contact    = (document.getElementById('ce-contact')      ||{}).value.trim();
     var onbNotes   = (document.getElementById('ce-onboard-notes')||{}).value.trim();
     var lastCont   = (document.getElementById('ce-last-contact') ||{}).value || null;
     var nextFup    = (document.getElementById('ce-followup')     ||{}).value || null;
@@ -1655,9 +1856,9 @@ async function saveClientInfo() {
     if (!email) { showToastAdmin('Contact Email is required.', 'error'); return; }
 
     // ── UPDATE clients ──
-    var contact = (document.getElementById('ce-contact')||{}).value.trim();
     var update = {
       name:             name,
+      contact_name:     contact || null,
       domain:           domain || null,
       email:            email,
       phone:            phone  || null,
@@ -1672,11 +1873,6 @@ async function saveClientInfo() {
     };
     var r = await _sb.from('clients').update(update).eq('id', _editingClientId);
     if (r.error) throw r.error;
-    // Save contact_name separately — column may not exist yet
-    if (contact) {
-      await _sb.from('clients').update({ contact_name: contact }).eq('id', _editingClientId)
-        .then(function(){}).catch(function(){});
-    }
 
     // ── UPDATE roadmap milestones ──
     var rmPanel = document.getElementById('ctab-panel-roadmap');
@@ -1817,6 +2013,7 @@ async function saveBilling() {
     var inv   = (document.getElementById('ce-inv-notes')||{}).value||'';
     var disc  = (document.getElementById('ce-discount')||{}).value||'';
     var pay   = document.getElementById('ce-payment');
+    var rate  = parseFloat((document.getElementById('ce-rate')||{}).value||0) || null;
     var cardLast4  = (document.getElementById('ce-card-last4')  ||{}).value.trim();
     var cardExpiry = (document.getElementById('ce-card-expiry') ||{}).value.trim();
     var cardName   = (document.getElementById('ce-card-name')   ||{}).value.trim();
@@ -1824,6 +2021,7 @@ async function saveBilling() {
       billing_cycle:  cycle ? cycle.options[cycle.selectedIndex].text.toLowerCase() : 'monthly',
       billing_notes:  inv||null, discount_code: disc||null,
       payment_method: pay ? pay.options[pay.selectedIndex].text.toLowerCase() : 'stripe',
+      monthly_rate:   rate,
       updated_at: new Date().toISOString()
     }).eq('id', _editingClientId);
     if (r.error) throw r.error;
@@ -1979,6 +2177,192 @@ function signOut() {
     _sb.auth.signOut().then(function() {
       window.location.replace('admin-login.html');
     });
+  }
+}
+
+// ── Custom Invoice — Stripe via Supabase edge function ────
+function previewInvoice() {
+  var sel = document.getElementById('inv-client');
+  var clientName = sel && sel.selectedIndex > 0 ? sel.options[sel.selectedIndex].text : null;
+  var amount  = parseFloat(document.getElementById('inv-amount').value || 0);
+  var desc    = (document.getElementById('inv-desc').value || '').trim();
+  var taxPct  = parseInt(document.getElementById('inv-tax').value || '0');
+  var dueDays = document.getElementById('inv-due-days').value || '30';
+  var preview = document.getElementById('inv-preview');
+  var previewText = document.getElementById('inv-preview-text');
+  if (!clientName || !amount || !desc) {
+    showToastAdmin('Fill in client, amount, and description to preview.', 'error'); return;
+  }
+  var tax = amount * taxPct / 100;
+  var total = amount + tax;
+  previewText.innerHTML =
+    '<strong style="color:#e8edf8">To:</strong> ' + esc(clientName) + '<br>' +
+    '<strong style="color:#e8edf8">Description:</strong> ' + esc(desc) + '<br>' +
+    '<strong style="color:#e8edf8">Subtotal:</strong> $' + amount.toFixed(2) +
+    (taxPct ? ' + $' + tax.toFixed(2) + ' HST = <strong style="color:#38d9a9">$' + total.toFixed(2) + ' total</strong>' : '') + '<br>' +
+    '<strong style="color:#e8edf8">Due in:</strong> ' + dueDays + ' days';
+  preview.style.display = 'block';
+}
+
+async function createStripeInvoice() {
+  var sel       = document.getElementById('inv-client');
+  var clientId  = sel && sel.selectedIndex > 0 ? sel.value : null;
+  var clientOpt = sel && sel.selectedIndex > 0 ? sel.options[sel.selectedIndex] : null;
+  var amount    = parseFloat(document.getElementById('inv-amount').value || 0);
+  var desc      = (document.getElementById('inv-desc').value || '').trim();
+  var taxPct    = parseInt(document.getElementById('inv-tax').value || '0');
+  var dueDays   = parseInt(document.getElementById('inv-due-days').value || '30');
+  var errEl     = document.getElementById('inv-error');
+  if (errEl) errEl.style.display = 'none';
+
+  if (!clientId)       { if(errEl){errEl.textContent='Please select a client.';errEl.style.display='block';} return; }
+  if (!amount || amount < 1) { if(errEl){errEl.textContent='Amount must be at least $1.00';errEl.style.display='block';} return; }
+  if (!desc)           { if(errEl){errEl.textContent='Description is required.';errEl.style.display='block';} return; }
+
+  var btn = document.querySelector('#panel-admin-invoices .btn-primary');
+  if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
+
+  try {
+    var tax   = Math.round(amount * taxPct) / 100;
+    var total = amount + tax;
+    var amountCents = Math.round(total * 100);
+
+    // ── Try edge function first ────────────────────────────
+    var session = await _sb.auth.getSession();
+    var token   = session.data.session ? session.data.session.access_token : SUPABASE_ANON;
+
+    var invoiceId = null;
+    var invoiceUrl = null;
+
+    var r = await fetch(SUPABASE_URL + '/functions/v1/create-stripe-invoice', {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': 'Bearer ' + token,
+        'apikey':        SUPABASE_ANON
+      },
+      body: JSON.stringify({
+        client_id:    clientId,
+        amount_cents: amountCents,
+        description:  desc,
+        due_days:     dueDays,
+        tax_pct:      taxPct
+      })
+    });
+    var res = await r.json();
+    if (!r.ok || res.error) throw new Error(res.error || res.message || 'Invoice creation failed (HTTP ' + r.status + ').');
+    invoiceId  = res.invoice_id  || null;
+    invoiceUrl = res.invoice_url || null;
+    // Billing table insert is handled inside the edge function already.
+
+    var clientName = clientOpt ? (clientOpt.dataset.name || clientOpt.text.split('(')[0].trim()) : 'client';
+
+    // Show result — Stripe test mode does not deliver real emails.
+    // Store invoice URL in a data attribute to avoid nested quote hell.
+    var errEl2 = document.getElementById('inv-error');
+    if (errEl2) {
+      errEl2.style.cssText = 'display:block;background:rgba(56,217,169,.08);border:1px solid rgba(56,217,169,.3);border-radius:8px;padding:12px 14px;font-size:.82rem;color:#38d9a9';
+      var linkHtml = '';
+      if (invoiceUrl) {
+        window._lastInvoiceUrl = invoiceUrl; // store safely for copy button
+        linkHtml =
+          '<div style="color:#8a9bbf;margin-top:4px;font-size:.8rem">Stripe test mode — no email sent to real inbox. Share this link:</div>' +
+          '<a href="' + invoiceUrl + '" target="_blank" rel="noopener" style="color:#4f8ef7;word-break:break-all;font-size:.78rem;display:block;margin-top:4px">' + invoiceUrl + '</a>' +
+          '<button id="copy-inv-url-btn" style="margin-top:6px;background:#1e3a6b;border:1px solid #4f8ef7;color:#4f8ef7;border-radius:6px;padding:3px 12px;font-size:.72rem;cursor:pointer">Copy Link</button>';
+      }
+      errEl2.innerHTML = '<strong>\u2705 Invoice created for ' + esc(clientName) + '!</strong>' + linkHtml;
+      // Attach copy handler after innerHTML is set
+      var copyBtn = document.getElementById('copy-inv-url-btn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+          navigator.clipboard.writeText(window._lastInvoiceUrl || '').then(function() {
+            copyBtn.textContent = 'Copied!';
+            setTimeout(function(){ copyBtn.textContent = 'Copy Link'; }, 2000);
+          });
+        });
+      }
+    }
+
+    // Reset form fields
+    if (sel) sel.selectedIndex = 0;
+    var amtEl = document.getElementById('inv-amount'); if (amtEl) amtEl.value = '';
+    var dscEl = document.getElementById('inv-desc');   if (dscEl) dscEl.value = '';
+    var pvEl  = document.getElementById('inv-preview'); if (pvEl) pvEl.style.display = 'none';
+
+    // Reload recent custom invoices
+    loadCustomInvoicesList();
+
+  } catch(e) {
+    var msg = e.message || String(e);
+    if (errEl) { errEl.textContent = 'Error: ' + msg; errEl.style.display = 'block'; }
+    else showToastAdmin('Error: ' + msg, 'error');
+  } finally {
+    if (btn) { btn.textContent = '📨 Generate & Send via Stripe'; btn.disabled = false; }
+  }
+}
+
+// ── Load recent custom invoices list ─────────────────────
+async function loadCustomInvoicesList() {
+  var ciWrap = document.getElementById('custom-invoices-list');
+  if (!ciWrap) return;
+  ciWrap.innerHTML = '<div style="color:#8a9bbf;font-size:.85rem;padding:12px 0">Loading…</div>';
+  try {
+    // Load ALL billing rows then filter client-side — avoids RLS/syntax issues with .or()
+    var ir = await _sb.from('billing')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (ir.error) throw ir.error;
+
+    console.log('[invoices] billing rows fetched:', ir.data ? ir.data.length : 0, ir.data);
+
+    // Keep only custom invoices: type=custom OR has a stripe_invoice_id
+    var invs = (ir.data || []).filter(function(b){
+      return b.type === 'custom' || (b.stripe_invoice_id && b.stripe_invoice_id.length > 0);
+    });
+
+    if (!invs.length) {
+      ciWrap.innerHTML = '<div style="color:#8a9bbf;font-size:.85rem;padding:12px 0">No custom invoices yet. Use the form above to send one.</div>';
+      return;
+    }
+
+    // Build client name map
+    var clientIds = Array.from(new Set(invs.map(function(b){ return b.client_id; }).filter(Boolean)));
+    var clientMap = {};
+    if (clientIds.length) {
+      var clr = await _sb.from('clients').select('id,name,email').in('id', clientIds);
+      if (!clr.error && clr.data) {
+        clr.data.forEach(function(c){ clientMap[c.id] = c; });
+      }
+    }
+
+    ciWrap.innerHTML =
+      '<table class="data-table"><thead><tr>' +
+      '<th>Client</th><th>Amount</th><th>Description</th><th>Date</th><th>Status</th><th>Invoice</th>' +
+      '</tr></thead><tbody>' +
+      invs.map(function(b) {
+        var cl  = clientMap[b.client_id] || {};
+        var bstatus = b.status || 'pending';
+        var sc  = bstatus === 'paid' ? 'green' : bstatus === 'failed' ? 'red' : 'yellow';
+        var disp = bstatus.charAt(0).toUpperCase() + bstatus.slice(1);
+        var stripeLink = b.stripe_invoice_id
+          ? '<a href="https://dashboard.stripe.com/test/invoices/' + esc(b.stripe_invoice_id) + '" target="_blank" rel="noopener" style="color:#4f8ef7;font-size:.75rem">View ↗</a>'
+          : '—';
+        return '<tr>' +
+          '<td><strong>' + esc(cl.name || '—') + '</strong>' +
+          (cl.email ? '<div style="font-size:.72rem;color:#8a9bbf">' + esc(cl.email) + '</div>' : '') +
+          '</td>' +
+          '<td style="font-family:var(--mono);color:#38d9a9">$' + parseFloat(b.amount || 0).toFixed(2) + '</td>' +
+          '<td style="color:#8a9bbf;font-size:.8rem;max-width:180px">' + esc(b.description || '—') + '</td>' +
+          '<td style="color:#8a9bbf;font-size:.8rem;white-space:nowrap">' + fmtDate(b.created_at) + '</td>' +
+          '<td><span class="pill ' + sc + '">' + disp + '</span></td>' +
+          '<td>' + stripeLink + '</td>' +
+          '</tr>';
+      }).join('') +
+      '</tbody></table>';
+  } catch(e) {
+    ciWrap.innerHTML = '<div style="color:#f05f5f;font-size:.85rem">Error loading invoices: ' + esc(e.message || String(e)) + '</div>';
   }
 }
 
