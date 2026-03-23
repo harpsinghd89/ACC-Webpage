@@ -830,6 +830,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <div class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
             <h2 style="margin:0">&#128179; Invoices &amp; Receipts</h2>
+
           </div>
           <div id="client-invoices-list">
             <table class="data-table" id="billing-history-table" aria-label="Invoice history">
@@ -889,7 +890,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </div>
         <div class="btn-row" style="margin-top:12px">
           <button class="btn-sm btn-primary" onclick="changePassword()">&#128274; Update Password</button>
-          <button class="btn-sm btn-ghost" onclick="sendResetEmail()">&#128231; Email Reset Link Instead</button>
+
         </div>
       </div>
 
@@ -1481,7 +1482,7 @@ Questions? Reply to this email.
     <button class="modal-close" onclick="closeModal('edit-stmt-modal')" aria-label="Close">&#x2715;</button>
     <h2 id="edit-stmt-title">Customize Accessibility Statement</h2>
     <div class="fgroup"><label for="stmt-co">Company Name</label><input class="finput" type="text" id="stmt-co" value="" style="width:100%"/></div>
-    <div class="fgroup"><label for="stmt-email">Feedback Email</label><input class="finput" type="email" id="stmt-email" value="accessibility@acmecorp.ca" style="width:100%"/></div>
+    <div class="fgroup"><label for="stmt-email">Feedback Email</label><input class="finput" type="email" id="stmt-email" value="" style="width:100%"/></div>
     <div class="fgroup"><label for="stmt-level">Conformance Level</label><select class="finput" id="stmt-level" style="width:100%"><option>WCAG 2.1 Level AA (recommended)</option><option>WCAG 2.0 Level AA</option><option>Partial conformance</option></select></div>
     <div class="btn-row" style="margin-top:8px">
       <button class="btn-sm btn-primary" onclick="applyStmtChanges()">Save &amp; Regenerate</button>
@@ -2108,40 +2109,29 @@ async function changePassword() {
 
 // Send password reset email from Account panel (alternative to typing inline)
 async function sendResetEmail() {
+  var email = window._clientData && window._clientData.email;
+  if (!email) { alert('Could not find your email address. Please contact ACC.'); return; }
   var btn = document.querySelector('#card-change-password .btn-ghost');
   if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
+  var r = await _sb_client.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/dashboard.html'
+  });
+  if (btn) { btn.textContent = '📧 Email Reset Link Instead'; btn.disabled = false; }
   var msg = document.getElementById('pw-change-msg');
-
-  try {
-    // Always use the actual Supabase auth email (may differ from clients table)
-    var sessionRes = await _sb_client.auth.getSession();
-    var authEmail = sessionRes.data && sessionRes.data.session && sessionRes.data.session.user && sessionRes.data.session.user.email;
-    if (!authEmail) throw new Error('Could not read your email from session. Please contact ACC.');
-
-    var r = await _sb_client.auth.resetPasswordForEmail(authEmail, {
-      redirectTo: window.location.origin + '/dashboard.html'
-    });
-
-    if (r.error) throw r.error;
-
-    if (msg) {
-      msg.textContent = '✓ Reset link sent to ' + authEmail + '. Check your inbox.';
-      msg.style.color = '#38d9a9';
-      msg.style.background = 'rgba(56,217,169,.08)';
-      msg.style.border = '1px solid rgba(56,217,169,.3)';
-      msg.style.padding = '10px 14px';
-      msg.style.borderRadius = '8px';
-      msg.style.display = 'block';
-    }
-  } catch(e) {
-    if (msg) {
-      msg.textContent = 'Error: ' + e.message;
-      msg.style.color = '#f05f5f';
-      msg.style.display = 'block';
-    }
-  } finally {
-    if (btn) { btn.textContent = '📧 Email Reset Link Instead'; btn.disabled = false; }
+  if (!msg) return;
+  msg.style.display = 'block';
+  if (r.error) {
+    msg.textContent = 'Error: ' + r.error.message;
+    msg.style.color = '#f05f5f';
+  } else {
+    msg.textContent = '✓ Reset link sent to ' + email + '. Check your inbox.';
+    msg.style.color = '#38d9a9';
+    msg.style.background = 'rgba(56,217,169,.08)';
+    msg.style.border = '1px solid rgba(56,217,169,.3)';
+    msg.style.padding = '10px 14px';
+    msg.style.borderRadius = '8px';
   }
+  msg.style.display = 'block';
 }
 
 // Set password modal — submit handler
@@ -2311,10 +2301,8 @@ function populateEmbed(c) {
 function populateRoadmap(milestones) {
   var container = document.getElementById('roadmap-year-cards');
   if (!container) return;
-
   var currentYear = new Date().getFullYear();
   var years = {};
-
   if (milestones && milestones.length) {
     milestones.forEach(function(m) {
       var yr = m.year || (m.target_date ? parseInt(m.target_date.substring(0,4)) : currentYear);
@@ -2322,24 +2310,20 @@ function populateRoadmap(milestones) {
       years[yr].push(m);
     });
   }
-
-  // Always show at least 3 years (current, +1, +2)
   [currentYear, currentYear+1, currentYear+2].forEach(function(yr){
     if (!years[yr]) years[yr] = [];
   });
-
   var sopts = function(cur) {
     return ['planned','in-progress','done','deferred'].map(function(s){
       return '<option value="'+s+'"'+(s===(cur||'planned')?' selected':'')+'>'+
         s.charAt(0).toUpperCase()+s.slice(1).replace('-',' ')+'</option>';
     }).join('');
   };
-
   container.innerHTML = Object.keys(years).sort().map(function(yr) {
     var rows = years[yr].map(function(m) {
-      var title  = esc(m.title || m.milestone || '');
-      var tdate  = (m.target_date || '').substring(0,10);
-      var rid    = m.id || '';
+      var title = esc(m.title || m.milestone || '');
+      var tdate = (m.target_date || '').substring(0,10);
+      var rid   = m.id || '';
       return '<tr data-rid="'+rid+'" data-year="'+yr+'">' +
         '<td><input class="finput" style="padding:4px 8px;font-size:.8rem;width:100%" value="'+title+'" placeholder="Milestone title"></td>' +
         '<td><input class="finput" type="date" style="padding:4px 8px;font-size:.8rem;width:100%" value="'+tdate+'"></td>' +
@@ -2353,7 +2337,7 @@ function populateRoadmap(milestones) {
         '<button type="button" class="btn-sm btn-ghost" style="font-size:.78rem" onclick="addClientRoadmapRow('+yr+')">+ Add Row</button>' +
       '</div>' +
       '<div style="overflow-x:auto"><table class="data-table" aria-label="'+yr+' roadmap milestones">' +
-      '<thead><tr><th style="min-width:200px">Milestone</th><th style="min-width:120px">Target Date</th><th style="min-width:110px">Status</th><th style="width:40px"></th></tr></thead>' +
+      '<thead><tr><th style="min-width:200px">Milestone</th><th style="min-width:130px">Target Date</th><th style="min-width:110px">Status</th><th style="width:40px"></th></tr></thead>' +
       '<tbody id="roadmap-tbody-'+yr+'">' + rows + '</tbody></table></div>' +
       '</div>';
   }).join('') +
@@ -2366,20 +2350,14 @@ async function deleteRoadmapRow(btn) {
   var row = btn.closest('tr');
   if (!row) return;
   var rid = row.getAttribute('data-rid');
-  // New unsaved rows — just remove from DOM
   if (!rid || rid.startsWith('new-')) { row.remove(); return; }
   if (!confirm('Delete this milestone?')) return;
   try {
-    var r = await _sb_client.from('roadmap')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', rid)
-      .eq('client_id', _clientData.id);
+    var r = await _sb_client.from('roadmap').update({ deleted_at: new Date().toISOString() }).eq('id', rid).eq('client_id', _clientData.id);
     if (r.error) throw r.error;
     row.remove();
     showToast('Milestone deleted.');
-  } catch(e) {
-    alert('Could not delete: ' + (e.message || e));
-  }
+  } catch(e) { alert('Could not delete: ' + (e.message || e)); }
 }
 
 async function saveClientRoadmap() {
@@ -2472,11 +2450,11 @@ async function populateTraining(c) {
     });
 
     var m1 = document.getElementById('mod1-count');
-    if (m1) { m1.textContent = counts[1] ? counts[1] + ' employee' + (counts[1]!==1?'s':'') + ' completed' : 'Not started'; m1.className = 'pill ' + (counts[1] ? 'green' : 'blue'); m1.style.cssText = 'font-size:.72rem;display:block;margin-bottom:10px'; }
+    if (m1) { m1.textContent = counts[1] ? counts[1] + ' employee' + (counts[1]!==1?'s':'') + ' completed' : 'Not started'; m1.className = 'pill ' + (counts[1] ? 'green' : 'blue'); m1.style.cssText = 'font-size:.72rem;display:inline-flex;margin-bottom:4px'; }
     var m2 = document.getElementById('mod2-count');
-    if (m2) { m2.textContent = counts[2] ? counts[2] + ' employee' + (counts[2]!==1?'s':'') + ' completed' : 'Not started'; }
+    if (m2) { m2.textContent = counts[2] ? counts[2] + ' employee' + (counts[2]!==1?'s':'') + ' completed' : 'Not started'; m2.className = 'pill ' + (counts[2] ? 'green' : 'blue'); m2.style.cssText = 'font-size:.72rem;display:inline-flex;margin-bottom:4px'; }
     var m3 = document.getElementById('mod3-count');
-    if (m3) { m3.textContent = counts[3] ? counts[3] + ' completed' : 'Not started'; }
+    if (m3) { m3.textContent = counts[3] ? counts[3] + ' employee' + (counts[3]!==1?'s':'') + ' completed' : 'Not started'; m3.className = 'pill ' + (counts[3] ? 'green' : 'blue'); m3.style.cssText = 'font-size:.72rem;display:inline-flex;margin-bottom:4px'; }
   } catch(_) {
     // training_logs table may not exist yet — leave pills as-is
   }
@@ -2539,7 +2517,7 @@ function applyDashboardAccess(access) {
 // ── Client file lists from Supabase Storage ──────────────
 async function populateClientFiles(clientCode) {
   var buckets = [
-    // reports panel is handled exclusively by populateReports() — filtered to YYYY-MM.pdf only
+    // reports panel handled exclusively by populateReports() — filtered to YYYY-MM.pdf only
     { bucket: 'evidence', containerId: 'client-evidence-list', label: 'evidence binder', path: clientCode },
     // invoices shown via populateBillingHistory from DB instead of storage listing
   ];
@@ -3879,10 +3857,6 @@ function openStmtModal() {
 // Runs once on page load. Redirects to login if no valid session.
 // Uses replace() so back button cannot loop back to dashboard.
 // Errors show a visible message instead of silently looping.
-// ── Auth guard ────────────────────────────────────────────
-// Runs once on page load. Redirects to login if no valid session.
-// Uses replace() so back button cannot loop back to dashboard.
-// Errors show a visible message instead of silently looping.
 (async function() {
   // Prevent redirect loop: if we arrived via a signOut redirect,
   // don't redirect again on error — show an error card instead.
@@ -3897,11 +3871,8 @@ function openStmtModal() {
     if (!s.data || !s.data.session) {
       var justLoggedIn = sessionStorage.getItem('_acc_just_logged_in');
       sessionStorage.removeItem('_acc_just_logged_in');
-
       if (justLoggedIn) {
-        // We just came from a successful login but getSession() returned null.
-        // Supabase occasionally needs a moment to finish writing to localStorage.
-        // Retry up to 3 times with 600ms gaps before giving up.
+        // Fresh from login — Supabase may need a moment to write session to localStorage
         var retries = 0;
         while (retries < 3 && (!s.data || !s.data.session)) {
           await new Promise(function(r){ setTimeout(r, 600); });
@@ -3909,9 +3880,7 @@ function openStmtModal() {
           retries++;
         }
       }
-
       if (!s.data || !s.data.session) {
-        // Still no session — send back to login (or show error if in a loop)
         sessionStorage.removeItem('_acc_redirected');
         if (redirected) {
           var errEl = document.getElementById('auth-error-msg');
@@ -3927,7 +3896,7 @@ function openStmtModal() {
       }
     }
 
-    // Session confirmed — clear all auth flags
+    // Session confirmed valid
     sessionStorage.removeItem('_acc_redirected');
     sessionStorage.removeItem('_acc_just_logged_in');
 
