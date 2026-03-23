@@ -624,7 +624,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <button class="ctab-btn active-tab" id="ctab-info"      role="tab" aria-selected="true"  onclick="showClientTab('info')">&#128100; Info</button>
       <button class="ctab-btn"            id="ctab-billing"   role="tab" aria-selected="false" onclick="showClientTab('billing')">&#128180; Billing</button>
       <button class="ctab-btn"            id="ctab-roadmap"   role="tab" aria-selected="false" onclick="showClientTab('roadmap')">&#128204; Roadmap</button>
-      <button class="ctab-btn"            id="ctab-templates" role="tab" aria-selected="false" onclick="showClientTab('templates')">&#128196; Templates</button>
       <button class="ctab-btn"            id="ctab-binder"    role="tab" aria-selected="false" onclick="showClientTab('binder')">&#128193; Binder</button>
       <button class="ctab-btn"            id="ctab-access"    role="tab" aria-selected="false" onclick="showClientTab('access')">&#128274; Access</button>
       <button class="ctab-btn"            id="ctab-notes"     role="tab" aria-selected="false" onclick="showClientTab('notes')">&#128221; Notes</button>
@@ -719,21 +718,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     </div>
 
     <!-- TEMPLATES TAB -->
-    <div id="ctab-panel-templates" style="display:none">
-      <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:14px">Control which policy templates this client can download. Toggle access and add custom notes.</p>
-      <div id="template-access-list">
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Disruption of Services Notice</strong><span>Required — Ontario Reg. 191/11 s.27</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Service Animal &amp; Support Person Policy</strong><span>Required — Ontario Reg. 191/11 s.3–5</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Emergency Response Plan</strong><span>Required — Ontario Reg. 191/11 s.27</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Multi-Year Accessibility Plan</strong><span>Required for 20+ employees</span></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Staff Training Registry Template</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Accessible Formats Request Procedure</strong><span>Additional service — charged separately</span></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Customer Feedback Form</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-        <div class="toggle-wrap"><div class="toggle-info"><strong>Accessibility Statement Template</strong></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-      </div>
-      
-      <button class="btn-sm btn-primary" onclick="saveTemplates()">&#10003; Save</button>
-    </div>
 
     <!-- BINDER TAB -->
     <div id="ctab-panel-binder" style="display:none">
@@ -1797,22 +1781,6 @@ async function openClientEditor(btn) {
       });
     }
 
-    // ── Templates tab — restore from DB ──
-    if (tr.data && tr.data.length) {
-      var tmplToggles = document.querySelectorAll('#template-access-list .toggle input[type=checkbox]');
-      var tmplLabels  = document.querySelectorAll('#template-access-list .toggle-info strong');
-      tmplToggles.forEach(function(t, i) {
-        if (tmplLabels[i]) {
-          var key = tmplLabels[i].textContent.trim()
-            .toLowerCase()
-            .replace(/&amp;/g,'and').replace(/&/g,'and')
-            .replace(/[^a-z0-9]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
-          var row = tr.data.find(function(r){ return r.template_key === key; });
-          if (row) t.checked = row.enabled !== false;
-        }
-      });
-    }
-    f('ce-last-contact',  c.last_contact  || '');
     f('ce-followup',      c.next_followup || '');
 
     // ── Roadmap tab — render milestone rows ──
@@ -1971,7 +1939,7 @@ function showClientTab(tab) {
     }
   }
 
-  var tabs = ['info','billing','roadmap','templates','binder','access','notes','files'];
+  var tabs = ['info','billing','roadmap','binder','access','notes','files'];
   tabs.forEach(function(t) {
     var btn   = document.getElementById('ctab-' + t);
     var panel = document.getElementById('ctab-panel-' + t);
@@ -2034,32 +2002,6 @@ async function saveBilling() {
     showToastAdmin('Billing saved.', 'success');
   } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
   finally { if (btn) { btn.textContent = '✓ Save Billing'; btn.disabled = false; } }
-}
-
-async function saveTemplates() {
-  if (!_editingClientId) return;
-  var btn = document.querySelector('#ctab-panel-templates .btn-primary');
-  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
-  try {
-    var toggles = document.querySelectorAll('#template-access-list .toggle input[type=checkbox]');
-    var labels  = document.querySelectorAll('#template-access-list .toggle-info strong');
-    var rows = [];
-    toggles.forEach(function(t, i) {
-      if (labels[i]) {
-        var key = labels[i].textContent.trim()
-          .toLowerCase()
-          .replace(/&amp;/g,'and').replace(/&/g,'and')
-          .replace(/[^a-z0-9]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
-        rows.push({ client_id: _editingClientId, template_key: key, enabled: t.checked, updated_at: new Date().toISOString() });
-      }
-    });
-    if (rows.length) {
-      var r = await _sb.from('template_access').upsert(rows, { onConflict: 'client_id,template_key' });
-      if (r.error) throw r.error;
-    }
-    showToastAdmin('Templates saved.', 'success');
-  } catch(e) { showToastAdmin('Error: ' + (e.message||e), 'error'); }
-  finally { if (btn) { btn.textContent = '✓ Save'; btn.disabled = false; } }
 }
 
 async function saveBinder() {
