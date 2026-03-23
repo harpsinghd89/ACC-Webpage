@@ -795,7 +795,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <h3 style="color:#fff;font-size:1.1rem;margin-bottom:12px">Accessibility Statement</h3>
           <p style="font-size:.88rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)" class="stmt-org-name">—</strong> &mdash; Last reviewed: March 2026</p>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><span class="stmt-org-name">Your organization</span> is committed to ensuring digital accessibility for people with disabilities. We continually improve the user experience for everyone and apply relevant accessibility standards.</p>
-          <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Conformance status:</strong> This website conforms to WCAG 2.1 Level AA.</p>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Conformance status:</strong> This website conforms to <span id="stmt-conformance-level">WCAG 2.1 Level AA</span>.</p>
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Feedback:</strong> We welcome feedback on the accessibility of this website. Please email <a href="/cdn-cgi/l/email-protection#721311111701011b101b1e1b060b32290b1d0700161d1f131b1c2f5c1113" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a>
           <a class="dl-btn" href="#" onclick="downloadA11yStatement()">&#8659; Download PDF</a>
           <button class="btn-sm btn-ghost" onclick="openStmtModal()">&#9998; Customize</button>
@@ -1559,12 +1559,9 @@ async function applyStmtChanges() {
       a.href = 'mailto:' + email; a.textContent = email;
     });
 
-    // Update conformance level mention
-    stmtBox.querySelectorAll('p').forEach(function(p){
-      if (p.textContent.includes('conforms to WCAG')) {
-        p.innerHTML = p.innerHTML.replace(/conforms to [^.]+\./, 'conforms to ' + level.replace(' (recommended)','') + '.');
-      }
-    });
+    // Update conformance level via span — no fragile regex
+    var confSpan = document.getElementById('stmt-conformance-level');
+    if (confSpan) confSpan.textContent = level.replace(' (recommended)','');
   }
 
   // Persist to DB
@@ -2424,7 +2421,11 @@ async function populateTraining(c) {
 
   // Update training link pre text and preview hrefs
   var pre = document.getElementById('training-link');
-  if (pre) pre.textContent = base + '?org=' + code + '&token=' + token;
+  if (pre) {
+    var trainingUrl = base + '?org=' + code + '&token=' + token;
+    pre.href = trainingUrl;
+    pre.innerHTML = '&#128279; Training Portal';
+  }
 
   var pm1 = document.getElementById('preview-mod1-link');
   if (pm1) { pm1.href = base + '?org=' + code + '&module=1&token=' + token; pm1.removeAttribute('id'); }
@@ -2734,16 +2735,10 @@ function populateA11yStatement(c) {
   document.querySelectorAll('.stmt-org-name').forEach(function(el){ el.textContent = displayName; });
   document.querySelectorAll('.stmt-domain').forEach(function(el){ el.textContent = c.domain || ''; });
 
-  // Restore saved conformance level in statement text
+  // Restore saved conformance level via span — no fragile regex
   if (stmt.stmt_level) {
-    var stmtBox = document.querySelector('#panel-a11y-stmt .card');
-    if (stmtBox) {
-      stmtBox.querySelectorAll('p').forEach(function(p){
-        if (p.textContent.includes('conforms to WCAG')) {
-          p.innerHTML = p.innerHTML.replace(/conforms to [^.]+\./, 'conforms to ' + stmt.stmt_level + '.');
-        }
-      });
-    }
+    var confSpan = document.getElementById('stmt-conformance-level');
+    if (confSpan) confSpan.textContent = stmt.stmt_level;
   }
 
   // Update scope acknowledgment company name
