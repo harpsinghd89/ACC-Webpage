@@ -636,32 +636,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div style="color:#8a9bbf;font-size:.82rem;padding:12px 0">Loading reports…</div>
         </div>
       </div>
-      <div class="card">
-        <h2>&#128270; Current Month Snapshot</h2>
-        <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
-          <span class="pill green">Live</span>
-          <span style="font-size:.82rem;color:var(--muted)" id="scan-last-time">Loading… <span class="stmt-domain"></span></span>
-          <button class="btn-sm btn-ghost" style="margin-left:auto" onclick="runScanNow(this)">Run Scan Now</button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
-          <div style="text-align:center;padding:16px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--teal)" id="scan-critical">—</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Critical</div>
-          </div>
-          <div style="text-align:center;padding:16px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--warn)" id="scan-warnings">—</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Warnings</div>
-          </div>
-          <div style="text-align:center;padding:16px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--accent)" id="scan-aria">—</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Pages Scanned</div>
-          </div>
-          <div style="text-align:center;padding:16px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px">
-            <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--teal)" id="scan-score">—</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Score</div>
-          </div>
-        </div>
-      </div>
+
     </div>
 
     <!-- EVIDENCE BINDER -->
@@ -3176,12 +3151,16 @@ async function generateBaselineClientSide(c) {
   var nDev   = issueList.filter(function(i){ return i.requiresDev&&i.type!=='fixed'; }).length;
   var nWarn  = issueList.filter(function(i){ return i.type==='warning'&&!i.requiresDev; }).length;
   // Use real scan score if available, otherwise estimate from issue counts
-  var score = scanSummary && scanSummary.length
-    ? Math.round(scanSummary.reduce(function(t,s){ return t+(s.score||0); },0)/scanSummary.length)
-    : Math.max(0, Math.min(100, Math.round(100 - nErr*14 - nDev*7 - nWarn*3)));
+  // No data at all → don't show 100/100, show — pending
+  var hasNoScore = !scanSummary && nErr === 0 && nDev === 0 && nWarn === 0 && nFixed === 0;
+  var score = hasNoScore
+    ? null
+    : scanSummary && scanSummary.length
+      ? Math.round(scanSummary.reduce(function(t,s){ return t+(s.score||0); },0)/scanSummary.length)
+      : Math.max(0, Math.min(100, Math.round(100 - nErr*14 - nDev*7 - nWarn*3)));
   var today  = new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'});
   var startLabel = c.start_date ? new Date(c.start_date).toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}) : today;
-  var scoreColor = score>=80?'#065f46':score>=60?'#92400e':'#991b1b';
+  var scoreColor = score===null?'#6b7280':score>=80?'#065f46':score>=60?'#92400e':'#991b1b';
 
   function escH(s){ var d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
 
@@ -3222,8 +3201,8 @@ async function generateBaselineClientSide(c) {
     + '</div>'
     + '<div style="display:flex;gap:12px;padding:16px 28px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;flex-wrap:wrap">'
     + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:2px solid ' + scoreColor + '">'
-    + '<div style="font-size:2rem;font-weight:800;color:'+scoreColor+'">'+score+'<span style="font-size:.9rem;color:#9ca3af">/100</span></div>'
-    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:'+scoreColor+';margin-top:4px">Baseline Score</div></div>'
+    + '<div style="font-size:2rem;font-weight:800;color:'+scoreColor+'">'+(score!==null?score:'—')+'<span style="font-size:.9rem;color:#9ca3af">/100</span></div>'
+    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:'+scoreColor+';margin-top:4px">'+(score!==null?'Baseline Score':'Pending Scan')+'</div></div>'
     + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:1.5px solid #10b981">'
     + '<div style="font-size:2rem;font-weight:800;color:#065f46">'+nFixed+'</div>'
     + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#10b981;margin-top:4px">Auto-Fixed</div></div>'
@@ -3737,11 +3716,14 @@ async function populateScanData(clientCode) {
 async function populateRecentActivity(c) {
   var list = document.getElementById('recent-activity-list');
   if (!list) return;
-
+  try {
   // Pull recent items from billing, feedback, scans — wrap each so a missing table doesn't crash
   var [scanRes, feedRes, billRes] = await Promise.all([
     _sb_client.from('scans').select('scanned_at,score,critical').eq('client_code', c.client_code).order('scanned_at', {ascending:false}).limit(1).catch(function(){ return {data:null}; }),
-    _sb_client.from('feedback').select('created_at,message').eq('client_id', c.id).order('created_at', {ascending:false}).limit(2).catch(function(){ return {data:null}; }),
+    Promise.all([
+      _sb_client.from('feedback').select('created_at,message').eq('client_id', c.id).order('created_at', {ascending:false}).limit(2).catch(function(){ return {data:[]}; }),
+      _sb_client.from('feedback').select('created_at,message').eq('client_code', c.client_code||'').is('client_id', null).order('created_at', {ascending:false}).limit(2).catch(function(){ return {data:[]}; }),
+    ]).then(function(r){ return { data: (r[0].data||[]).concat(r[1].data||[]).sort(function(a,b){ return new Date(b.created_at)-new Date(a.created_at); }).slice(0,2) }; }).catch(function(){ return {data:null}; }),
     _sb_client.from('billing').select('created_at,status,amount').eq('client_id', c.id).order('created_at', {ascending:false}).limit(1).catch(function(){ return {data:null}; }),
   ]);
 
@@ -3776,6 +3758,10 @@ async function populateRecentActivity(c) {
       (item.date ? '<div style="font-size:.75rem;color:var(--muted)">' + esc(item.date) + '</div>' : '') +
       '</div></div>';
   }).join('');
+  } catch(e) {
+    console.error('populateRecentActivity error:', e);
+    list.innerHTML = '<div style="color:#8a9bbf;font-size:.82rem">No recent activity yet.</div>';
+  }
 }
 
 // ── Item 2: Run scan now ──
@@ -4112,6 +4098,7 @@ async function saveWidgetSettings() {
 
   var settings = {
     client_id:        _clientData.id,
+    client_code:      _clientData.client_code || '',
     position:         (document.getElementById('w-position') || {}).value || 'Bottom Right',
     accent_color:     (document.getElementById('w-color')    || {}).value || '#4f8ef7',
     language:         (document.getElementById('w-lang')     || {}).value || 'English',

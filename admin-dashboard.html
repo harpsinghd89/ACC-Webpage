@@ -1472,6 +1472,7 @@ async function loadClients() {
       return;
     }
     var clients = (r.data || []).filter(function(c){ return !c.deleted_at; });
+    window._adminClients = clients;  // store globally so loadClientScores can mark _hasScan
     renderClientsTable(clients);
     // Update client count display
     var countEl = document.getElementById('client-count');
@@ -1597,12 +1598,15 @@ function updateOverviewStats(clients) {
   // ── Widget Deploy table ──
   var wdWrap = document.getElementById('widget-deploy-table-wrap');
   if (wdWrap) {
-    var deployed = clients.filter(function(c){ return c.widget_deployed; });
-    var notDeployed = clients.filter(function(c){ return !c.widget_deployed; });
+    // Use latest scan data to determine real deployment status
+    // clients with recent scans (within 30 days) = live
+    // clients with widget_deployed=true but no scan = installed pending
+    var deployed    = clients.filter(function(c){ return c.widget_deployed || c._hasScan; });
+    var notDeployed = clients.filter(function(c){ return !c.widget_deployed && !c._hasScan; });
     wdWrap.innerHTML =
       '<table class="data-table"><thead><tr><th>Client</th><th>Domain</th><th>Widget Version</th><th>Last Seen</th><th>Status</th></tr></thead><tbody>' +
       clients.map(function(c) {
-        var live = !!c.widget_deployed;
+        var live = !!(c.widget_deployed || c._hasScan);
         var ver  = c.widget_version ? 'v' + c.widget_version : (live ? 'v12' : '—');
         var seen = c.widget_last_seen ? fmtDate(c.widget_last_seen) : (live ? 'Today' : '—');
         var pill = live ? '<span class="pill green">Live</span>' : '<span class="pill red">Not Deployed</span>';
@@ -2837,6 +2841,15 @@ async function loadClientScores() {
       if (!scoreMap[s.client_code]) scoreMap[s.client_code] = s;
     });
 
+    // Mark each client with _hasScan so deploy panel counts are accurate
+    if (window._adminClients) {
+      window._adminClients.forEach(function(c) {
+        c._hasScan = !!(scoreMap[c.client_code]);
+      });
+      // Refresh overview stats so deploy counts reflect real scan data
+      try { updateOverviewStats(window._adminClients); } catch(_) {}
+    }
+
     // Update each row in the clients table
     var rows = document.querySelectorAll('#client-tbody tr[data-id]');
     rows.forEach(function(row) {
@@ -2858,11 +2871,18 @@ async function loadClientScores() {
         }
       }
       if (widgetCell) {
-        var deployed = row.getAttribute('data-deployed') === 'true';
-        var hasScan  = !!scan;
-        if (deployed && hasScan) {
-          widgetCell.innerHTML = '<span class="pill green" style="font-size:.65rem">Live</span>';
-        } else if (deployed) {
+        var hasScan = !!scan;
+        // Use scan data as proof of deployment — if widget sent a scan it's live
+        // widget_deployed flag is a manual fallback for "installed but not yet visited"
+        var deployedFlag = row.getAttribute('data-deployed') === 'true';
+        if (hasScan) {
+          // Has real scan data — widget is confirmed live
+          var daysSince = scan.created_at
+            ? Math.floor((Date.now() - new Date(scan.created_at)) / 86400000)
+            : null;
+          var freshLabel = daysSince !== null && daysSince <= 7 ? 'Live' : daysSince !== null && daysSince <= 30 ? 'Active' : 'Active';
+          widgetCell.innerHTML = '<span class="pill green" style="font-size:.65rem">&#10003; ' + freshLabel + '</span>';
+        } else if (deployedFlag) {
           widgetCell.innerHTML = '<span class="pill yellow" style="font-size:.65rem">Deployed</span>';
         } else {
           widgetCell.innerHTML = '<span class="pill" style="font-size:.65rem;background:rgba(30,58,107,.5);color:#8a9bbf">Not deployed</span>';
