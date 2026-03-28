@@ -3716,31 +3716,44 @@ async function populateScanData(clientCode) {
 async function populateRecentActivity(c) {
   var list = document.getElementById('recent-activity-list');
   if (!list) return;
-  try {
-  // Pull recent items from billing, feedback, scans — wrap each so a missing table doesn't crash
-  var [scanRes, feedRes, billRes] = await Promise.all([
-    _sb_client.from('scans').select('scanned_at,score,critical').eq('client_code', c.client_code).order('scanned_at', {ascending:false}).limit(1).catch(function(){ return {data:null}; }),
-    Promise.all([
-      _sb_client.from('feedback').select('created_at,message').eq('client_id', c.id).order('created_at', {ascending:false}).limit(2).catch(function(){ return {data:[]}; }),
-      _sb_client.from('feedback').select('created_at,message').eq('client_code', c.client_code||'').is('client_id', null).order('created_at', {ascending:false}).limit(2).catch(function(){ return {data:[]}; }),
-    ]).then(function(r){ return { data: (r[0].data||[]).concat(r[1].data||[]).sort(function(a,b){ return new Date(b.created_at)-new Date(a.created_at); }).slice(0,2) }; }).catch(function(){ return {data:null}; }),
-    _sb_client.from('billing').select('created_at,status,amount').eq('client_id', c.id).order('created_at', {ascending:false}).limit(1).catch(function(){ return {data:null}; }),
-  ]);
 
   var items = [];
-  if (scanRes.data && scanRes.data[0]) {
-    var s = scanRes.data[0];
-    var col = s.critical > 0 ? 'var(--warn)' : 'var(--teal)';
-    items.push({ color: col, text: 'Scan completed — Score ' + (s.score ?? '—'), date: fmtDate(s.scanned_at) });
-  }
-  if (billRes.data && billRes.data[0]) {
-    var b = billRes.data[0];
-    var amt = b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) + ' CAD' : '';
-    items.push({ color: 'var(--teal)', text: 'Invoice ' + esc(b.status||'') + (amt?' — '+amt:''), date: fmtDate(b.created_at) });
-  }
-  (feedRes.data || []).forEach(function(f) {
-    items.push({ color: 'var(--accent)', text: 'Feedback: ' + esc((f.message||'').substring(0,60)), date: fmtDate(f.created_at) });
-  });
+
+  // Each query is independent — a failure just means no entry for that type
+  try {
+    var sr = await _sb_client.from('scans').select('scanned_at,score,critical')
+      .eq('client_code', c.client_code).order('scanned_at', {ascending:false}).limit(1);
+    if (sr.data && sr.data[0]) {
+      var s = sr.data[0];
+      items.push({ color: s.critical > 0 ? 'var(--warn)' : 'var(--teal)',
+        text: 'Scan completed — Score ' + (s.score ?? '—'), date: fmtDate(s.scanned_at) });
+    }
+  } catch(_) {}
+
+  try {
+    var f1 = await _sb_client.from('feedback').select('created_at,message')
+      .eq('client_id', c.id).order('created_at', {ascending:false}).limit(2);
+    var f2 = await _sb_client.from('feedback').select('created_at,message')
+      .eq('client_code', c.client_code||'').order('created_at', {ascending:false}).limit(2);
+    var allFb = ((f1.data||[]).concat(f2.data||[]))
+      .sort(function(a,b){ return new Date(b.created_at)-new Date(a.created_at); }).slice(0,2);
+    allFb.forEach(function(f) {
+      items.push({ color: 'var(--accent)', text: 'Feedback: ' + esc((f.message||'').substring(0,60)), date: fmtDate(f.created_at) });
+    });
+  } catch(_) {}
+
+  try {
+    var br = await _sb_client.from('billing').select('created_at,status,amount')
+      .eq('client_id', c.id).order('created_at', {ascending:false}).limit(1);
+    if (br.data && br.data[0]) {
+      var b = br.data[0];
+      var amt = b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) + ' CAD' : '';
+      items.push({ color: 'var(--teal)', text: 'Invoice ' + esc(b.status||'') + (amt?' — '+amt:''), date: fmtDate(b.created_at) });
+    }
+  } catch(_) {}
+
+
+
   // Always show renewal date
   if (c.renewal_date) {
     var days = daysUntil(c.renewal_date);
@@ -3758,10 +3771,6 @@ async function populateRecentActivity(c) {
       (item.date ? '<div style="font-size:.75rem;color:var(--muted)">' + esc(item.date) + '</div>' : '') +
       '</div></div>';
   }).join('');
-  } catch(e) {
-    console.error('populateRecentActivity error:', e);
-    list.innerHTML = '<div style="color:#8a9bbf;font-size:.82rem">No recent activity yet.</div>';
-  }
 }
 
 // ── Item 2: Run scan now ──
@@ -4118,7 +4127,7 @@ async function saveWidgetSettings() {
     if (error) throw error;
     // Rebuild embed code with new settings
     updateEmbedCode(_clientData, settings);
-    showToast('Widget settings saved. Embed code updated.');
+    showToast('Widget settings saved. Changes apply on the next page load on the client site.');
   } catch(e) {
     alert('Could not save settings: ' + e.message);
   } finally {
