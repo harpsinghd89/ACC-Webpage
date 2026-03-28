@@ -2055,8 +2055,23 @@ async function saveClientInfo() {
       if (nameEl) nameEl.textContent = name;
       if (cells[1]) cells[1].innerHTML = '<span class="pill blue">' + tierLabel(tier) + '</span>';
       if (cells[2]) cells[2].textContent = domain;
-      // cells[3]=Score, cells[4]=Widget are managed by loadClientScores — don't overwrite
+      // cells[3]=Score managed by loadClientScores
+      // cells[4]=Widget — update to reflect widget_active toggle
       // cells[5]=Renewal, cells[6]=Status
+      var widgetActiveNow = document.getElementById('ce-widget-active');
+      var wActive = widgetActiveNow ? widgetActiveNow.checked : true;
+      _editingRow.setAttribute('data-widget-active', wActive ? 'true' : 'false');
+      if (cells[4]) {
+        if (!wActive) {
+          cells[4].innerHTML = '<span class="pill" style="font-size:.65rem;background:rgba(240,95,95,.12);color:#f05f5f;border:1px solid rgba(240,95,95,.3)">Disabled</span>';
+        } else {
+          // Keep existing Live/Not deployed label — loadClientScores will refresh
+          // but only update if it was previously showing Disabled
+          if (cells[4].textContent.trim() === 'Disabled') {
+            cells[4].innerHTML = '<span style="color:#8a9bbf;font-size:.75rem">—</span>';
+          }
+        }
+      }
       if (cells[5]) cells[5].textContent = renewal ? fmtDate(renewal) : '—';
       if (cells[6]) cells[6].innerHTML = '<span class="pill ' + statusColor(status) + '">' + status.charAt(0).toUpperCase()+status.slice(1) + '</span>';
       _editingRow.setAttribute('data-name',   name.toLowerCase());
@@ -2824,7 +2839,9 @@ async function sendLoginInvite(email, name, clientId) {
     } else {
       showToastAdmin('\u2705 Invite sent to ' + email, 'success');
     }
-    loadClients();
+    // Do NOT call loadClients() here — it re-renders the table which races
+    // with the invite-link modal that was just opened, causing it to disappear.
+    // Nothing in the clients table changed from sending an invite.
 
   } catch(e) {
     console.error('sendLoginInvite:', e);
@@ -2905,7 +2922,10 @@ async function loadClientScores() {
       }
       if (widgetCell) {
         var hasScan = !!scan;
-        if (hasScan) {
+        var isDisabled = row.getAttribute('data-widget-active') === 'false';
+        if (isDisabled) {
+          widgetCell.innerHTML = '<span class="pill" style="font-size:.65rem;background:rgba(240,95,95,.12);color:#f05f5f;border:1px solid rgba(240,95,95,.3)">Disabled</span>';
+        } else if (hasScan) {
           widgetCell.innerHTML = '<span class="pill green" style="font-size:.65rem">&#10003; Live</span>';
         } else {
           widgetCell.innerHTML = '<span class="pill" style="font-size:.65rem;background:rgba(30,58,107,.5);color:#8a9bbf">Not deployed</span>';
@@ -2936,6 +2956,7 @@ async function loadClientScores() {
       if (!c) return;
       row.setAttribute('data-code', c.client_code || '');
       row.setAttribute('data-deployed', c.widget_deployed ? 'true' : 'false');
+      row.setAttribute('data-widget-active', c.widget_active !== false ? 'true' : 'false');
       // Insert score cell after domain (3rd td, index 2)
       var tds = row.querySelectorAll('td');
       if (tds.length >= 3 && !row.querySelector('.client-score-cell')) {
