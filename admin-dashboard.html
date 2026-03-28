@@ -380,9 +380,10 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           </select>
           <select class="finput" id="client-status-filter" onchange="filterClients()" style="max-width:160px">
             <option value="">All Statuses</option>
-            <option value="current">Current</option>
+            <option value="active">Active</option>
             <option value="overdue">Overdue</option>
             <option value="pending">Pending</option>
+            <option value="cancelled">Cancelled</option>
           </select>
           <button class="btn-sm btn-primary" onclick="openModal('add-client-modal')">+ Add Client</button>
           <button class="btn-sm btn-ghost" onclick="exportClients()">&#8659; CSV</button>
@@ -781,13 +782,15 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           </select>
         </div>
         <div class="fgroup"><label>Widget</label>
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
+          <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
             <label class="toggle" aria-label="Toggle widget active" style="flex-shrink:0">
               <input type="checkbox" id="ce-widget-active" checked onchange="onWidgetActiveChange(this)">
               <span class="toggle-slider"></span>
             </label>
-            <span id="ce-widget-active-label" style="font-size:.82rem;color:#8a9bbf">Widget enabled</span>
-            <span style="font-size:.72rem;color:#5a6e8c;margin-left:4px" title="Cancelled clients keep the widget active until their renewal date passes. Uncheck this to disable immediately.">ⓘ</span>
+            <div>
+              <span id="ce-widget-active-label" style="font-size:.82rem;color:#8a9bbf">Widget enabled</span>
+              <div style="font-size:.72rem;color:#5a6e8c;margin-top:2px">Cancelled clients stay live until renewal date. Uncheck to kill immediately.</div>
+            </div>
           </div>
         </div>
         <div class="fgroup"><label>Start Date</label><input class="finput" type="date" id="ce-start" value="2026-01-10"></div>
@@ -1067,8 +1070,9 @@ function exportClients() {
     code = code.split('·')[0].trim();
     var tier   = cells[1] ? cells[1].textContent.trim() : '';
     var domain = cells[2] ? cells[2].textContent.trim() : '';
-    var renews = cells[3] ? cells[3].textContent.trim() : '';
-    var status = cells[4] ? cells[4].textContent.trim() : '';
+    // Score=cells[3], Widget=cells[4] injected by patchRenderClientsTable
+    var renews = cells[5] ? cells[5].textContent.trim() : '';
+    var status = cells[6] ? cells[6].textContent.trim() : '';
     var csvRow = [name, code, domain, tier, status, renews].map(function(v){
       v = String(v).replace(/"/g, '""');
       return '"' + v + '"';
@@ -1485,7 +1489,6 @@ async function loadClients() {
       return;
     }
     var clients = (r.data || []).filter(function(c){ return !c.deleted_at; });
-    window._adminClients = clients;  // store globally so loadClientScores can mark _hasScan
     renderClientsTable(clients);
     // Update client count display
     var countEl = document.getElementById('client-count');
@@ -1558,7 +1561,7 @@ function toIsoDate(val) {
 
 
 function updateOverviewStats(clients) {
-  var active  = clients.filter(function(c){ var s=(c.status||'').toLowerCase(); return s==='active'||s==='current'; });
+  var active  = clients.filter(function(c){ var s=(c.status||'').toLowerCase(); return s==='active'; });
   var overdue = clients.filter(function(c){ return (c.status||'').toLowerCase()==='overdue'; });
   var pending = clients.filter(function(c){ return (c.status||'').toLowerCase()==='pending'; });
   var tier1   = clients.filter(function(c){ return c.tier==1; });
@@ -1611,15 +1614,12 @@ function updateOverviewStats(clients) {
   // ── Widget Deploy table ──
   var wdWrap = document.getElementById('widget-deploy-table-wrap');
   if (wdWrap) {
-    // Use latest scan data to determine real deployment status
-    // clients with recent scans (within 30 days) = live
-    // clients with widget_deployed=true but no scan = installed pending
-    var deployed    = clients.filter(function(c){ return c.widget_deployed || c._hasScan; });
-    var notDeployed = clients.filter(function(c){ return !c.widget_deployed && !c._hasScan; });
+    var deployed = clients.filter(function(c){ return c.widget_deployed; });
+    var notDeployed = clients.filter(function(c){ return !c.widget_deployed; });
     wdWrap.innerHTML =
       '<table class="data-table"><thead><tr><th>Client</th><th>Domain</th><th>Widget Version</th><th>Last Seen</th><th>Status</th></tr></thead><tbody>' +
       clients.map(function(c) {
-        var live = !!(c.widget_deployed || c._hasScan);
+        var live = !!c.widget_deployed;
         var ver  = c.widget_version ? 'v' + c.widget_version : (live ? 'v12' : '—');
         var seen = c.widget_last_seen ? fmtDate(c.widget_last_seen) : (live ? 'Today' : '—');
         var pill = live ? '<span class="pill green">Live</span>' : '<span class="pill red">Not Deployed</span>';
@@ -1864,18 +1864,21 @@ async function openClientEditor(btn) {
 
     var statusSel = document.getElementById('ce-status');
     if (statusSel) {
-      var clientStatus = (c.status || 'active').toLowerCase();
-      // Map legacy 'current' → 'active'
-      if (clientStatus === 'current') clientStatus = 'active';
-      statusSel.value = clientStatus;
-      if (!statusSel.value) statusSel.value = 'active'; // fallback if value not in list
-      // Sync widget_active toggle
-      var widgetChk = document.getElementById('ce-widget-active');
-      var widgetLbl = document.getElementById('ce-widget-active-label');
-      if (widgetChk) {
-        var wa = c.widget_active !== false && clientStatus !== 'cancelled';
-        widgetChk.checked = wa;
-        if (widgetLbl) widgetLbl.textContent = wa ? 'Widget enabled' : 'Widget disabled';
+      var cs = (c.status || 'active').toLowerCase();
+      if (cs === 'current') cs = 'active'; // migrate legacy value
+      statusSel.value = cs;
+      if (!statusSel.value) statusSel.value = 'active';
+    }
+    // Populate widget active toggle
+    var widgetChk = document.getElementById('ce-widget-active');
+    var widgetLbl = document.getElementById('ce-widget-active-label');
+    if (widgetChk) {
+      var wa = c.widget_active !== false; // default true if column not yet added
+      widgetChk.checked = wa;
+      var cStatus = (c.status || 'active').toLowerCase();
+      if (widgetLbl) {
+        if (cStatus === 'cancelled') widgetLbl.textContent = 'Widget active until renewal date';
+        else widgetLbl.textContent = wa ? 'Widget enabled' : 'Widget disabled';
       }
     }
 
@@ -1963,21 +1966,16 @@ async function openClientEditor(btn) {
 
 // ── Save client info (writes to Supabase) ────────────────
 function onClientStatusChange(sel) {
-  var widgetChk = document.getElementById('ce-widget-active');
-  var widgetLbl = document.getElementById('ce-widget-active-label');
-  if (!widgetChk) return;
-  // When cancelled: widget stays ON until renewal_date passes (grace period)
-  // Admin can manually disable immediately using the widget toggle
+  var chk = document.getElementById('ce-widget-active');
+  var lbl = document.getElementById('ce-widget-active-label');
+  if (!chk || !lbl) return;
   if (sel.value === 'cancelled') {
-    if (widgetLbl) widgetLbl.textContent = 'Widget active until renewal date';
-  } else if (!widgetChk.checked) {
-    if (widgetLbl) widgetLbl.textContent = 'Widget disabled';
+    lbl.textContent = 'Widget active until renewal date';
   } else {
-    if (widgetLbl) widgetLbl.textContent = 'Widget enabled';
+    lbl.textContent = chk.checked ? 'Widget enabled' : 'Widget disabled';
   }
 }
 
-// Update label when toggle is manually changed
 function onWidgetActiveChange(chk) {
   var lbl = document.getElementById('ce-widget-active-label');
   if (lbl) lbl.textContent = chk.checked ? 'Widget enabled' : 'Widget disabled';
@@ -2011,6 +2009,7 @@ async function saveClientInfo() {
     if (!email) { showToastAdmin('Contact Email is required.', 'error'); return; }
 
     // ── UPDATE clients ──
+    var widgetActiveEl = document.getElementById('ce-widget-active');
     var update = {
       name:             name,
       contact_name:     contact || null,
@@ -2019,6 +2018,7 @@ async function saveClientInfo() {
       phone:            phone  || null,
       tier:             tier,
       status:           status,
+      widget_active:    widgetActiveEl ? widgetActiveEl.checked : true,
       start_date:       start,
       renewal_date:     renewal,
       billing_notes:    billNotes || null,
@@ -2026,11 +2026,6 @@ async function saveClientInfo() {
       last_contact:     lastCont,
       next_followup:    nextFup
     };
-    // widget_active: always use the toggle value
-    // Cancelled clients keep widget running until renewal_date (grace period)
-    // Admin can manually uncheck the toggle for immediate kill
-    var widgetActiveEl = document.getElementById('ce-widget-active');
-    update.widget_active = widgetActiveEl ? widgetActiveEl.checked : true;
     var r = await _sb.from('clients').update(update).eq('id', _editingClientId);
     if (r.error) throw r.error;
 
@@ -2060,8 +2055,10 @@ async function saveClientInfo() {
       if (nameEl) nameEl.textContent = name;
       if (cells[1]) cells[1].innerHTML = '<span class="pill blue">' + tierLabel(tier) + '</span>';
       if (cells[2]) cells[2].textContent = domain;
-      if (cells[3]) cells[3].textContent = renewal ? fmtDate(renewal) : '—';
-      if (cells[4]) cells[4].innerHTML = '<span class="pill ' + statusColor(status) + '">' + status.charAt(0).toUpperCase()+status.slice(1) + '</span>';
+      // cells[3]=Score, cells[4]=Widget are managed by loadClientScores — don't overwrite
+      // cells[5]=Renewal, cells[6]=Status
+      if (cells[5]) cells[5].textContent = renewal ? fmtDate(renewal) : '—';
+      if (cells[6]) cells[6].innerHTML = '<span class="pill ' + statusColor(status) + '">' + status.charAt(0).toUpperCase()+status.slice(1) + '</span>';
       _editingRow.setAttribute('data-name',   name.toLowerCase());
       _editingRow.setAttribute('data-tier',   tier);
       _editingRow.setAttribute('data-status', status);
@@ -2708,22 +2705,9 @@ async function renderFileList(bucket, clientCode) {
 
 async function downloadAdminFile(bucket, path) {
   try {
-    var r = await _sb.storage.from(bucket).createSignedUrl(path, 300);
+    var r = await _sb.storage.from(bucket).createSignedUrl(path, 60);
     if (r.error) throw r.error;
-    // HTML files: fetch + document.write to render properly (Supabase adds Content-Disposition:attachment)
-    if (path.match(/\.html$/i)) {
-      var res = await fetch(r.data.signedUrl);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      var html = await res.text();
-      var win = window.open('', '_blank');
-      if (!win) { showToastAdmin('Please allow popups to view reports.', 'error'); return; }
-      win.document.open();
-      win.document.write(html);
-      win.document.close();
-    } else {
-      // PDFs and other files — direct open/download
-      window.open(r.data.signedUrl, '_blank');
-    }
+    window.open(r.data.signedUrl, '_blank');
   } catch(e) {
     showToastAdmin('Download failed: ' + (e.message || e), 'error');
   }
@@ -2840,9 +2824,7 @@ async function sendLoginInvite(email, name, clientId) {
     } else {
       showToastAdmin('\u2705 Invite sent to ' + email, 'success');
     }
-    // Don't call loadClients() here — it re-renders the table and races with
-    // the modal that was just opened, causing the modal to disappear.
-    // Client data hasn't changed so no refresh needed.
+    loadClients();
 
   } catch(e) {
     console.error('sendLoginInvite:', e);
@@ -2901,15 +2883,6 @@ async function loadClientScores() {
       if (!scoreMap[s.client_code]) scoreMap[s.client_code] = s;
     });
 
-    // Mark each client with _hasScan so deploy panel counts are accurate
-    if (window._adminClients) {
-      window._adminClients.forEach(function(c) {
-        c._hasScan = !!(scoreMap[c.client_code]);
-      });
-      // Refresh overview stats so deploy counts reflect real scan data
-      try { updateOverviewStats(window._adminClients); } catch(_) {}
-    }
-
     // Update each row in the clients table
     var rows = document.querySelectorAll('#client-tbody tr[data-id]');
     rows.forEach(function(row) {
@@ -2932,18 +2905,8 @@ async function loadClientScores() {
       }
       if (widgetCell) {
         var hasScan = !!scan;
-        // Use scan data as proof of deployment — if widget sent a scan it's live
-        // widget_deployed flag is a manual fallback for "installed but not yet visited"
-        var deployedFlag = row.getAttribute('data-deployed') === 'true';
         if (hasScan) {
-          // Has real scan data — widget is confirmed live
-          var daysSince = scan.created_at
-            ? Math.floor((Date.now() - new Date(scan.created_at)) / 86400000)
-            : null;
-          var freshLabel = daysSince !== null && daysSince <= 7 ? 'Live' : daysSince !== null && daysSince <= 30 ? 'Active' : 'Active';
-          widgetCell.innerHTML = '<span class="pill green" style="font-size:.65rem">&#10003; ' + freshLabel + '</span>';
-        } else if (deployedFlag) {
-          widgetCell.innerHTML = '<span class="pill yellow" style="font-size:.65rem">Deployed</span>';
+          widgetCell.innerHTML = '<span class="pill green" style="font-size:.65rem">&#10003; Live</span>';
         } else {
           widgetCell.innerHTML = '<span class="pill" style="font-size:.65rem;background:rgba(30,58,107,.5);color:#8a9bbf">Not deployed</span>';
         }
