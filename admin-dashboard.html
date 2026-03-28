@@ -774,12 +774,24 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           </select>
         </div>
         <div class="fgroup"><label>Status</label>
-          <select class="finput" id="ce-status">
+          <select class="finput" id="ce-status" onchange="onClientStatusChange(this)">
             <option value="active" selected>Active</option>
             <option value="pending">Pending</option>
             <option value="overdue">Overdue</option>
             <option value="cancelled">Cancelled</option>
           </select>
+        </div>
+        <div class="fgroup"><label>Widget</label>
+          <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
+            <label class="toggle" aria-label="Toggle widget active" style="flex-shrink:0">
+              <input type="checkbox" id="ce-widget-active" checked onchange="onWidgetActiveChange(this)">
+              <span class="toggle-slider"></span>
+            </label>
+            <div>
+              <span id="ce-widget-active-label" style="font-size:.82rem;color:#8a9bbf">Widget enabled</span>
+              <div style="font-size:.72rem;color:#5a6e8c;margin-top:2px">Cancelled clients stay live until renewal date. Uncheck to kill immediately.</div>
+            </div>
+          </div>
         </div>
         <div class="fgroup"><label>Start Date</label><input class="finput" type="date" id="ce-start" value="2026-01-10"></div>
         <div class="fgroup"><label>Next Renewal</label><input class="finput" type="date" id="ce-renewal" value="2026-04-10"></div>
@@ -1857,6 +1869,18 @@ async function openClientEditor(btn) {
       statusSel.value = cs;
       if (!statusSel.value) statusSel.value = 'active';
     }
+    // Populate widget active toggle
+    var widgetChk = document.getElementById('ce-widget-active');
+    var widgetLbl = document.getElementById('ce-widget-active-label');
+    if (widgetChk) {
+      var wa = c.widget_active !== false; // default true if column not yet added
+      widgetChk.checked = wa;
+      var cStatus = (c.status || 'active').toLowerCase();
+      if (widgetLbl) {
+        if (cStatus === 'cancelled') widgetLbl.textContent = 'Widget active until renewal date';
+        else widgetLbl.textContent = wa ? 'Widget enabled' : 'Widget disabled';
+      }
+    }
 
     // ── Billing tab ──
     f('ce-inv-notes',    c.billing_notes  || '');
@@ -1941,6 +1965,22 @@ async function openClientEditor(btn) {
 
 
 // ── Save client info (writes to Supabase) ────────────────
+function onClientStatusChange(sel) {
+  var chk = document.getElementById('ce-widget-active');
+  var lbl = document.getElementById('ce-widget-active-label');
+  if (!chk || !lbl) return;
+  if (sel.value === 'cancelled') {
+    lbl.textContent = 'Widget active until renewal date';
+  } else {
+    lbl.textContent = chk.checked ? 'Widget enabled' : 'Widget disabled';
+  }
+}
+
+function onWidgetActiveChange(chk) {
+  var lbl = document.getElementById('ce-widget-active-label');
+  if (lbl) lbl.textContent = chk.checked ? 'Widget enabled' : 'Widget disabled';
+}
+
 async function saveClientInfo() {
   if (!_editingClientId) return;
 
@@ -1969,6 +2009,7 @@ async function saveClientInfo() {
     if (!email) { showToastAdmin('Contact Email is required.', 'error'); return; }
 
     // ── UPDATE clients ──
+    var widgetActiveEl = document.getElementById('ce-widget-active');
     var update = {
       name:             name,
       contact_name:     contact || null,
@@ -1977,6 +2018,7 @@ async function saveClientInfo() {
       phone:            phone  || null,
       tier:             tier,
       status:           status,
+      widget_active:    widgetActiveEl ? widgetActiveEl.checked : true,
       start_date:       start,
       renewal_date:     renewal,
       billing_notes:    billNotes || null,
