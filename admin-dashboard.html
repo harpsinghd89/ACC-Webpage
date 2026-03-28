@@ -773,9 +773,22 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           </select>
         </div>
         <div class="fgroup"><label>Status</label>
-          <select class="finput" id="ce-status">
-            <option selected>Current</option><option>Pending</option><option>Overdue</option><option>Cancelled</option>
+          <select class="finput" id="ce-status" onchange="onClientStatusChange(this)">
+            <option value="active" selected>Active</option>
+            <option value="pending">Pending</option>
+            <option value="overdue">Overdue</option>
+            <option value="cancelled">Cancelled</option>
           </select>
+        </div>
+        <div class="fgroup"><label>Widget</label>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
+            <label class="toggle" aria-label="Toggle widget active" style="flex-shrink:0">
+              <input type="checkbox" id="ce-widget-active" checked onchange="onWidgetActiveChange(this)">
+              <span class="toggle-slider"></span>
+            </label>
+            <span id="ce-widget-active-label" style="font-size:.82rem;color:#8a9bbf">Widget enabled</span>
+            <span style="font-size:.72rem;color:#5a6e8c;margin-left:4px" title="Cancelled clients keep the widget active until their renewal date passes. Uncheck this to disable immediately.">ⓘ</span>
+          </div>
         </div>
         <div class="fgroup"><label>Start Date</label><input class="finput" type="date" id="ce-start" value="2026-01-10"></div>
         <div class="fgroup"><label>Next Renewal</label><input class="finput" type="date" id="ce-renewal" value="2026-04-10"></div>
@@ -1851,12 +1864,18 @@ async function openClientEditor(btn) {
 
     var statusSel = document.getElementById('ce-status');
     if (statusSel) {
-      var capS = (c.status||'active').charAt(0).toUpperCase() + (c.status||'active').slice(1);
-      for (var i=0; i<statusSel.options.length; i++) {
-        if (statusSel.options[i].text.toLowerCase() === (c.status||'').toLowerCase() ||
-            statusSel.options[i].value.toLowerCase() === (c.status||'').toLowerCase()) {
-          statusSel.selectedIndex = i; break;
-        }
+      var clientStatus = (c.status || 'active').toLowerCase();
+      // Map legacy 'current' → 'active'
+      if (clientStatus === 'current') clientStatus = 'active';
+      statusSel.value = clientStatus;
+      if (!statusSel.value) statusSel.value = 'active'; // fallback if value not in list
+      // Sync widget_active toggle
+      var widgetChk = document.getElementById('ce-widget-active');
+      var widgetLbl = document.getElementById('ce-widget-active-label');
+      if (widgetChk) {
+        var wa = c.widget_active !== false && clientStatus !== 'cancelled';
+        widgetChk.checked = wa;
+        if (widgetLbl) widgetLbl.textContent = wa ? 'Widget enabled' : 'Widget disabled';
       }
     }
 
@@ -1943,6 +1962,27 @@ async function openClientEditor(btn) {
 
 
 // ── Save client info (writes to Supabase) ────────────────
+function onClientStatusChange(sel) {
+  var widgetChk = document.getElementById('ce-widget-active');
+  var widgetLbl = document.getElementById('ce-widget-active-label');
+  if (!widgetChk) return;
+  // When cancelled: widget stays ON until renewal_date passes (grace period)
+  // Admin can manually disable immediately using the widget toggle
+  if (sel.value === 'cancelled') {
+    if (widgetLbl) widgetLbl.textContent = 'Widget active until renewal date';
+  } else if (!widgetChk.checked) {
+    if (widgetLbl) widgetLbl.textContent = 'Widget disabled';
+  } else {
+    if (widgetLbl) widgetLbl.textContent = 'Widget enabled';
+  }
+}
+
+// Update label when toggle is manually changed
+function onWidgetActiveChange(chk) {
+  var lbl = document.getElementById('ce-widget-active-label');
+  if (lbl) lbl.textContent = chk.checked ? 'Widget enabled' : 'Widget disabled';
+}
+
 async function saveClientInfo() {
   if (!_editingClientId) return;
 
@@ -1965,7 +2005,7 @@ async function saveClientInfo() {
     var tierEl   = document.getElementById('ce-tier');
     var tier     = tierEl ? parseInt(tierEl.value) : 1;
     var statusEl = document.getElementById('ce-status');
-    var status   = statusEl ? statusEl.options[statusEl.selectedIndex].text.toLowerCase() : 'active';
+    var status   = statusEl ? (statusEl.value || 'active') : 'active';
 
     if (!name) { showToastAdmin('Business Name is required.', 'error'); return; }
     if (!email) { showToastAdmin('Contact Email is required.', 'error'); return; }
@@ -1986,6 +2026,11 @@ async function saveClientInfo() {
       last_contact:     lastCont,
       next_followup:    nextFup
     };
+    // widget_active: always use the toggle value
+    // Cancelled clients keep widget running until renewal_date (grace period)
+    // Admin can manually uncheck the toggle for immediate kill
+    var widgetActiveEl = document.getElementById('ce-widget-active');
+    update.widget_active = widgetActiveEl ? widgetActiveEl.checked : true;
     var r = await _sb.from('clients').update(update).eq('id', _editingClientId);
     if (r.error) throw r.error;
 
@@ -2663,9 +2708,22 @@ async function renderFileList(bucket, clientCode) {
 
 async function downloadAdminFile(bucket, path) {
   try {
-    var r = await _sb.storage.from(bucket).createSignedUrl(path, 60);
+    var r = await _sb.storage.from(bucket).createSignedUrl(path, 300);
     if (r.error) throw r.error;
-    window.open(r.data.signedUrl, '_blank');
+    // HTML files: fetch + document.write to render properly (Supabase adds Content-Disposition:attachment)
+    if (path.match(/\.html$/i)) {
+      var res = await fetch(r.data.signedUrl);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var html = await res.text();
+      var win = window.open('', '_blank');
+      if (!win) { showToastAdmin('Please allow popups to view reports.', 'error'); return; }
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
+    } else {
+      // PDFs and other files — direct open/download
+      window.open(r.data.signedUrl, '_blank');
+    }
   } catch(e) {
     showToastAdmin('Download failed: ' + (e.message || e), 'error');
   }
@@ -2782,7 +2840,9 @@ async function sendLoginInvite(email, name, clientId) {
     } else {
       showToastAdmin('\u2705 Invite sent to ' + email, 'success');
     }
-    loadClients();
+    // Don't call loadClients() here — it re-renders the table and races with
+    // the modal that was just opened, causing the modal to disappear.
+    // Client data hasn't changed so no refresh needed.
 
   } catch(e) {
     console.error('sendLoginInvite:', e);
