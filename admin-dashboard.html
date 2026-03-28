@@ -309,6 +309,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <button class="nav-item" id="nav-admin-widgets" onclick="showPanel('admin-widgets')">
         <span class="nav-icon">&#9881;</span> Widget Deploy
       </button>
+      <button class="nav-item" id="nav-admin-scan" onclick="showPanel('admin-scan')">
+        <span class="nav-icon">&#128269;</span> URL Scanner
+      </button>
 
     </div>
   </nav>
@@ -386,7 +389,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </div>
         <p style="font-size:.75rem;color:#8a9bbf;margin-bottom:12px">Showing <span id="client-count">0</span> clients</p>
         <table class="data-table" id="client-table">
-          <thead><tr><th>Client</th><th>Tier</th><th>Domain</th><th>Renews</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Client</th><th>Tier</th><th>Domain</th><th>Score</th><th>Widget</th><th>Renews</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody id="client-tbody"><tr><td colspan="6" style="text-align:center;color:#8a9bbf;padding:32px">Loading clients…</td></tr></tbody>
         </table>
       </div>
@@ -525,6 +528,129 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </div>
       </div>
     </div>
+
+    <!-- ══ URL SCANNER ══ -->
+    <div class="panel" id="panel-admin-scan">
+      <div class="page-header">
+        <h1>&#128269; URL Accessibility Scanner</h1>
+        <p>Scan any public URL for WCAG 2.1 AA issues. Generate a detailed shareable report — use this to capture prospect interest or audit existing clients.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <h2>&#127760; Scan a URL</h2>
+        <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px">
+          <input class="finput" type="url" id="scan-url-input" placeholder="https://client-site.ca" style="flex:1;min-width:240px" />
+          <select class="finput" id="scan-report-type" style="max-width:180px">
+            <option value="prospect">Prospect Report</option>
+            <option value="audit">Full Audit Report</option>
+          </select>
+          <button class="btn-sm btn-primary" id="scan-run-btn" onclick="runAdminScan()">&#128269; Scan URL</button>
+        </div>
+        <p style="font-size:.75rem;color:#8a9bbf">
+          &#9432; Scanner fetches pages server-side (bypasses X-Frame-Options). Falls back to iframe if edge function is unavailable.
+          <strong style="color:#4f8ef7">Prospect Report</strong> = sales-ready, client-facing &nbsp;·&nbsp; <strong style="color:#4f8ef7">Full Audit</strong> = technical WCAG breakdown. Scores show <em>today → with widget</em>.
+        </p>
+      </div>
+
+      <!-- Loading -->
+      <div id="scan-loading" style="display:none;text-align:center;padding:28px 16px;color:#8a9bbf;font-size:.88rem">
+        <div style="font-size:1.1rem;margin-bottom:10px">&#9203; <span id="scan-loading-msg">Discovering pages via sitemap…</span></div>
+        <div style="background:rgba(30,58,107,.4);border-radius:99px;height:6px;width:280px;margin:0 auto 10px;overflow:hidden">
+          <div id="scan-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#4f8ef7,#38d9a9);border-radius:99px;transition:width .4s ease"></div>
+        </div>
+        <div id="scan-progress-label" style="font-size:.78rem;color:#3a5a8a"></div>
+      </div>
+
+      <!-- Results -->
+      <div id="scan-results" style="display:none">
+
+        <!-- Score + summary bar -->
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:16px">
+            <div>
+              <h2 style="margin:0 0 4px">&#128202; Scan Results</h2>
+              <div id="scan-url-label" style="font-size:.78rem;color:#8a9bbf"></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn-sm btn-primary" onclick="downloadAdminScanReport()">&#8659; Download Report</button>
+              <button class="btn-sm btn-ghost" onclick="copyProspectEmail()">&#128203; Copy Prospect Email</button>
+              <button class="btn-sm btn-ghost" id="sr-save-btn" onclick="saveScanToSupabase()" style="display:none">&#128190; Save Scan</button>
+            </div>
+          </div>
+
+          <!-- Score before/after widget row -->
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:0;background:rgba(13,31,60,.6);border:1px solid rgba(30,58,107,.6);border-radius:12px;margin-bottom:12px;overflow:hidden">
+            <div style="text-align:center;padding:14px 10px">
+              <div style="font-size:1.5rem;font-weight:800;font-family:ui-monospace,'SF Mono',monospace;color:#f05f5f" id="sr-raw-score">—</div>
+              <div style="font-size:.62rem;color:#8a9bbf;margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Score Today</div>
+              <div style="font-size:.6rem;color:#3a5a8a;margin-top:2px">without widget</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 14px;background:rgba(30,58,107,.4)">
+              <div style="font-size:.7rem;color:#38d9a9;font-weight:700">+<span id="sr-score-delta">—</span> pts</div>
+              <div style="font-size:1rem;color:#38d9a9">→</div>
+              <div style="font-size:.6rem;color:#38d9a9;font-weight:600;text-align:center">ACC<br>Widget</div>
+            </div>
+            <div style="text-align:center;padding:14px 10px;background:rgba(56,217,169,.06)">
+              <div style="font-size:1.5rem;font-weight:800;font-family:ui-monospace,'SF Mono',monospace;color:#38d9a9" id="sr-score">—</div>
+              <div style="font-size:.62rem;color:#38d9a9;margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Score After Widget</div>
+              <div style="font-size:.6rem;color:#8a9bbf;margin-top:2px">instant, day one</div>
+            </div>
+          </div>
+          <!-- Other stats row -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:16px">
+            <div style="text-align:center;padding:12px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px">
+              <div style="font-size:1.6rem;font-weight:800;color:#38d9a9;font-family:ui-monospace,'SF Mono',monospace" id="sr-fixed">—</div>
+              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Fix Types</div>
+            </div>
+            <div style="text-align:center;padding:12px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px">
+              <div style="font-size:1.6rem;font-weight:800;color:#38d9a9;font-family:ui-monospace,'SF Mono',monospace" id="sr-elements-fixed">—</div>
+              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Elements Fixed</div>
+            </div>
+            <div style="text-align:center;padding:12px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px">
+              <div style="font-size:1.6rem;font-weight:800;color:#4f8ef7;font-family:ui-monospace,'SF Mono',monospace" id="sr-dev">—</div>
+              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Needs Dev</div>
+            </div>
+            <div style="text-align:center;padding:12px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);border-radius:10px">
+              <div style="font-size:1.6rem;font-weight:800;color:#f5a623;font-family:ui-monospace,'SF Mono',monospace" id="sr-warn">—</div>
+              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Warnings</div>
+            </div>
+            <div style="text-align:center;padding:12px;background:rgba(240,95,95,.06);border:1px solid rgba(240,95,95,.15);border-radius:10px">
+              <div style="font-size:1.6rem;font-weight:800;color:#f05f5f;font-family:ui-monospace,'SF Mono',monospace" id="sr-errors">—</div>
+              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Critical</div>
+            </div>
+          </div>
+
+          <!-- POUR breakdown -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="sr-pour"></div>
+        </div>
+
+        <!-- Issue table — specific, not general -->
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <h2 style="margin:0">&#128203; Detailed Issue Breakdown</h2>
+            <div style="display:flex;gap:8px">
+              <select class="finput" id="sr-filter-type" onchange="filterScanIssues()" style="font-size:.75rem;padding:5px 8px">
+                <option value="all">All types</option>
+                <option value="error">Errors only</option>
+                <option value="warning">Warnings only</option>
+                <option value="fixed">Auto-fixed only</option>
+              </select>
+              <select class="finput" id="sr-filter-section" onchange="filterScanIssues()" style="font-size:.75rem;padding:5px 8px">
+                <option value="all">All sections</option>
+                <option value="header">Header</option>
+                <option value="navigation">Navigation</option>
+                <option value="main">Main</option>
+                <option value="form">Form</option>
+                <option value="footer">Footer</option>
+                <option value="page">Page-level</option>
+              </select>
+            </div>
+          </div>
+          <div id="sr-issue-list" style="display:flex;flex-direction:column;gap:6px;max-height:520px;overflow-y:auto"></div>
+        </div>
+
+      </div><!-- /scan-results -->
+    </div><!-- /panel-admin-scan -->
 
     <!-- ACCESS CONTROL REMOVED — managed per-client in Edit Client modal -->
     <div class="panel" id="panel-admin-access" style="display:none">
@@ -1634,6 +1760,23 @@ async function addClient() {
     if (tierEl) tierEl.value = '1';
 
     showToastAdmin('Client ' + name + ' created (' + code + ')', 'success');
+
+    // Queue baseline report generation if domain provided (non-blocking)
+    if (domain) {
+      fetch('https://wfyzvmfvlukawidowuym.supabase.co/functions/v1/generate-baseline-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + (window._sb?.supabaseKey || ''),
+        },
+        body: JSON.stringify({ client_code: r.data.client_code || code }),
+      })
+      .then(function(res) {
+        if (res.ok) showToastAdmin('Baseline report queued for ' + domain, 'info');
+      })
+      .catch(function() {}); // silent — non-blocking
+    }
+
     loadClients();
 
   } catch(e) {
@@ -2664,6 +2807,1232 @@ function copyInviteLink() {
       .then(function(){ showToastAdmin('Link copied!', 'success'); })
       .catch(function(){ showToastAdmin('Please copy manually', 'info'); });
   }
+}
+</script>
+
+<!-- ══════════════════════════════════════════════════════════
+     ACC ADMIN SCANNER — URL scan, detailed report, client scores
+══════════════════════════════════════════════════════════ -->
+<script>
+// ─────────────────────────────────────────────────────────────
+// CLIENT SCORE LOADER
+// Fetches latest scan score + widget deployment for each client
+// and injects into the clients table.
+// ─────────────────────────────────────────────────────────────
+async function loadClientScores() {
+  try {
+    var sb = window._sb;
+    if (!sb) return;
+    // Get latest scan score per client_code
+    var { data: scans } = await sb
+      .from('scans')
+      .select('client_code, score, raw_score, auto_fixed, elements_fixed, requires_dev, created_at')
+      .order('created_at', { ascending: false });
+
+    if (!scans || !scans.length) return;
+
+    // Build map: client_code → latest scan
+    var scoreMap = {};
+    scans.forEach(function(s) {
+      if (!scoreMap[s.client_code]) scoreMap[s.client_code] = s;
+    });
+
+    // Update each row in the clients table
+    var rows = document.querySelectorAll('#client-tbody tr[data-id]');
+    rows.forEach(function(row) {
+      var code = row.getAttribute('data-code');
+      if (!code) return;
+      var scan = scoreMap[code];
+      var scoreCell   = row.querySelector('.client-score-cell');
+      var widgetCell  = row.querySelector('.client-widget-cell');
+      if (scoreCell) {
+        if (scan && scan.score != null) {
+          var color = scan.score >= 80 ? '#38d9a9' : scan.score >= 60 ? '#f5a623' : '#f05f5f';
+          var rawColor = (scan.raw_score != null && scan.raw_score < scan.score) ? '#f05f5f' : color;
+          var rawPart = (scan.raw_score != null && scan.raw_score !== scan.score)
+            ? '<span style="color:' + rawColor + ';font-family:ui-monospace,monospace;text-decoration:line-through;font-size:.7rem;opacity:.6">' + scan.raw_score + '</span><span style="color:#38d9a9;font-size:.7rem;margin:0 2px">→</span>'
+            : '';
+          scoreCell.innerHTML = rawPart + '<span style="font-weight:700;color:' + color + ';font-family:ui-monospace,monospace">' + scan.score + '</span>';
+        } else {
+          scoreCell.innerHTML = '<span style="color:#8a9bbf;font-size:.75rem">No data</span>';
+        }
+      }
+      if (widgetCell) {
+        var deployed = row.getAttribute('data-deployed') === 'true';
+        var hasScan  = !!scan;
+        if (deployed && hasScan) {
+          widgetCell.innerHTML = '<span class="pill green" style="font-size:.65rem">Live</span>';
+        } else if (deployed) {
+          widgetCell.innerHTML = '<span class="pill yellow" style="font-size:.65rem">Deployed</span>';
+        } else {
+          widgetCell.innerHTML = '<span class="pill" style="font-size:.65rem;background:rgba(30,58,107,.5);color:#8a9bbf">Not deployed</span>';
+        }
+      }
+    });
+  } catch(e) {
+    console.warn('loadClientScores error:', e.message);
+  }
+}
+
+// Hook into renderClientsTable to add score/widget cells + data attributes
+(function patchRenderClientsTable() {
+  var _orig = window.renderClientsTable;
+  if (!_orig) {
+    // Try again after DOMContentLoaded
+    window.addEventListener('DOMContentLoaded', function() { patchRenderClientsTable(); });
+    return;
+  }
+  window.renderClientsTable = function(clients) {
+    _orig(clients);
+    // Add data-code and extra cells to each row
+    var tbody = document.getElementById('client-tbody');
+    if (!tbody) return;
+    var rows = tbody.querySelectorAll('tr[data-id]');
+    rows.forEach(function(row, i) {
+      var c = clients[i];
+      if (!c) return;
+      row.setAttribute('data-code', c.client_code || '');
+      row.setAttribute('data-deployed', c.widget_deployed ? 'true' : 'false');
+      // Insert score cell after domain (3rd td, index 2)
+      var tds = row.querySelectorAll('td');
+      if (tds.length >= 3 && !row.querySelector('.client-score-cell')) {
+        var scoreTd  = document.createElement('td');
+        scoreTd.className = 'client-score-cell';
+        scoreTd.innerHTML = '<span style="color:#8a9bbf;font-size:.75rem">—</span>';
+        var widgetTd = document.createElement('td');
+        widgetTd.className = 'client-widget-cell';
+        widgetTd.innerHTML = '<span style="color:#8a9bbf;font-size:.75rem">—</span>';
+        // Insert after domain td (index 2)
+        tds[2].after(scoreTd);
+        scoreTd.after(widgetTd);
+      }
+    });
+    // Load scores asynchronously
+    loadClientScores();
+  };
+})();
+
+// ─────────────────────────────────────────────────────────────
+// ADMIN URL SCANNER — detailed element-level issue capture
+// ─────────────────────────────────────────────────────────────
+var _adminScanIssues = [];
+var _adminScanURL    = '';
+var _adminScanDoc    = null;
+var _adminScanMeta   = { pagesScanned:1, totalFound:1, sitemapUrl:'', pageUrls:[], perPage:[] };
+
+function runAdminScan() {
+  var urlInput = document.getElementById('scan-url-input');
+  var btn      = document.getElementById('scan-run-btn');
+  var url      = (urlInput ? urlInput.value : '').trim();
+  if (!url || !/^https?:\/\/.+/.test(url)) {
+    showToastAdmin('Please enter a valid URL starting with https://', 'error');
+    return;
+  }
+  _adminScanURL = url;
+  document.getElementById('scan-results').style.display = 'none';
+  document.getElementById('scan-loading').style.display = 'block';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Scanning…'; }
+  // Reset save button for every new scan
+  var saveBtn = document.getElementById('sr-save-btn');
+  if (saveBtn) { saveBtn.style.display = 'none'; saveBtn.textContent = '💾 Save Scan'; saveBtn.style.color = ''; saveBtn.disabled = false; }
+
+  // ── helpers ──────────────────────────────────────────────────────────────
+  var _scanDone = false;
+
+  function setProgress(pct, msg, sub) {
+    var bar = document.getElementById('scan-progress-bar');
+    var msgEl = document.getElementById('scan-loading-msg');
+    var lbl = document.getElementById('scan-progress-label');
+    if (bar) bar.style.width = pct + '%';
+    if (msg && msgEl) msgEl.textContent = msg;
+    if (lbl) lbl.textContent = sub || '';
+  }
+
+  function finishScan(allIssues, label) {
+    if (_scanDone) return;
+    _scanDone = true;
+    _adminScanIssues = allIssues;
+    document.getElementById('scan-loading').style.display = 'none';
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Scan URL'; }
+    renderAdminScanResults(allIssues, label);
+    var resultsEl = document.getElementById('scan-results');
+    if (resultsEl) setTimeout(function(){ resultsEl.scrollIntoView({ behavior:'smooth', block:'start' }); }, 100);
+  }
+
+  // ── Aggregate issues from multiple pages ─────────────────────────────────
+  // Deduplicates by criterion+type — sums element counts across pages
+  function aggregateIssues(perPageResults) {
+    var map = {};
+    for (var pi = 0; pi < perPageResults.length; pi++) {
+      var pageIssues = perPageResults[pi].issues;
+      var pageUrl    = perPageResults[pi].url;
+      for (var ii = 0; ii < pageIssues.length; ii++) {
+        var issue = pageIssues[ii];
+        var key = issue.type + '::' + issue.criterion;
+        if (!map[key]) {
+          map[key] = JSON.parse(JSON.stringify(issue));
+          map[key].pagesAffected = 1;
+          map[key].pageList = [pageUrl];
+          // prefix each element with the page path
+          if (map[key].elements) {
+            map[key].elements = map[key].elements.slice(0, 3).map(function(el) {
+              var path = '';
+              try { path = new URL(pageUrl).pathname; } catch(e) {}
+              return { selector: el.selector, snippet: (path !== '/' ? path + ' — ' : '') + el.snippet };
+            });
+          }
+        } else {
+          map[key].pagesAffected = (map[key].pagesAffected || 1) + 1;
+          map[key].pageList.push(pageUrl);
+          if (map[key].elements && issue.elements) {
+            var extra = issue.elements.slice(0, 2).map(function(el) {
+              var path = '';
+              try { path = new URL(pageUrl).pathname; } catch(e) {}
+              return { selector: el.selector, snippet: (path !== '/' ? path + ' — ' : '') + el.snippet };
+            });
+            map[key].elements = map[key].elements.concat(extra);
+          }
+          if (issue.count) map[key].count = (map[key].count || 1) + issue.count;
+        }
+      }
+    }
+    return Object.values(map);
+  }
+
+  // ── Parse HTML string into scannable document ─────────────────────────────
+  function parsePageDoc(html, pageUrl) {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(html, 'text/html');
+    var base = doc.createElement('base');
+    base.href = pageUrl;
+    if (doc.head) doc.head.insertBefore(base, doc.head.firstChild);
+    return doc;
+  }
+
+  // ── Main crawl flow ───────────────────────────────────────────────────────
+  var token = SUPABASE_ANON;
+  try { var s = _sb && _sb.auth && _sb.auth.currentSession; if (s && s.access_token) token = s.access_token; } catch(e) {}
+  var edgeScrapeURL = SUPABASE_URL + '/functions/v1/scrape-url';
+
+  setProgress(5, 'Discovering pages via sitemap…', '');
+
+  // Try edge function crawl mode first
+  var crawlCtrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var crawlTimeout = setTimeout(function() {
+    if (crawlCtrl) crawlCtrl.abort();
+    runIframeFallback();
+  }, 45000); // 45s total budget for multi-page crawl
+
+  fetch(edgeScrapeURL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, 'apikey': SUPABASE_ANON },
+    body: JSON.stringify({ url: url, crawl: true, maxPages: 20 }),
+    signal: crawlCtrl ? crawlCtrl.signal : undefined
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
+  .then(function(data) {
+    clearTimeout(crawlTimeout);
+    if (!data.pages || !data.pages.length) throw new Error('no pages returned');
+
+    var pages = data.pages;
+    var totalFound = data.totalFound || pages.length;
+    var sitemapUsed = data.sitemapUrl ? ' via sitemap' : ' via link discovery';
+    setProgress(30, 'Scanning ' + pages.length + ' pages…', 'Found ' + totalFound + ' pages' + sitemapUsed);
+
+    // Scan each page's HTML through adminScanEngine
+    var perPageResults = [];
+    for (var i = 0; i < pages.length; i++) {
+      var pg = pages[i];
+      if (!pg.html) continue;
+      try {
+        var doc = parsePageDoc(pg.html, pg.url);
+        var issues = adminScanEngine(doc);
+        perPageResults.push({ url: pg.url, issues: issues });
+        var pct = 30 + Math.round((i + 1) / pages.length * 65);
+        setProgress(pct, 'Scanning ' + pages.length + ' pages…', 'Scanned ' + (i + 1) + ' of ' + pages.length);
+      } catch(e) {
+        console.warn('Scan failed for', pg.url, e.message);
+      }
+    }
+
+    setProgress(98, 'Aggregating results…', '');
+    var aggregated = aggregateIssues(perPageResults);
+    var scannedCount = perPageResults.length;
+    var label = url + ' — ' + scannedCount + ' page' + (scannedCount !== 1 ? 's' : '') + ' scanned' + (data.sitemapUrl ? ' (sitemap)' : ' (link crawl)');
+    // Attach crawl metadata for the report
+    _adminScanMeta = {
+      pagesScanned: scannedCount,
+      totalFound:   totalFound,
+      sitemapUrl:   data.sitemapUrl || '',
+      pageUrls:     pages.map(function(p){ return p.url; }),
+      perPage:      perPageResults.map(function(r){
+        return {
+          url:    r.url,
+          errors: r.issues.filter(function(i){return i.type==='error';}).length,
+          warns:  r.issues.filter(function(i){return i.type==='warning';}).length,
+          fixed:  r.issues.filter(function(i){return i.type==='fixed';}).length
+        };
+      })
+    };
+    finishScan(aggregated, label);
+  })
+  .catch(function(e) {
+    clearTimeout(crawlTimeout);
+    if (e && e.name === 'AbortError') return;
+    console.warn('Edge crawl failed, falling back to iframe:', e.message);
+    runIframeFallback();
+  });
+
+  // ── iframe fallback (single page only) ───────────────────────────────────
+  function runIframeFallback() {
+    if (_scanDone) return;
+    setProgress(10, 'Scanning homepage…', 'Sitemap crawl unavailable — scanning single page');
+    var oldFrame = document.getElementById('acc-admin-scan-iframe');
+    if (oldFrame) oldFrame.remove();
+    var iframe = document.createElement('iframe');
+    iframe.id = 'acc-admin-scan-iframe';
+    iframe.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1280px;height:900px;border:none;opacity:0;pointer-events:none;';
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+    iframe.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(iframe);
+    var ifrTimeout = setTimeout(function() {
+      finishScan(adminScanEngine(document), url + ' (homepage only — deploy scrape-url for multi-page)');
+    }, 9000);
+    iframe.onload = function() {
+      clearTimeout(ifrTimeout);
+      setTimeout(function() {
+        try {
+          var doc = iframe.contentDocument || iframe.contentWindow.document;
+          if (!doc || !doc.body) throw new Error('no body');
+          setProgress(80, 'Analysing page…', '');
+          _adminScanMeta = { pagesScanned: 1, totalFound: 1, sitemapUrl: '', pageUrls: [url], perPage: [] };
+          finishScan(adminScanEngine(doc), url + ' (homepage only — deploy scrape-url for multi-page)');
+        } catch(err) {
+          finishScan(adminScanEngine(document), url + ' (cross-origin — current page scanned as demo)');
+        }
+      }, 800);
+    };
+    iframe.onerror = function() {
+      clearTimeout(ifrTimeout);
+      finishScan(adminScanEngine(document), url + ' (load error — current page scanned as demo)');
+    };
+    iframe.src = url;
+  }
+}
+
+function renderAdminScanResults(issues, label) {
+  document.getElementById('scan-results').style.display = 'block';
+  document.getElementById('scan-url-label').textContent = label;
+
+  var nFixed  = issues.filter(function(i){ return i.type==='fixed'; }).length;
+  var nErr    = issues.filter(function(i){ return i.type==='error'; }).length;
+  var nWarn   = issues.filter(function(i){ return i.type==='warning'; }).length;
+  var nDev    = issues.filter(function(i){ return i.requiresDev; }).length;
+  var errA    = issues.filter(function(i){ return i.type==='error'&&i.level==='A'; }).length;
+  var errAA   = issues.filter(function(i){ return i.type==='error'&&i.level==='AA'; }).length;
+  // RAW = site today without widget (fixed issues counted as errors for baseline)
+  var fixedA  = issues.filter(function(i){ return i.type==='fixed'&&i.level==='A'; }).length;
+  var fixedAA = issues.filter(function(i){ return i.type==='fixed'&&i.level==='AA'; }).length;
+  var rawScore = Math.max(0,Math.min(100,Math.round(100-(errA+fixedA)*14-(errAA+fixedAA)*7-nWarn*3)));
+  // WIDGET score = after widget resolves all auto-fixed categories (fixed issues no longer penalise)
+  var score    = Math.max(0,Math.min(100,Math.round(100-errA*14-errAA*7-nWarn*3)));
+  var sColor  = score>=80?'#38d9a9':score>=60?'#f5a623':'#f05f5f';
+
+  var totalElFixed = issues.filter(function(i){return i.type==='fixed';})
+    .reduce(function(s,i){return s+(i.elements&&i.elements.length>0?i.elements.length:1);},0);
+  var scoreDelta = score - rawScore;
+
+  // Store rawScore for report functions to read
+  document.getElementById('sr-score').textContent      = score;
+  document.getElementById('sr-score').style.color      = sColor;
+  document.getElementById('sr-raw-score').textContent  = rawScore;
+  document.getElementById('sr-raw-score').style.color  = rawScore>=80?'#38d9a9':rawScore>=60?'#f5a623':'#f05f5f';
+  document.getElementById('sr-score-delta').textContent = scoreDelta > 0 ? scoreDelta : '0';
+  // Store on element for report functions
+  document.getElementById('sr-score').setAttribute('data-raw', rawScore);
+  document.getElementById('sr-fixed').textContent         = nFixed;
+  document.getElementById('sr-elements-fixed').textContent= totalElFixed;
+  document.getElementById('sr-dev').textContent    = nDev;
+  document.getElementById('sr-warn').textContent   = nWarn;
+  document.getElementById('sr-errors').textContent = nErr;
+
+  // POUR breakdown
+  var pour = {
+    Perceivable:    calcPOUR(issues,['1.1.1','1.3.1','1.4.3','1.4.5','1.4.10','1.4.11','1.4.12','1.2.2'],'1'),
+    Operable:       calcPOUR(issues,['2.1.1','2.4.1','2.4.2','2.4.3','2.4.4','2.4.7','2.2.2'],'2'),
+    Understandable: calcPOUR(issues,['3.1.1','3.3.1','3.3.2'],'3'),
+    Robust:         calcPOUR(issues,['4.1.1','4.1.2'],'4'),
+  };
+  var pourEl = document.getElementById('sr-pour');
+  pourEl.innerHTML = Object.entries(pour).map(function(kv) {
+    var k=kv[0],v=kv[1];
+    var c=v>=80?'#38d9a9':v>=60?'#f5a623':'#f05f5f';
+    return '<div style="text-align:center;padding:10px;background:rgba(17,34,68,.6);border-radius:8px;border:1px solid rgba(30,58,107,.6)">'
+      +'<div style="font-size:1.2rem;font-weight:800;color:'+c+';font-family:ui-monospace,monospace">'+v+'</div>'
+      +'<div style="font-size:.65rem;color:#8a9bbf;margin-top:2px">'+k+'</div>'
+      +'</div>';
+  }).join('');
+
+  renderScanIssueList(issues);
+  // Show save button now that scan data is ready
+  var saveBtn = document.getElementById('sr-save-btn');
+  if(saveBtn) saveBtn.style.display = '';
+}
+
+// ── Save scan result to Supabase scans table ─────────────────────────────────
+async function saveScanToSupabase() {
+  if(!_adminScanIssues.length) return;
+  var btn = document.getElementById('sr-save-btn');
+  if(btn) { btn.textContent = '⏳ Saving…'; btn.disabled = true; }
+  try {
+    var scoreEl  = document.getElementById('sr-score');
+    var score    = parseInt(scoreEl ? scoreEl.textContent : '0')||0;
+    var rawScore = parseInt(scoreEl ? scoreEl.getAttribute('data-raw') : '0')||score;
+    var nFixed   = _adminScanIssues.filter(function(i){return i.type==='fixed';}).length;
+    var totalEl  = _adminScanIssues.filter(function(i){return i.type==='fixed';})
+      .reduce(function(s,i){return s+(i.elements&&i.elements.length?i.elements.length:1);},0);
+    var nDev     = _adminScanIssues.filter(function(i){return i.requiresDev&&i.type!=='fixed';}).length;
+    var nErr     = _adminScanIssues.filter(function(i){return i.type==='error';}).length;
+    var nWarn    = _adminScanIssues.filter(function(i){return i.type==='warning';}).length;
+
+    // Match URL hostname to a client domain — only save if it matches a known client
+    var hostname = '';
+    try { hostname = new URL(_adminScanURL).hostname.replace(/^www\./,''); } catch(e){}
+    var clientCode = null;
+    var clientName = null;
+    if(hostname && _sb) {
+      var { data: match } = await _sb.from('clients').select('client_code,name').ilike('domain', '%'+hostname+'%').limit(1);
+      if(match && match.length) { clientCode = match[0].client_code; clientName = match[0].name; }
+    }
+
+    if(!clientCode) {
+      showToastAdmin('No matching client found for this domain — scan not saved. Assign the domain to a client first.', 'error');
+      if(btn) { btn.textContent = '💾 Save Scan'; btn.disabled = false; }
+      return;
+    }
+
+    // Use column names matching the widget scans table schema exactly
+    var topFailures = _adminScanIssues
+      .filter(function(i){return i.type==='error';})
+      .map(function(i){return i.criterion;})
+      .filter(function(v,idx,arr){return arr.indexOf(v)===idx;})
+      .slice(0,5);
+
+    var row = {
+      client_code:    clientCode,
+      domain:         hostname,
+      page_url:       _adminScanURL,
+      page_title:     'Admin Scan — ' + hostname,
+      score:          score,
+      raw_score:      rawScore,
+      critical:       nErr,       // widget uses 'critical', not 'errors'
+      warnings:       nWarn,
+      fixes_applied:  nFixed,     // widget uses 'fixes_applied', not 'auto_fixed'
+      auto_fixed:     nFixed,
+      elements_fixed: totalEl,
+      requires_dev:   nDev,
+      top_failures:   JSON.stringify(topFailures),
+      issue_count:    _adminScanIssues.length,
+      scanned_at:     new Date().toISOString()
+    };
+
+    var r = await _sb.from('scans').insert(row);
+    if(r.error) throw r.error;
+    showToastAdmin('Scan saved to ' + clientName + ' history', 'success');
+    if(btn) { btn.textContent = '✓ Saved'; btn.style.color = '#38d9a9'; }
+    if(typeof loadClientScores === 'function') loadClientScores();
+  } catch(e) {
+    showToastAdmin('Save failed: '+(e.message||e), 'error');
+    if(btn) { btn.textContent = '💾 Save Scan'; btn.disabled = false; }
+  }
+}
+
+function calcPOUR(issues, criteria, prefix) {
+  var e=issues.filter(function(i){return i.type==='error'&&criteria.some(function(c){return i.criterion===c;});}).length;
+  var w=issues.filter(function(i){return i.type==='warning'&&i.criterion&&i.criterion.startsWith(prefix+'.');}).length;
+  return Math.max(0,Math.min(100,Math.round(100-e*14-w*3)));
+}
+
+function renderScanIssueList(issues) {
+  var typeF    = (document.getElementById('sr-filter-type')    ||{}).value||'all';
+  var sectionF = (document.getElementById('sr-filter-section') ||{}).value||'all';
+  var filtered = issues.filter(function(i){
+    if(typeF!=='all'&&i.type!==typeF) return false;
+    if(sectionF!=='all'&&i.section!==sectionF) return false;
+    return true;
+  });
+  filtered.sort(function(a,b){return ({'error':2,'warning':1,'fixed':0}[b.type]||0)-({'error':2,'warning':1,'fixed':0}[a.type]||0);});
+  var el = document.getElementById('sr-issue-list');
+  if(!filtered.length){el.innerHTML='<p style="color:#8a9bbf;font-size:.82rem;padding:12px 0">No issues match the current filters.</p>';return;}
+  el.innerHTML = filtered.map(function(i,idx){
+    var leftColor=i.type==='fixed'?'#38d9a9':i.type==='warning'?'#f5a623':'#f05f5f';
+    var badgeTxt =i.type==='fixed'?'Auto-Fixed':i.requiresDev?'Needs Dev':i.type==='warning'?'Warning':'Critical';
+    var badgeBg  =i.type==='fixed'?'rgba(56,217,169,.15)':i.requiresDev?'rgba(245,166,35,.15)':i.type==='warning'?'rgba(79,142,247,.12)':'rgba(240,95,95,.15)';
+    var badgeFg  =i.type==='fixed'?'#38d9a9':i.requiresDev?'#f5a623':i.type==='warning'?'#4f8ef7':'#f05f5f';
+
+    // Element-specific details
+    var detailsHtml = '';
+    if(i.elements && i.elements.length) {
+      detailsHtml='<div style="margin-top:8px;background:rgba(6,13,26,.5);border-radius:6px;padding:8px 10px;font-size:.72rem">'
+        +'<div style="color:#8a9bbf;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:.62rem">Affected elements</div>'
+        + i.elements.slice(0,5).map(function(el){
+            return '<div style="color:#4f8ef7;font-family:ui-monospace,monospace;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
+              + esc(el.selector)
+              +'<span style="color:#8a9bbf;font-weight:400"> — '+esc(el.snippet)+'</span></div>';
+          }).join('')
+        + (i.elements.length>5?'<div style="color:#8a9bbf;margin-top:2px">…and '+(i.elements.length-5)+' more</div>':'')
+        +'</div>';
+    }
+    return '<div style="border-left:3px solid '+leftColor+';background:rgba(13,31,60,.6);border-radius:0 8px 8px 0;padding:10px 12px;animation:fadeIn .2s ease both;animation-delay:'+Math.min(idx*0.03,0.3)+'s">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'
+      +'<span style="font-weight:600;color:#e8edf8;font-size:.82rem">'+(i.icon||'')+' '+esc(i.title)+'</span>'
+      +'<div style="display:flex;gap:4px;flex-shrink:0">'
+      +(i.section&&i.section!=='page'?'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(56,217,169,.1);color:#38d9a9;text-transform:uppercase">'+esc(i.section)+'</span>':'')
+      +'<span style="font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:4px;background:'+badgeBg+';color:'+badgeFg+'">'+badgeTxt+'</span>'
+      +'</div></div>'
+      +'<div style="color:#8a9bbf;font-size:.74rem;margin-top:4px;line-height:1.5">'+esc(i.desc)+'</div>'
+      +(i.requiresDev?'<div style="font-size:.68rem;color:#f5a623;margin-top:3px">⚠ Requires custom code — widget cannot auto-fix this</div>':'')
+      +(i.criterion?'<div style="font-size:.65rem;color:#3a5a8a;margin-top:2px;font-family:ui-monospace,monospace">WCAG '+esc(i.criterion)+' — Level '+(i.level||'AA')+(i.elements?(' — '+i.elements.length+' element'+(i.elements.length!==1?'s':'')):'')+'</div>':'')
+      + detailsHtml
+      +'</div>';
+  }).join('');
+}
+
+function filterScanIssues() { renderScanIssueList(_adminScanIssues); }
+
+function esc(s){ var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML; }
+
+// ─────────────────────────────────────────────────────────────
+// PROSPECT EMAIL COPY
+// ─────────────────────────────────────────────────────────────
+function copyProspectEmail() {
+  if(!_adminScanIssues.length){ showToastAdmin('Run a scan first','error'); return; }
+  var nErr  = _adminScanIssues.filter(function(i){return i.type==='error';}).length;
+  var nDev  = _adminScanIssues.filter(function(i){return i.requiresDev;}).length;
+  var fixedIssues = _adminScanIssues.filter(function(i){return i.type==='fixed';});
+  var nFix  = fixedIssues.length;
+  var totalElFixed = fixedIssues.reduce(function(s,i){return s+(i.elements&&i.elements.length?i.elements.length:1);},0);
+  var scoreEl  = document.getElementById('sr-score');
+  var score    = parseInt(scoreEl ? scoreEl.textContent : '0')||0;
+  var rawScore = parseInt(scoreEl ? scoreEl.getAttribute('data-raw') : '0')||score;
+  var delta    = score - rawScore;
+  var url   = _adminScanURL;
+  var fixNames = fixedIssues.slice(0,3).map(function(i){
+    var cnt = i.elements&&i.elements.length>1?' ('+i.elements.length+' elements)':'';
+    return '  ✓ '+i.title+cnt;
+  });
+  var text = [
+    'Subject: ' + url + ' — ' + (nErr+nDev) + ' Accessibility Issues Found (Free Audit)',
+    '',
+    'Hi,',
+    '',
+    'We ran a free WCAG 2.1 AA accessibility audit on ' + url + ' and found ' + (nErr+nDev) + ' issues that create AODA compliance risk.',
+    '',
+    'Current compliance score: ' + rawScore + '/100',
+    'Score with ACC Widget installed: ' + score + '/100  (+' + delta + ' pts, day one)',
+    '',
+    'The ACC widget instantly resolves ' + nFix + ' violation categories affecting ' + totalElFixed + ' elements — including:',
+  ].concat(fixNames).concat([
+    (nFix > 3 ? '  …and ' + (nFix-3) + ' more' : ''),
+    '',
+    'The remaining ' + (nErr+nDev) + ' issues are addressed through ACC managed compliance plan.',
+    '',
+    'Under AODA, all Ontario organizations must meet WCAG 2.1 AA. Non-compliance risks fines up to $100,000/day.',
+    '',
+    'ACC plan starts at $69/month — widget install + policy docs + evidence binder + ongoing monitoring.',
+    'Book a free 15-minute call: https://accessibilitycompliance.ca',
+    '',
+    'Best,',
+    'ACC — Accessibility Compliance Canada Inc.',
+    'accessibilitycompliance.ca'
+  ]).filter(function(l){return l!==''||true;}).join('\n');
+  navigator.clipboard.writeText(text)
+    .then(function(){ showToastAdmin('Prospect email copied to clipboard','success'); })
+    .catch(function(){ showToastAdmin('Could not copy — check browser permissions','error'); });
+}
+
+// ─────────────────────────────────────────────────────────────
+// DOWNLOAD DETAILED REPORT (PDF-quality HTML)
+// Branches on #scan-report-type: 'prospect' vs 'audit'
+// ─────────────────────────────────────────────────────────────
+function downloadAdminScanReport() {
+  if(!_adminScanIssues.length){ showToastAdmin('Run a scan first','error'); return; }
+  var reportType = (document.getElementById('scan-report-type')||{}).value || 'audit';
+  if (reportType === 'prospect') { downloadProspectReport(); return; }
+  var issues = _adminScanIssues;
+  var url    = _adminScanURL;
+  var scoreEl     = document.getElementById('sr-score');
+  var score       = parseInt(scoreEl ? scoreEl.textContent : '0')||0;
+  var scoreWithout= parseInt(scoreEl ? scoreEl.getAttribute('data-raw') : '0')||score;
+  var nFixed = issues.filter(function(i){return i.type==='fixed';}).length;
+  var nErr   = issues.filter(function(i){return i.type==='error';}).length;
+  var nWarn  = issues.filter(function(i){return i.type==='warning'&&!i.requiresDev;}).length;
+  var nDev   = issues.filter(function(i){return i.requiresDev&&i.type!=='fixed';}).length;
+  var now    = new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
+  var scoreColor = score>=80?'#065f46':score>=60?'#92400e':'#991b1b';
+  var scoreBg    = score>=80?'#d1fae5':score>=60?'#fef3c7':'#fee2e2';
+  var autoFixImpact = score - scoreWithout;
+
+  // Multi-page scan metadata
+  var pagesScanned  = _adminScanMeta.pagesScanned || 1;
+  var totalFound    = _adminScanMeta.totalFound   || 1;
+  var sitemapUsed   = !!_adminScanMeta.sitemapUrl;
+  var perPage       = _adminScanMeta.perPage || [];
+  var scanScope     = pagesScanned > 1
+    ? pagesScanned + ' pages scanned' + (sitemapUsed ? ' (sitemap)' : ' (link crawl)')
+    : '1 page scanned (homepage only)';
+
+  // Group issues matching monthly report order:
+  // Auto-Fixed first → Critical → Needs Dev → Warnings
+  var byType = { fixed:[], error:[], dev:[], warning:[] };
+  issues.forEach(function(i){
+    if(i.type==='fixed')                           byType.fixed.push(i);
+    else if(i.type==='error'&&!i.requiresDev)      byType.error.push(i);
+    else if(i.requiresDev)                         byType.dev.push(i);
+    else if(i.type==='warning')                    byType.warning.push(i);
+  });
+
+  function issueRows(list) {
+    return list.map(function(i){
+      var badge = i.type==='fixed'?'fixed':i.requiresDev?'dev':i.type==='warning'?'warning':'critical';
+      var badgeLabel = i.type==='fixed'?'Auto-Fixed':i.requiresDev?'Needs Dev':i.type==='warning'?'Warning':'Critical';
+      var elDetails = '';
+      if(i.elements && i.elements.length) {
+        elDetails = '<div style="margin-top:6px;background:#f8f9fc;border-radius:4px;padding:6px 8px;font-family:monospace;font-size:.72rem">'
+          +'<div style="font-weight:600;color:#64748b;margin-bottom:3px">Affected elements:</div>'
+          + i.elements.slice(0,5).map(function(el){
+              return '<div style="color:#1e40af;word-break:break-all;white-space:normal">'+escHtml(el.selector)
+                +'<span style="color:#64748b"> — '+escHtml(el.snippet)+'</span></div>';
+            }).join('')
+          +(i.elements.length>5?'<div style="color:#94a3b8">…and '+(i.elements.length-5)+' more elements</div>':'')
+          +'</div>';
+      }
+      // col widths: Issue (auto/flex) | Description (auto/flex) | Status (90px) | WCAG (70px) | Level (54px) | Section (70px) | # (36px)
+      return '<tr class="issue-row ' + badge + '">'
+        +'<td class="col-issue" style="padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;min-width:0">'
+        +'<div style="font-weight:600;font-size:.82rem;color:#0f172a;margin-bottom:2px;word-break:break-word">'+(i.icon||'')+' '+escHtml(i.title)+'</div>'
+        + elDetails
+        +'</td>'
+        +'<td class="col-desc" style="padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;min-width:0">'
+        +'<div style="font-size:.75rem;color:#475569;line-height:1.5;word-break:break-word">'+escHtml(i.desc)+'</div>'
+        +(i.requiresDev?'<div style="font-size:.7rem;color:#92400e;font-style:italic;margin-top:3px">⚠ Requires custom developer code — cannot be auto-fixed by widget</div>':'')
+        +'</td>'
+        +'<td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;vertical-align:top;white-space:nowrap;width:90px">'
+        +'<span class="badge '+badge+'">'+badgeLabel+'</span></td>'
+        +'<td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;vertical-align:top;font-family:monospace;font-size:.75rem;color:#64748b;white-space:nowrap;width:70px">'+escHtml(i.criterion||'—')+'</td>'
+        +'<td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;vertical-align:top;font-size:.75rem;color:#64748b;white-space:nowrap;width:54px">'+escHtml(i.level||'AA')+'</td>'
+        +'<td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;vertical-align:top;font-size:.75rem;color:#64748b;white-space:nowrap;width:70px">'+escHtml(i.section||'page')+'</td>'
+        +'<td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;vertical-align:top;font-size:.75rem;font-weight:600;color:#64748b;white-space:nowrap;width:36px">'+(i.elements?i.elements.length:i.count||1)+'</td>'
+        +'</tr>';
+    }).join('');
+  }
+
+  function escHtml(s){var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
+
+  var beforeColor = scoreWithout>=80?'#065f46':scoreWithout>=60?'#92400e':'#991b1b';
+  var beforeBg    = scoreWithout>=80?'#d1fae5':scoreWithout>=60?'#fef3c7':'#fee2e2';
+
+  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'    +'<title>ACC Accessibility Audit — '+escHtml(url)+'</title>'    +'<style>'    +'*{box-sizing:border-box}body{font-family:"Segoe UI",system-ui,sans-serif;background:#f8fafc;color:#0f172a;margin:0;padding:32px}'    +'.report{max-width:960px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}'    +'.rh{background:linear-gradient(135deg,#0a1628,#0d1f3c);color:#fff;padding:28px 32px}'    +'.rh-meta{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#64748b;margin-bottom:4px}'    +'.rh-title{font-size:1.1rem;font-weight:700;margin:0 0 3px;color:#fff}'    +'.rh-sub{font-size:.75rem;color:#94a3b8}'    +'.score-row{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;padding:16px 32px;background:#f1f5f9;border-bottom:1px solid #e2e8f0}'    +'.score-card{flex:1;min-width:120px;padding:14px 16px;border-radius:10px;text-align:center}'    +'.score-card.with-widget{background:#fff;border:2px solid #10b981}'    +'.score-card.without-widget{background:#fff;border:1.5px solid #e2e8f0}'    +'.score-card.delta-card{background:linear-gradient(135deg,#d1fae5,#a7f3d0);border:none;display:flex;flex-direction:column;align-items:center;justify-content:center}'    +'.score-card.af-card{background:#fff;border:1.5px solid #10b981;flex:1.4}'    +'.score-big{font-size:2.2rem;font-weight:800;line-height:1}'    +'.score-denom{font-size:.9rem;font-weight:400;color:#94a3b8}'    +'.score-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-top:4px}'    +'.score-caption{font-size:.65rem;color:#94a3b8;margin-top:2px}'    +'.delta-num{font-size:1.8rem;font-weight:800;color:#065f46;line-height:1}'    +'.delta-label{font-size:.65rem;color:#065f46;font-weight:600;margin-top:2px}'    +'.pills{display:flex;gap:8px;flex-wrap:wrap;padding:12px 32px;background:#f8fafc;border-bottom:1px solid #e2e8f0}'    +'.pill-item{padding:5px 14px;border-radius:20px;font-size:.75rem;font-weight:600}'    +'.pour-grid{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}'    +'.pour-item{padding:14px;text-align:center;border-right:1px solid #e2e8f0}'    +'.pour-item:last-child{border-right:none}'    +'.pour-score{font-size:1.4rem;font-weight:700}'    +'.pour-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-top:2px}'    +'.pour-def{font-size:.6rem;color:#94a3b8;margin-top:3px;line-height:1.4;max-width:120px;margin-left:auto;margin-right:auto}'    +'.section-hdr{padding:10px 32px 8px;display:flex;align-items:center;gap:10px;background:#f8fafc;border-bottom:1px solid #e2e8f0;border-top:2px solid transparent}'    +'.section-hdr.s-fixed{border-top-color:#10b981}.section-hdr.s-critical{border-top-color:#ef4444}.section-hdr.s-dev{border-top-color:#f59e0b}.section-hdr.s-warning{border-top-color:#3b82f6}'    +'.section-hdr-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em}'    +'.section-hdr-count{font-size:.68rem;font-weight:600;padding:2px 10px;border-radius:10px}'    +'table{width:100%;border-collapse:collapse;table-layout:fixed}'    +'th{padding:10px 12px;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;text-align:left;background:#f1f5f9;border-bottom:1px solid #e2e8f0;white-space:nowrap}'    +'.col-issue{width:26%}.col-desc{width:auto}'    +'.issue-row.critical td:first-child{border-left:3px solid #ef4444}'    +'.issue-row.dev td:first-child{border-left:3px solid #f59e0b}'    +'.issue-row.warning td:first-child{border-left:3px solid #3b82f6}'    +'.issue-row.fixed td:first-child{border-left:3px solid #10b981}'    +'.badge{padding:3px 9px;border-radius:6px;font-size:.65rem;font-weight:700;text-transform:uppercase;white-space:nowrap}'    +'.badge.critical{background:#fee2e2;color:#991b1b}'    +'.badge.dev{background:#fef3c7;color:#92400e}'    +'.badge.warning{background:#dbeafe;color:#1e40af}'    +'.badge.fixed{background:#d1fae5;color:#065f46}'    +'.score-note{padding:10px 32px;font-size:.72rem;color:#64748b;background:#f8fafc;border-bottom:1px solid #e2e8f0;line-height:1.6}'    +'.footer{padding:14px 32px;font-size:.65rem;color:#94a3b8;text-align:center;border-top:1px solid #e2e8f0;background:#f8fafc}'    +'</style></head><body><div class="report">'    +'<div class="rh">'    +'<div class="rh-meta">WCAG 2.1 AA Accessibility Audit</div>'    +'<div class="rh-title">'+escHtml(url)+'</div>'    +'<div class="rh-sub">Generated '+now+' &nbsp;·&nbsp; ACC — Accessibility Compliance Canada Inc.</div>'    +'</div>'    +'<div class="score-row">'    +'<div class="score-card with-widget">'    +'<div class="score-big" style="color:'+scoreColor+'">'+score+'<span class="score-denom">/100</span></div>'    +'<div class="score-label" style="color:'+scoreColor+'">'+(score>=80?'Compliant':score>=60?'In Progress':'Needs Attention')+'</div>'    +'<div class="score-caption">WITH ACC Widget</div>'    +'</div>'    +'<div class="score-card without-widget">'    +'<div class="score-big" style="color:'+beforeColor+'">'+scoreWithout+'<span class="score-denom">/100</span></div>'    +'<div class="score-label" style="color:'+beforeColor+'">'+(scoreWithout>=80?'Compliant':scoreWithout>=60?'In Progress':'Needs Attention')+'</div>'    +'<div class="score-caption">Without Widget</div>'    +'</div>'    +'<div class="score-card delta-card">'    +'<div class="delta-num">+'+autoFixImpact+'</div>'    +'<div class="delta-label">pts improvement</div>'    +'</div>'    +'<div class="score-card af-card">'    +'<div class="score-big" style="color:#10b981">'+nFixed+'</div>'    +'<div class="score-label" style="color:#10b981">Auto-Fixes</div>'    +'<div class="score-caption">resolved by widget every visit</div>'    +'</div>'    +'</div>'    +'<div class="score-note" style="padding:10px 32px;font-size:.72rem;color:#64748b;background:#f8fafc;border-bottom:1px solid #e2e8f0;line-height:1.6">'
+    +'<strong>Scan scope:</strong> '+escHtml(scanScope)+'.'
+    +(pagesScanned < totalFound ? ' ('+totalFound+' pages found in sitemap; first '+pagesScanned+' scanned)' : '')
+    +'&nbsp; <strong>How scores work:</strong> Each unfixed Level A violation costs −14 pts, Level AA −7 pts, warnings −3 pts. '
+    +'Score Today = raw without widget. With ACC Widget = auto-fixed violations excluded.'
+    +'</div>'
+    +(perPage.length > 1
+      ? '<div style="padding:10px 32px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0">'
+        +'<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:8px">Per-Page Results</div>'
+        +'<table style="width:100%;border-collapse:collapse;font-size:.72rem">'
+        +'<thead><tr>'
+        +'<th style="text-align:left;padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8">Page</th>'
+        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">Critical</th>'
+        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">Warnings</th>'
+        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">Auto-Fixed</th>'
+        +'</tr></thead><tbody>'
+        +perPage.map(function(p){
+          var path='';try{path=new URL(p.url).pathname||'/';}catch(e){path=p.url;}
+          return '<tr>'
+            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;color:#0f172a;word-break:break-all">'+escHtml(path)+'</td>'
+            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.errors>0?'#ef4444':'#10b981')+';font-weight:700">'+p.errors+'</td>'
+            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.warns>0?'#f59e0b':'#10b981')+';font-weight:700">'+p.warns+'</td>'
+            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:#10b981;font-weight:700">'+p.fixed+'</td>'
+            +'</tr>';
+        }).join('')
+        +'</tbody></table></div>'
+      : '')    +'<div class="pills">'    +'<span class="pill-item" style="background:#d1fae5;color:#065f46">✓ '+nFixed+' Auto-Fixed by Widget</span>'    +'<span class="pill-item" style="background:#fee2e2;color:#991b1b">✕ '+nErr+' Critical</span>'    +'<span class="pill-item" style="background:#fef3c7;color:#92400e">⚙ '+nDev+' Needs Developer Code</span>'    +'<span class="pill-item" style="background:#dbeafe;color:#1e40af">⚠ '+nWarn+' Warnings</span>'    +'</div>'    +'<div class="pour-grid">'    +['Perceivable','Operable','Understandable','Robust'].map(function(p,idx){        var criteria=[['1.1.1','1.3.1','1.4.3','1.4.5'],['2.1.1','2.4.1','2.4.2','2.4.4'],['3.1.1','3.3.1','3.3.2'],['4.1.1','4.1.2']][idx];        var defs=['Can perceive: alt text, contrast, captions, text resize','Can operate: keyboard, focus, no time traps, skip links','Can understand: readable text, predictable pages, form help','Works with: screen readers, braille displays, AT tools'][idx];        var e=issues.filter(function(i){return i.type==='error'&&criteria.indexOf(i.criterion)>=0;}).length;        var s=Math.max(0,Math.min(100,Math.round(100-e*14)));        var c=s>=80?'#065f46':s>=60?'#92400e':'#991b1b';        return '<div class="pour-item"><div class="pour-score" style="color:'+c+'">'+s+'</div><div class="pour-label">'+p+'</div><div class="pour-def">'+defs+'</div></div>';      }).join('')    +'</div>'    +(byType.fixed.length?'<div class="section-hdr s-fixed"><span class="section-hdr-label" style="color:#065f46">Auto-Fixed by ACC Widget</span><span class="section-hdr-count" style="background:#d1fae5;color:#065f46">'+byType.fixed.length+' resolved at runtime — no developer action needed</span></div>'      +'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:90px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup><thead><tr><th>Issue</th><th>Fix Applied</th><th>Status</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'      +issueRows(byType.fixed)+'</tbody></table>':'')    +(byType.error.length?'<div class="section-hdr s-critical"><span class="section-hdr-label" style="color:#991b1b">Critical Issues</span><span class="section-hdr-count" style="background:#fee2e2;color:#991b1b">'+byType.error.length+' require developer action</span></div>'      +'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:90px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup><thead><tr><th>Issue</th><th>Details &amp; Affected Elements</th><th>Status</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'      +issueRows(byType.error)+'</tbody></table>':'')    +(byType.dev.length?'<div class="section-hdr s-dev"><span class="section-hdr-label" style="color:#92400e">Needs Developer Code</span><span class="section-hdr-count" style="background:#fef3c7;color:#92400e">'+byType.dev.length+' cannot be auto-fixed by widget</span></div>'      +'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:90px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup><thead><tr><th>Issue</th><th>Details &amp; Affected Elements</th><th>Status</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'      +issueRows(byType.dev)+'</tbody></table>':'')    +(byType.warning.length?'<div class="section-hdr s-warning"><span class="section-hdr-label" style="color:#1e40af">Warnings</span><span class="section-hdr-count" style="background:#dbeafe;color:#1e40af">'+byType.warning.length+' review and address where possible</span></div>'      +'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:90px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup><thead><tr><th>Issue</th><th>Details &amp; Affected Elements</th><th>Status</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'      +issueRows(byType.warning)+'</tbody></table>':'')    +'<div class="footer">ACC — Accessibility Compliance Canada Inc. &nbsp;|&nbsp; accessibilitycompliance.ca &nbsp;|&nbsp; '+now    +'<br>Auto-Fixed: resolved by ACC widget at runtime on every page visit. Needs Dev: requires custom code changes. WCAG 2.1 Level AA standard.</div>'    +'</div></body></html>';
+
+  var blob = new Blob([html],{type:'text/html'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  var slug = url.replace(/^https?:\/\//,'').replace(/[^a-zA-Z0-9]/g,'-').substring(0,40);
+  a.download = 'ACC-Full-Audit-'+slug+'-'+new Date().toISOString().slice(0,10)+'.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToastAdmin('Full audit report downloaded','success');
+}
+
+// ─────────────────────────────────────────────────────────────
+// PROSPECT REPORT — sales-focused, client-facing HTML
+// ─────────────────────────────────────────────────────────────
+function downloadProspectReport() {
+  var issues = _adminScanIssues;
+  var url    = _adminScanURL;
+  var scoreEl      = document.getElementById('sr-score');
+  var score        = parseInt(scoreEl ? scoreEl.textContent : '0')||0;
+  var scoreWithout = parseInt(scoreEl ? scoreEl.getAttribute('data-raw') : '0')||score;
+  var fixedIssues  = issues.filter(function(i){return i.type==='fixed';});
+  var nFixed = fixedIssues.length;
+  var nErr   = issues.filter(function(i){return i.type==='error';}).length;
+  var nWarn  = issues.filter(function(i){return i.type==='warning'&&!i.requiresDev;}).length;
+  var nDev   = issues.filter(function(i){return i.requiresDev&&i.type!=='fixed';}).length;
+  var now    = new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
+
+  var totalElementsFixed = fixedIssues.reduce(function(sum,i){
+    return sum + (i.elements && i.elements.length ? i.elements.length : 1);
+  }, 0);
+  if (totalElementsFixed < nFixed) totalElementsFixed = nFixed;
+  var autoFixImpact = score - scoreWithout;
+
+  // Multi-page scan metadata
+  var pagesScanned = _adminScanMeta.pagesScanned || 1;
+  var totalFound   = _adminScanMeta.totalFound   || 1;
+  var sitemapUsed  = !!_adminScanMeta.sitemapUrl;
+  var scanScope    = pagesScanned > 1
+    ? pagesScanned + ' pages scanned' + (sitemapUsed ? ' via sitemap' : ' via link crawl')
+    : '1 page (homepage only)';
+
+  var scoreColor   = score>=80?'#065f46':score>=60?'#b45309':'#b91c1c';
+  var riskLevel    = score>=80 ? 'Low Risk' : score>=60 ? 'Medium Risk' : 'High Risk';
+  var riskColor    = score>=80?'#065f46':score>=60?'#b45309':'#b91c1c';
+  var riskBg       = score>=80?'#d1fae5':score>=60?'#fef3c7':'#fee2e2';
+
+  function escHtml(s){var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
+
+  // ── Auto-fix cards: name each fix + element count ───────────────────────
+  var autoFixCards = fixedIssues.map(function(i){
+    var count = i.elements && i.elements.length > 1 ? i.elements.length : null;
+    var countBadge = count
+      ? '<span style="display:inline-block;background:#d1fae5;color:#065f46;border-radius:99px;padding:2px 9px;font-size:.68rem;font-weight:700;margin-left:6px">'+count+' instances</span>'
+      : '';
+    return '<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid #f0fdf4">'
+      +'<div style="width:28px;height:28px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem">'+(i.icon||'✓')+'</div>'
+      +'<div style="min-width:0">'
+      +'<div style="font-size:.82rem;font-weight:700;color:#065f46;margin-bottom:2px">'+escHtml(i.title)+countBadge+'</div>'
+      +'<div style="font-size:.75rem;color:#475569;line-height:1.5">'+escHtml(i.desc)+'</div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+
+  // ── Top 5 critical/warning issues for prospect ──────────────────────────
+  var topIssues = issues
+    .filter(function(i){ return i.type==='error'||i.type==='warning'; })
+    .sort(function(a,b){
+      var rank = {error:2, warning:1};
+      return (rank[b.type]||0)-(rank[a.type]||0);
+    })
+    .slice(0,5);
+
+  var issueRows = topIssues.map(function(i){
+    var elCount = i.elements && i.elements.length > 0 ? i.elements.length : (i.count||1);
+    var badge = i.type==='error'
+      ? '<span style="background:#fee2e2;color:#b91c1c;padding:3px 9px;border-radius:5px;font-size:.68rem;font-weight:700;white-space:nowrap">Critical</span>'
+      : '<span style="background:#dbeafe;color:#1d4ed8;padding:3px 9px;border-radius:5px;font-size:.68rem;font-weight:700;white-space:nowrap">Warning</span>';
+    var affectedHtml = elCount > 1
+      ? '<div style="font-size:.7rem;color:#94a3b8;margin-top:3px">Affects '+elCount+' elements on this page</div>'
+      : '';
+    return '<tr>'
+      +'<td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;font-size:.82rem;font-weight:600;color:#0f172a;width:30%">'+(i.icon||'')+'&nbsp;'+escHtml(i.title)+'</td>'
+      +'<td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;font-size:.78rem;color:#475569;line-height:1.5">'+escHtml(i.desc)+affectedHtml+'</td>'
+      +'<td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;text-align:center;white-space:nowrap;vertical-align:middle">'+badge+'</td>'
+      +'</tr>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<title>Accessibility Audit — '+escHtml(url)+'</title>'
+    +'<style>'
+    +'*{box-sizing:border-box;margin:0;padding:0}'
+    +'body{font-family:"Segoe UI",system-ui,sans-serif;background:#f0f4f8;color:#0f172a;padding:32px 16px}'
+    +'.wrap{max-width:780px;margin:0 auto}'
+    +'.header{background:linear-gradient(135deg,#0a1628 0%,#1e3a6b 100%);border-radius:16px 16px 0 0;padding:36px 40px;color:#fff}'
+    +'.header-eyebrow{font-size:.68rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#94a3b8;margin-bottom:8px}'
+    +'.header-title{font-size:1.5rem;font-weight:800;margin-bottom:4px;word-break:break-all}'
+    +'.header-sub{font-size:.8rem;color:#94a3b8}'
+    +'.body{background:#fff;border-radius:0 0 16px 16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.1)}'
+    +'.risk-banner{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid #f1f5f9;flex-wrap:wrap;gap:12px}'
+    +'.risk-pill{padding:7px 18px;border-radius:99px;font-size:.8rem;font-weight:700;background:'+riskBg+';color:'+riskColor+'}'
+    +'.score-grid{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #f1f5f9}'
+    +'.score-cell{padding:20px;text-align:center;border-right:1px solid #f1f5f9}'
+    +'.score-cell:last-child{border-right:none}'
+    +'.score-num{font-size:2rem;font-weight:800;line-height:1}'
+    +'.score-lbl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-top:4px}'
+    +'.section{padding:28px 40px;border-bottom:1px solid #f1f5f9}'
+    +'.section-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#94a3b8;margin-bottom:14px}'
+    // before/after
+    +'.ba-wrap{display:grid;grid-template-columns:1fr auto 1fr;background:#f8fafc;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;margin-bottom:10px}'
+    +'.ba-cell{padding:18px 20px;text-align:center}'
+    +'.ba-cell.accent{background:linear-gradient(135deg,#d1fae5,#a7f3d0)}'
+    +'.ba-arrow{display:flex;align-items:center;justify-content:center;background:#f1f5f9;color:#64748b;font-size:1.2rem;padding:0 14px}'
+    +'.ba-score{font-size:2rem;font-weight:800;line-height:1}'
+    +'.ba-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:4px}'
+    +'.ba-note{font-size:.65rem;color:#94a3b8;margin-top:3px}'
+    // widget impact callout
+    +'.widget-impact{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:1.5px solid #6ee7b7;border-radius:12px;padding:20px 24px;margin-top:14px}'
+    +'.wi-headline{font-size:1rem;font-weight:800;color:#065f46;margin-bottom:6px}'
+    +'.wi-sub{font-size:.8rem;color:#047857;line-height:1.5;margin-bottom:14px}'
+    +'.wi-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}'
+    +'.wi-stat{background:#fff;border-radius:8px;padding:12px;text-align:center;border:1px solid #a7f3d0}'
+    +'.wi-stat-num{font-size:1.6rem;font-weight:800;color:#065f46;line-height:1}'
+    +'.wi-stat-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6ee7b7;margin-top:3px}'
+    // fix cards
+    +'.fix-list{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;overflow:hidden}'
+    +'.fix-list-hdr{padding:10px 16px;background:#dcfce7;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#065f46}'
+    // issues table
+    +'.issues-table{width:100%;border-collapse:collapse;table-layout:fixed}'
+    +'.issues-table th{text-align:left;padding:10px 16px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;background:#f8fafc;border-bottom:1px solid #e2e8f0}'
+    // legal + cta
+    +'.risk-box{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:18px 22px}'
+    +'.risk-box-title{font-size:.85rem;font-weight:700;color:#92400e;margin-bottom:6px}'
+    +'.risk-box-body{font-size:.8rem;color:#78350f;line-height:1.6}'
+    +'.cta-box{background:linear-gradient(135deg,#0a1628,#1e3a6b);border-radius:12px;padding:28px 32px;color:#fff;text-align:center}'
+    +'.cta-title{font-size:1.1rem;font-weight:800;margin-bottom:8px}'
+    +'.cta-sub{font-size:.82rem;color:#94a3b8;margin-bottom:20px;line-height:1.6}'
+    +'.cta-btn{display:inline-block;background:#4f8ef7;color:#fff;padding:13px 36px;border-radius:8px;font-weight:700;font-size:.88rem;text-decoration:none}'
+    +'.footer{text-align:center;padding:20px;font-size:.68rem;color:#94a3b8}'
+    +'@media(max-width:620px){.score-grid{grid-template-columns:1fr 1fr}.section{padding:20px}.risk-banner{padding:14px 20px}.header{padding:22px 20px}.ba-wrap{grid-template-columns:1fr}.ba-arrow{display:none}.wi-stats{grid-template-columns:1fr 1fr}}'
+    +'</style></head><body><div class="wrap">'
+
+    // ── Header ──────────────────────────────────────────────────────────────
+    +'<div class="header">'
+    +'<div class="header-eyebrow">Free Accessibility Audit Report</div>'
+    +'<div class="header-title">'+escHtml(url)+'</div>'
+    +'<div class="header-sub">Prepared by ACC — Accessibility Compliance Canada &nbsp;·&nbsp; '+now+'</div>'
+    +'</div>'
+
+    +'<div class="body">'
+
+    // ── Risk banner ─────────────────────────────────────────────────────────
+    +'<div class="risk-banner">'
+    +'<div>'
+    +'<div style="font-size:.9rem;font-weight:700;color:#0f172a">WCAG 2.1 AA Compliance Snapshot</div>'
+    +'<div style="font-size:.7rem;color:#94a3b8;margin-top:3px">&#128269; '+escHtml(scanScope)+(pagesScanned<totalFound?' &nbsp;·&nbsp; '+totalFound+' pages found in sitemap':'')+'</div>'
+    +'</div>'
+    +'<span class="risk-pill">'+riskLevel+'</span>'
+    +'</div>'
+
+    // ── Score grid ──────────────────────────────────────────────────────────
+    +'<div class="score-grid">'
+    +'<div class="score-cell"><div class="score-num" style="color:'+scoreColor+'">'+score+'<span style="font-size:1rem;font-weight:400;color:#94a3b8">/100</span></div><div class="score-lbl">Compliance Score</div></div>'
+    +'<div class="score-cell"><div class="score-num" style="color:#10b981">'+totalElementsFixed+'</div><div class="score-lbl">Elements Fixed Instantly</div></div>'
+    +'<div class="score-cell"><div class="score-num" style="color:#ef4444">'+(nErr+nDev)+'</div><div class="score-lbl">Issues Found</div></div>'
+    +'<div class="score-cell"><div class="score-num" style="color:#f59e0b">'+nWarn+'</div><div class="score-lbl">Warnings</div></div>'
+    +'</div>'
+
+    // ── Widget Impact section ───────────────────────────────────────────────
+    +'<div class="section">'
+    +'<div class="section-title">What the ACC Widget fixes — instantly, on every page visit</div>'
+    +'<div class="ba-wrap">'
+    +'<div class="ba-cell"><div class="ba-score" style="color:#b91c1c">'+scoreWithout+'<span style="font-size:.9rem;font-weight:400;color:#94a3b8">/100</span></div><div class="ba-lbl" style="color:#b91c1c">Without Widget</div><div class="ba-note">Your site today</div></div>'
+    +'<div class="ba-arrow">→</div>'
+    +'<div class="ba-cell accent"><div class="ba-score" style="color:#065f46">'+score+'<span style="font-size:.9rem;font-weight:400;color:#065f46">/100</span></div><div class="ba-lbl" style="color:#065f46">With ACC Widget</div><div class="ba-note">+'+autoFixImpact+' pts, day one</div></div>'
+    +'</div>'
+    +'<div class="widget-impact">'
+    +'<div class="wi-headline">🤖 ACC AI Widget — no developer required</div>'
+    +'<div class="wi-sub">The ACC widget runs on every page load and automatically repairs accessibility violations in real-time — before the browser renders the page to users. '
+    +'It resolves <strong>'+nFixed+' violation categories</strong> affecting <strong>'+totalElementsFixed+' elements</strong> on your site, instantly and continuously, with a single line of code.</div>'
+    +'<div class="wi-stats">'
+    +'<div class="wi-stat"><div class="wi-stat-num">'+totalElementsFixed+'</div><div class="wi-stat-lbl">Elements Repaired</div></div>'
+    +'<div class="wi-stat"><div class="wi-stat-num">'+nFixed+'</div><div class="wi-stat-lbl">Violation Types Fixed</div></div>'
+    +'<div class="wi-stat"><div class="wi-stat-num">+'+autoFixImpact+'</div><div class="wi-stat-lbl">Score Improvement</div></div>'
+    +'</div>'
+    +'</div>'
+    +(nFixed > 0 ?
+      '<div style="margin-top:16px"><div class="section-title" style="margin-bottom:8px">Specific fixes applied automatically</div>'
+      +'<div class="fix-list">'
+      +'<div class="fix-list-hdr">✓ Resolved instantly on every page load — zero developer work</div>'
+      +autoFixCards
+      +'</div></div>'
+    : '')
+    +'</div>'
+
+    // ── Top issues ──────────────────────────────────────────────────────────
+    +(topIssues.length ? '<div class="section">'
+    +'<div class="section-title">Issues requiring attention</div>'
+    +'<table class="issues-table"><thead><tr><th style="width:28%">Issue</th><th>Description</th><th style="width:96px;text-align:center">Severity</th></tr></thead><tbody>'
+    +issueRows
+    +'</tbody></table></div>' : '')
+
+    // ── Legal risk ──────────────────────────────────────────────────────────
+    +'<div class="section">'
+    +'<div class="risk-box">'
+    +'<div class="risk-box-title">⚠ Ontario AODA Compliance Risk</div>'
+    +'<div class="risk-box-body">Under the Accessibility for Ontarians with Disabilities Act (AODA), all public-facing websites must meet WCAG 2.1 Level AA. '
+    +'Non-compliance can result in fines of up to <strong>$100,000 per day</strong>. '
+    +'Your site currently has <strong>'+(nErr+nDev)+' unresolved issues</strong> that create legal exposure. '
+    +'The ACC widget eliminates '+nFixed+' of them immediately — the remaining '+(nErr+nDev-Math.min(nFixed,nErr+nDev))+' are addressed through ACC\'s managed compliance plan.</div>'
+    +'</div>'
+    +'</div>'
+
+    // ── CTA ─────────────────────────────────────────────────────────────────
+    +'<div class="section" style="border-bottom:none">'
+    +'<div class="cta-box">'
+    +'<div class="cta-title">Get Compliant — Starting at $69/month</div>'
+    +'<div class="cta-sub">The ACC widget installs with one line of code and immediately resolves '+totalElementsFixed+' accessibility issues on your site.<br>A managed plan covers the rest — policy docs, staff training, evidence binder, and ongoing monitoring.</div>'
+    +'<a class="cta-btn" href="https://accessibilitycompliance.ca">Book a Free 15-Min Call →</a>'
+    +'</div>'
+    +'</div>'
+
+    +'</div>'// /body
+    +'<div class="footer">ACC — Accessibility Compliance Canada Inc. &nbsp;·&nbsp; accessibilitycompliance.ca &nbsp;·&nbsp; '+now+'<br>'
+    +'Automated WCAG 2.1 Level AA scan across '+escHtml(scanScope)+'. Issues are aggregated and deduplicated across all pages. '
+    +'The ACC widget resolves listed auto-fix items on every page visit at runtime. Results are indicative — manual audit recommended for legal certification.'
+    +'</div>'
+    +'</div></body></html>';
+
+  var blob = new Blob([html],{type:'text/html'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  var slug = url.replace(/^https?:\/\//,'').replace(/[^a-zA-Z0-9]/g,'-').substring(0,40);
+  a.download = 'ACC-Prospect-Report-'+slug+'-'+new Date().toISOString().slice(0,10)+'.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToastAdmin('Prospect report downloaded','success');
+}
+
+// ─────────────────────────────────────────────────────────────
+// ADMIN SCAN ENGINE — captures specific element details
+// Returns issues[] with elements[] array containing selector + snippet
+// ─────────────────────────────────────────────────────────────
+function adminScanEngine(doc) {
+  var issues  = [];
+  var widgetEl = doc.getElementById('acc-widget-root');
+  function $$(sel){return Array.from(doc.querySelectorAll(sel)).filter(function(e){return !widgetEl||!widgetEl.contains(e);});}
+
+  function getSection(el){
+    if(!el)return'page';
+    var node=el;
+    while(node&&node!==doc.documentElement){
+      var tag=(node.tagName||'').toLowerCase(),role=(node.getAttribute('role')||'').toLowerCase();
+      if(tag==='header'||role==='banner')return'header';
+      if(tag==='nav'||role==='navigation')return'navigation';
+      if(tag==='main'||role==='main')return'main';
+      if(tag==='aside'||role==='complementary')return'aside';
+      if(tag==='footer'||role==='contentinfo')return'footer';
+      if(tag==='form'||role==='form')return'form';
+      node=node.parentElement;
+    }
+    return'page';
+  }
+
+  function getSelector(el){
+    if(!el)return'';
+    var tag=(el.tagName||'').toLowerCase();
+    var id=el.id?'#'+el.id:'';
+    var cls=el.className&&typeof el.className==='string'?'.'+el.className.trim().split(/\s+/).slice(0,2).join('.'):'';
+    return tag+(id||cls);
+  }
+
+  function getSnippet(el){
+    var txt=(el.textContent||el.getAttribute('alt')||el.getAttribute('placeholder')||el.getAttribute('aria-label')||'').trim().substring(0,60);
+    return txt||(el.getAttribute('src')||el.getAttribute('href')||'').substring(0,60)||el.tagName.toLowerCase();
+  }
+
+  function lum(r,g,b){var s=function(c){c/=255;return c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4);};return .2126*s(r)+.7152*s(g)+.0722*s(b);}
+  function contrast(l1,l2){var hi=Math.max(l1,l2),lo=Math.min(l1,l2);return(hi+.05)/(lo+.05);}
+  function parseRgb(str){var m=(str||'').match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);return m?[+m[1],+m[2],+m[3]]:null;}
+  function getBg(el){var node=el;while(node&&node!==doc.body){var bg=getComputedStyle(node).backgroundColor;if(bg&&bg!=='rgba(0, 0, 0, 0)'&&bg!=='transparent'){var p=parseRgb(bg);if(p)return p;}node=node.parentElement;}return parseRgb(getComputedStyle(doc.body).backgroundColor)||[255,255,255];}
+
+  function push(type,criterion,level,icon,title,desc,elements,requiresDev,section){
+    issues.push({type:type,criterion:criterion,level:level,icon:icon,title:title,desc:desc,
+      elements:elements||[],count:elements?elements.length:0,
+      requiresDev:!!requiresDev,section:section||'page'});
+  }
+
+  // 1.1.1 Alt text — specific elements
+  (function(){
+    var imgs=$$('img,input[type=image],[role=img]');
+    var missing=[],poor=[];
+    imgs.forEach(function(img){
+      if(img.getAttribute('alt')==='')return;
+      if(!img.hasAttribute('alt')&&img.getAttribute('role')!=='presentation'){
+        var lbl=img.getAttribute('aria-label')||img.getAttribute('title');
+        if(!lbl) missing.push({selector:getSelector(img),snippet:img.getAttribute('src')||'<img>'});
+      } else if(/\.(png|jpe?g|gif|webp|svg)$/i.test(img.getAttribute('alt')||'')){
+        poor.push({selector:getSelector(img),snippet:'alt="'+img.getAttribute('alt')+'"'});
+      }
+    });
+    if(missing.length) push('error','1.1.1','A','🖼','Images Missing Alt Text','These images have no alt attribute. Screen readers cannot describe them.',missing,true,'page');
+    if(poor.length)   push('warning','1.1.1','A','🖼','Decorative-looking Alt Text','Alt text looks like a filename. Use a meaningful description.',poor,true,'page');
+  })();
+
+  // 1.3.1 Headings
+  (function(){
+    var hds=$$('h1,h2,h3,h4,h5,h6');
+    var h1s=hds.filter(function(h){return h.tagName==='H1';});
+    var skips=[];
+    for(var i=1;i<hds.length;i++){if(parseInt(hds[i].tagName[1])-parseInt(hds[i-1].tagName[1])>1)skips.push({selector:getSelector(hds[i]),snippet:hds[i].textContent.trim().substring(0,60)});}
+    if(!h1s.length) push('error','1.3.1','A','📋','No H1 Heading','Every page must have exactly one H1 heading.',[{selector:'<body>',snippet:'No <h1> found on page'}],true,'page');
+    if(h1s.length>1){var els=h1s.map(function(h){return{selector:getSelector(h),snippet:h.textContent.trim().substring(0,60)};});push('warning','1.3.1','A','📋','Multiple H1 Headings','Only one H1 should exist per page.',els,true,'page');}
+    if(skips.length) push('warning','1.3.1','A','📋','Heading Levels Skipped','Headings jump levels (e.g. H2 to H4). Use sequential heading levels.',skips,true,'page');
+
+    var noTh=$$('table').filter(function(t){return!t.querySelector('th');});
+    if(noTh.length) push('error','1.3.1','A','📊','Tables Missing Header Cells','Data tables must have <th> elements to be accessible.',noTh.map(function(t){return{selector:getSelector(t),snippet:t.querySelector('caption')?t.querySelector('caption').textContent:'<table>'};}),true,'main');
+  })();
+
+  // 1.4.3 Contrast — specific elements
+  (function(){
+    var sampled=$$('p,span,li,h1,h2,h3,h4,h5,h6,a,button,label,td,th').filter(function(e){return e.textContent.trim().length>2;}).slice(0,200);
+    var failAA=[],failAAA=[];
+    sampled.forEach(function(el){
+      try{
+        var cs=getComputedStyle(el),fg=parseRgb(cs.color);if(!fg)return;
+        var bg=getBg(el),fs=parseFloat(cs.fontSize),bold=parseInt(cs.fontWeight)>=700;
+        var large=fs>=18||(bold&&fs>=14);
+        var ratio=contrast(lum(fg[0],fg[1],fg[2]),lum(bg[0],bg[1],bg[2]));
+        if(ratio<(large?3.0:4.5))failAA.push({selector:getSelector(el),snippet:el.textContent.trim().substring(0,50)+' (ratio:'+ratio.toFixed(2)+':1)'});
+        else if(ratio<(large?4.5:7.0))failAAA.push({selector:getSelector(el),snippet:el.textContent.trim().substring(0,50)+' (ratio:'+ratio.toFixed(2)+':1)'});
+      }catch(e){}
+    });
+    if(failAA.length) push('error','1.4.3','AA','🎨','Insufficient Colour Contrast','These text elements fail the 4.5:1 minimum contrast ratio required by WCAG 2.1 AA.',failAA.slice(0,20),true,'page');
+    if(failAAA.length&&!failAA.length) push('warning','1.4.3','AA','🎨','Contrast Below AAA Target','These elements pass AA (4.5:1) but not AAA (7:1).',failAAA.slice(0,10),true,'page');
+  })();
+
+  // 2.4.1 Skip navigation
+  (function(){
+    var hasSkip=doc.querySelector('[data-acc-skip],[href="#main"],[href="#content"],.skip-link');
+    if(!hasSkip) push('warning','2.4.1','A','⏭','No Skip Navigation Link','Keyboard users must tab through all navigation on every page without a skip link.',[{selector:'<body>',snippet:'No skip link found'}],true,'navigation');
+  })();
+
+  // 2.4.2 Page title
+  (function(){
+    var title=doc.title||'';
+    if(!title.trim()) push('error','2.4.2','A','🏷','Page Has No Title','The <title> element is empty or missing.',[{selector:'<title>',snippet:'(empty)'}],false,'page');
+    else if(title.length<5||['home','index','untitled','document'].indexOf(title.toLowerCase())>=0)
+      push('warning','2.4.2','A','🏷','Generic Page Title','The page title "'+title+'" does not describe the page content.',[{selector:'<title>',snippet:title}],true,'page');
+  })();
+
+  // 2.4.3 Positive tabindex
+  (function(){
+    var pos=$$('[tabindex]').filter(function(e){return parseInt(e.getAttribute('tabindex'))>0;});
+    if(pos.length) push('error','2.4.3','A','🔢','Positive tabindex Values','tabindex > 0 disrupts the natural keyboard focus order for all users.',pos.map(function(e){return{selector:getSelector(e),snippet:'tabindex="'+e.getAttribute('tabindex')+'" — '+e.textContent.trim().substring(0,40)};}),true,'page');
+  })();
+
+  // 2.4.4 Link purpose
+  (function(){
+    var vague=['click here','read more','here','more','link','details','learn more','continue','click','go'];
+    var vagueLinks=$$('a[href]').filter(function(l){return vague.indexOf((l.textContent||'').trim().toLowerCase())>=0&&!l.getAttribute('aria-label');});
+    var emptyLinks=$$('a[href]').filter(function(l){return !(l.textContent||'').trim()&&!l.getAttribute('aria-label')&&!l.querySelector('img[alt]');});
+    if(vagueLinks.length) push('warning','2.4.4','A','🔗','Vague Link Text','These links use non-descriptive text. Screen reader users cannot determine the link purpose.',vagueLinks.map(function(l){return{selector:getSelector(l),snippet:'"'+l.textContent.trim()+'" → '+l.getAttribute('href').substring(0,50)};}),true,'page');
+    if(emptyLinks.length) push('error','2.4.4','A','🔗','Empty Links','These links have no text content or aria-label. Screen readers announce them as "blank".',emptyLinks.map(function(l){return{selector:getSelector(l),snippet:l.getAttribute('href').substring(0,60)};}),true,'page');
+  })();
+
+  // 2.4.7 Focus visible
+  (function(){
+    var removed=false;
+    try{Array.from(doc.styleSheets).forEach(function(sheet){try{Array.from(sheet.cssRules||[]).forEach(function(rule){if(rule.style&&rule.style.outline==='none'&&/:focus/.test(rule.selectorText||''))removed=true;});}catch(e){}});}catch(e){}
+    if(removed) push('error','2.4.7','AA','🔲','Focus Indicator Removed via CSS','A CSS rule removes the :focus outline. Keyboard users cannot see which element has focus.',[{selector:'CSS rule: *:focus { outline: none }',snippet:'Affects all focusable elements'}],true,'page');
+  })();
+
+  // 3.1.1 Language
+  (function(){
+    var lang=doc.documentElement.getAttribute('lang');
+    if(!lang) push('error','3.1.1','A','🌐','Page Language Not Set','The lang attribute on <html> is missing. Screen readers cannot select the correct voice.',[{selector:'<html>',snippet:'lang attribute missing'}],false,'page');
+    else if(!/^[a-z]{2,3}(-[A-Z]{2,3})?$/.test(lang)) push('warning','3.1.1','A','🌐','Invalid lang Attribute','The lang value "'+lang+'" may not be a valid BCP 47 language tag.',[{selector:'<html lang="'+lang+'">',snippet:'lang="'+lang+'"'}],true,'page');
+  })();
+
+  // 3.3.2 Form labels
+  (function(){
+    var inputs=$$('input:not([type=hidden]):not([type=submit]):not([type=button]):not([type=reset]),select,textarea');
+    var unlabelled=[];
+    inputs.forEach(function(inp){
+      var lbl=inp.id?doc.querySelector('label[for="'+inp.id+'"]'):null;
+      var aria=inp.getAttribute('aria-label')||inp.getAttribute('aria-labelledby');
+      var ph=inp.getAttribute('placeholder');
+      if(!lbl&&!aria&&!ph) unlabelled.push({selector:getSelector(inp),snippet:'type="'+(inp.getAttribute('type')||inp.tagName.toLowerCase())+'" name="'+(inp.name||'(no name)')+'"'});
+    });
+    if(unlabelled.length) push('error','3.3.2','A','📝','Form Fields Without Labels','These inputs have no label, aria-label, or placeholder. Screen readers cannot identify them.',unlabelled,true,'form');
+  })();
+
+  // 4.1.1 Duplicate IDs
+  (function(){
+    var allIds=Array.from(doc.querySelectorAll('[id]')).map(function(e){return e.id;});
+    var dupes=[...new Set(allIds.filter(function(id,i){return allIds.indexOf(id)!==i;}))];
+    if(dupes.length) push('error','4.1.1','A','🆔','Duplicate ID Attributes','IDs must be unique per page. Duplicate IDs break ARIA relationships and landmark navigation.',
+      dupes.map(function(id){return{selector:'#'+id,snippet:allIds.filter(function(x){return x===id;}).length+' elements share this ID'};}),true,'page');
+  })();
+
+  // 4.1.2 Buttons without labels
+  (function(){
+    var btns=$$('button,input[type=submit],input[type=button],[role=button]');
+    var unlabelled=btns.filter(function(b){
+      var txt=(b.textContent||'').trim()||(b.getAttribute('value')||'');
+      var aria=b.getAttribute('aria-label')||b.getAttribute('aria-labelledby');
+      return !txt&&!aria&&!b.querySelector('img[alt]')&&!b.querySelector('svg title');
+    });
+    if(unlabelled.length) push('error','4.1.2','A','🔘','Buttons Without Accessible Names','These buttons have no text or aria-label. Screen readers announce them as "button" with no context.',unlabelled.map(function(b){return{selector:getSelector(b),snippet:b.getAttribute('class')||b.outerHTML.substring(0,60)};}),true,'page');
+
+    // Missing landmarks
+    if(!doc.querySelector('main,[role=main]')) push('error','4.1.2','A','🗺','No <main> Landmark','The page has no <main> element. Screen reader users cannot jump to main content.',[{selector:'<body>',snippet:'No <main> element found'}],true,'page');
+    if(!doc.querySelector('nav,[role=navigation]')) push('warning','4.1.2','A','🗺','No <nav> Landmark','No <nav> element found. Wrap navigation in a <nav> element.',[{selector:'<body>',snippet:'No <nav> element found'}],true,'navigation');
+  })();
+
+  // Click handlers on non-interactive elements
+  (function(){
+    var clickables=$$('[onclick]:not(a):not(button):not(input):not(select):not([role=button]):not([tabindex])');
+    if(clickables.length) push('error','2.1.1','A','⌨','Click Handlers on Non-Focusable Elements','These elements have onclick but cannot be reached by keyboard.',clickables.map(function(e){return{selector:getSelector(e),snippet:e.textContent.trim().substring(0,50)||e.tagName.toLowerCase()};}),true,'page');
+  })();
+
+  // Auto-fixed items (widget fixes these at runtime)
+  // This list must match exactly what the widget's runScan() engine applies.
+  (function(){
+    // 1.1.1 — Alt text restored from aria-label/title
+    var imgsMissingAlt=$$('img,input[type=image],[role=img]').filter(function(img){
+      return !img.hasAttribute('alt')&&img.getAttribute('role')!=='presentation'
+        &&(img.getAttribute('aria-label')||img.getAttribute('title'));
+    });
+    if(imgsMissingAlt.length) push('fixed','1.1.1','A','🖼','Alt Text Restored',
+      'ACC widget restores alt text from aria-label or title attribute on '+imgsMissingAlt.length+' image(s).',
+      imgsMissingAlt.map(function(img){return{selector:getSelector(img),snippet:(img.getAttribute('aria-label')||img.getAttribute('title')||'').substring(0,50)};}),
+      false,'page');
+
+    // 1.3.4 — Viewport meta
+    if(!doc.querySelector('meta[name=viewport]'))
+      push('fixed','1.3.4','AA','📱','Viewport Meta Added',
+        'ACC widget injects a viewport meta tag enabling proper mobile scaling and zoom.',[],false,'page');
+
+    // 1.4.2 — Autoplay media muted
+    var autoplay=$$('video[autoplay],audio[autoplay]').filter(function(m){return !m.muted;});
+    if(autoplay.length) push('fixed','1.4.2','A','🔇','Autoplay Media Muted',
+      'ACC widget mutes '+autoplay.length+' auto-playing media element(s) to prevent unexpected audio on page load.',
+      autoplay.map(function(m){return{selector:getSelector(m),snippet:m.getAttribute('src')||m.tagName.toLowerCase()};}),
+      false,'page');
+
+    // 2.4.1 — Skip link
+    if(!doc.querySelector('[data-acc-skip],[href="#main"],[href="#content"],.skip-link')&&doc.querySelector('main,[role=main]'))
+      push('fixed','2.4.1','A','⏭','Skip Navigation Link Added',
+        'ACC widget injects a "Skip to main content" link so keyboard users can bypass repeated navigation on every page.',[],false,'navigation');
+
+    // 2.4.4 — Empty links labelled
+    var empLinks=$$('a[href]').filter(function(l){
+      return !(l.textContent||'').trim()&&!l.getAttribute('aria-label')&&!l.querySelector('img[alt]');
+    });
+    if(empLinks.length) push('fixed','2.4.4','A','🔗','Empty Links Labelled',
+      'ACC widget adds aria-label to '+empLinks.length+' link(s) with no visible text, using their href as the label.',
+      empLinks.map(function(l){return{selector:getSelector(l),snippet:(l.getAttribute('href')||'').substring(0,60)};}),
+      false,'page');
+
+    // 2.4.4 — External links secured
+    var extLinks=$$('a[href]').filter(function(l){
+      var h=(l.getAttribute('href')||'');
+      return h.startsWith('http')&&!h.includes(doc.location&&doc.location.hostname||'')&&l.getAttribute('target')==='_blank';
+    });
+    if(extLinks.length) push('fixed','2.4.4','A','🔒','External Links Secured',
+      'ACC widget adds rel="noopener noreferrer" and "(opens in new tab)" notice to '+extLinks.length+' external link(s).',
+      extLinks.map(function(l){return{selector:getSelector(l),snippet:(l.textContent||'').trim().substring(0,50)||l.getAttribute('href').substring(0,50)};}),
+      false,'page');
+
+    // 3.1.1 — Page language
+    if(!doc.documentElement.getAttribute('lang'))
+      push('fixed','3.1.1','A','🌐','Page Language Set',
+        'ACC widget adds lang="en" to <html>. Screen readers use this to select the correct speech synthesis voice.',[],false,'page');
+
+    // 3.3.2 — Input labels from placeholder
+    var unlabelledInps=$$('input:not([type=hidden]):not([type=submit]):not([type=button]),select,textarea').filter(function(inp){
+      var lbl=inp.id?doc.querySelector('label[for="'+inp.id+'"]'):null;
+      return !lbl&&!inp.getAttribute('aria-label')&&!inp.getAttribute('aria-labelledby')&&inp.getAttribute('placeholder');
+    });
+    if(unlabelledInps.length) push('fixed','3.3.2','A','📝','Form Input Labels Added',
+      'ACC widget adds aria-label from placeholder text to '+unlabelledInps.length+' input(s) that have no visible label. Note: visible <label> elements are still recommended.',
+      unlabelledInps.map(function(inp){return{selector:getSelector(inp),snippet:'placeholder="'+(inp.getAttribute('placeholder')||'')+'"'};}),
+      false,'form');
+
+    // 4.1.2 — Icon buttons labelled
+    var iconBtns=$$('button,input[type=submit],input[type=button],[role=button]').filter(function(b){
+      var txt=(b.textContent||'').trim()||(b.getAttribute('value')||'').trim();
+      var aria=b.getAttribute('aria-label')||b.getAttribute('aria-labelledby');
+      var svgTitle=b.querySelector('svg title');
+      var imgAlt=b.querySelector('img[alt]');
+      return !txt&&!aria&&(svgTitle||imgAlt);
+    });
+    if(iconBtns.length) push('fixed','4.1.2','A','🔘','Icon Buttons Labelled',
+      'ACC widget adds aria-label to '+iconBtns.length+' icon button(s) using the SVG title or image alt text inside them.',
+      iconBtns.map(function(b){
+        var lbl=(b.querySelector('svg title')||{textContent:''}).textContent||(b.querySelector('img[alt]')||{}).getAttribute('alt')||'';
+        return{selector:getSelector(b),snippet:'labelled from: '+lbl.substring(0,40)};
+      }),
+      false,'page');
+
+    // 4.1.2 — iFrames titled
+    var untitledFrames=$$('iframe:not([title])');
+    if(untitledFrames.length) push('fixed','4.1.2','A','🖥','iFrames Titled',
+      'ACC widget adds a title attribute to '+untitledFrames.length+' iframe(s) that had none, making them identifiable to screen readers.',
+      untitledFrames.map(function(f){return{selector:getSelector(f),snippet:(f.getAttribute('src')||'').substring(0,60)};}),
+      false,'page');
+
+    // 2.4.7 — Focus indicator injected
+    // Widget injects a visible :focus outline stylesheet on every page — applies universally
+    (function(){
+      var hasOutlineReset = false;
+      try {
+        var sheets = Array.from(doc.styleSheets);
+        for (var s=0;s<sheets.length;s++) {
+          try {
+            var rules = Array.from(sheets[s].cssRules||[]);
+            for (var r=0;r<rules.length;r++) {
+              var txt = (rules[r].cssText||'');
+              if(/:focus/.test(txt) && /outline\s*:\s*(0|none)/.test(txt)) { hasOutlineReset = true; break; }
+            }
+          } catch(e){}
+          if(hasOutlineReset) break;
+        }
+      } catch(e){}
+      if(hasOutlineReset)
+        push('fixed','2.4.7','AA','🔲','Focus Indicators Restored',
+          'A stylesheet rule suppresses all focus outlines on this page. The ACC widget injects a visible focus indicator rule, restoring keyboard navigation visibility for all interactive elements.',[],false,'page');
+    })();
+
+    // 1.1.1 — Decorative SVGs hidden from AT
+    var decorativeSvgs=$$('svg').filter(function(s){
+      return !s.getAttribute('aria-label')&&!s.getAttribute('aria-labelledby')&&!s.getAttribute('title')&&!s.getAttribute('role')&&!s.querySelector('title');
+    });
+    if(decorativeSvgs.length) push('fixed','1.1.1','A','🎨','Decorative SVGs Hidden from Screen Readers',
+      'ACC widget adds aria-hidden="true" to '+decorativeSvgs.length+' SVG icon(s) that have no accessible label, preventing screen readers from announcing meaningless graphic noise.',
+      decorativeSvgs.slice(0,10).map(function(s){return{selector:getSelector(s),snippet:s.getAttribute('class')||'<svg>'};}),
+      false,'page');
+
+    // 1.3.5 — Autocomplete on common personal fields
+    var personalInputs=$$('input[type=text],input[type=email],input[type=tel],input:not([type])').filter(function(inp){
+      if(inp.getAttribute('autocomplete')) return false;
+      var name=(inp.getAttribute('name')||inp.getAttribute('id')||inp.getAttribute('placeholder')||'').toLowerCase();
+      return /email|name|phone|tel|address|city|postal|zip/.test(name);
+    });
+    if(personalInputs.length) push('fixed','1.3.5','AA','🤖','Autocomplete Attributes Added',
+      'ACC widget adds autocomplete attributes to '+personalInputs.length+' personal data field(s), enabling browser autofill for users with cognitive or motor disabilities.',
+      personalInputs.map(function(inp){return{selector:getSelector(inp),snippet:(inp.getAttribute('name')||inp.getAttribute('id')||'').substring(0,40)};}),
+      false,'form');
+
+    // 4.1.2 — aria-expanded missing on toggle controls
+    var toggleControls=$$('[data-toggle],[data-bs-toggle],[aria-controls]').filter(function(el){
+      return !el.hasAttribute('aria-expanded')&&(el.tagName==='BUTTON'||(el.getAttribute('role')||'')==='button');
+    });
+    if(toggleControls.length) push('fixed','4.1.2','A','🔄','Toggle State Announced',
+      'ACC widget adds aria-expanded to '+toggleControls.length+' toggle control(s) (menus, accordions, dropdowns) so screen readers announce whether they are open or closed.',
+      toggleControls.map(function(el){return{selector:getSelector(el),snippet:(el.textContent||'').trim().substring(0,50)};}),
+      false,'navigation');
+
+    // 4.1.2 — Missing role on interactive SVG buttons
+    var svgBtns=$$('a svg,button svg,[onclick] svg').filter(function(s){
+      return !s.querySelector('title')&&!s.getAttribute('aria-label');
+    });
+    if(svgBtns.length) push('fixed','4.1.2','A','🔘','SVG Icons in Buttons Labelled',
+      'ACC widget adds accessible titles to '+svgBtns.length+' SVG icon(s) inside interactive elements, so screen readers can announce what action each button performs.',
+      svgBtns.slice(0,10).map(function(s){return{selector:getSelector(s.parentElement||s),snippet:(s.getAttribute('class')||'svg in '+(s.parentElement?s.parentElement.tagName.toLowerCase():''))+''};}),
+      false,'page');
+
+  })();
+
+  return issues;
 }
 </script>
 

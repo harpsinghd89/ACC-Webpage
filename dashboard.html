@@ -437,18 +437,22 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
               <span style="color:var(--muted)">Perceivable</span><span id="wcag-p-pct">—%</span>
             </div>
             <div class="progress-bar"><div class="progress-fill" id="wcag-p-bar" style="width:0%"></div></div>
+            <div style="font-size:.68rem;color:var(--muted);margin-bottom:8px;line-height:1.5">Can users perceive content? Covers alt text, captions, colour contrast, and text resizing.</div>
             <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
               <span style="color:var(--muted)">Operable</span><span id="wcag-o-pct">—%</span>
             </div>
             <div class="progress-bar"><div class="progress-fill" id="wcag-o-bar" style="width:0%"></div></div>
+            <div style="font-size:.68rem;color:var(--muted);margin-bottom:8px;line-height:1.5">Can users operate the interface? Covers keyboard navigation, focus order, skip links, and no timing traps.</div>
             <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
               <span style="color:var(--muted)">Understandable</span><span id="wcag-u-pct">—%</span>
             </div>
             <div class="progress-bar"><div class="progress-fill" id="wcag-u-bar" style="width:0%"></div></div>
+            <div style="font-size:.68rem;color:var(--muted);margin-bottom:8px;line-height:1.5">Is content readable and predictable? Covers page language, form labels, error messages, and consistent navigation.</div>
             <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:4px">
               <span style="color:var(--muted)">Robust</span><span id="wcag-r-pct">—%</span>
             </div>
             <div class="progress-bar"><div class="progress-fill" id="wcag-r-bar" style="width:0%"></div></div>
+            <div style="font-size:.68rem;color:var(--muted);margin-bottom:4px;line-height:1.5">Does content work with assistive tech? Covers valid HTML, ARIA roles, and compatibility with screen readers and braille displays.</div>
           </div>
         </div>
 
@@ -487,36 +491,38 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             </div>
           </div>
           <div class="fgroup">
-            <label for="w-lang">Default Language</label>
+            <label for="w-lang">Default Widget Language</label>
             <select class="finput" id="w-lang" style="width:100%">
-              <option>English</option><option>French</option><option>Bilingual (EN/FR)</option>
+              <option value="en">English</option>
+              <option value="fr">French (Français)</option>
             </select>
+            <p style="font-size:.72rem;color:var(--muted);margin-top:6px;line-height:1.6">Controls the widget UI labels on first load. The 🌐 Language Selector lets visitors choose from 90+ languages at any time.</p>
           </div>
         </div>
         <div class="card">
-          <h2>&#127895; Features</h2>
+          <h2>&#127895; Widget Features</h2>
           <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Profiles</strong><span>Disability-optimized presets</span></div>
+            <div class="toggle-info"><strong>Accessibility Profiles</strong><span>Shows 6 disability-optimized presets (Visually Impaired, Motor, Senior, ADHD, Deaf, Cognitive). Visitors click one to instantly apply a full set of adjustments.</span></div>
             <label class="toggle" aria-label="Toggle profiles"><input type="checkbox" id="w-profiles" checked><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Auto-Fix Engine</strong><span>Disabled for client-facing pages</span></div>
-            <label class="toggle" aria-label="Toggle auto-fix"><input type="checkbox" id="w-autofix"><span class="toggle-slider"></span></label>
+            <div class="toggle-info"><strong>Auto-Fix Engine</strong><span>Widget automatically patches detectable issues at runtime — missing alt text, skip links, empty ARIA labels. Does not require code changes on your site.</span></div>
+            <label class="toggle" aria-label="Toggle auto-fix"><input type="checkbox" id="w-autofix" checked><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Contrast Checker</strong><span>Warn on low contrast text</span></div>
-            <label class="toggle" aria-label="Toggle contrast checker"><input type="checkbox" id="w-contrast" checked><span class="toggle-slider"></span></label>
+            <div class="toggle-info"><strong>Colour &amp; Contrast Tools</strong><span>Enables colour filter swatches (high-contrast, greyscale, inverted) and contrast adjustment slider in the widget settings tab.</span></div>
+            <label class="toggle" aria-label="Toggle contrast"><input type="checkbox" id="w-contrast" checked><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Reading Guide</strong><span>Focus line for reading support</span></div>
+            <div class="toggle-info"><strong>Reading Tools</strong><span>Enables the Reading Guide (highlights the current line), Reading Mask (dims surrounding content), and text spacing controls.</span></div>
             <label class="toggle" aria-label="Toggle reading guide"><input type="checkbox" id="w-reading" checked><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Audit History</strong><span>Show history tab to visitors</span></div>
-            <label class="toggle" aria-label="Toggle audit history"><input type="checkbox" id="w-history"><span class="toggle-slider"></span></label>
+            <div class="toggle-info"><strong>Language Selector</strong><span>Shows the 🌐 globe button in the widget header. Visitors can translate the entire page into 90+ languages via Google Translate. EN/FR default is set in Appearance above.</span></div>
+            <label class="toggle" aria-label="Toggle language selector"><input type="checkbox" id="w-language" checked><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Feedback Capture</strong><span>Collect accessibility feedback via widget</span></div>
+            <div class="toggle-info"><strong>Visitor Feedback Tab</strong><span>Adds a Feedback tab in the widget where visitors can report accessibility issues directly. Submissions appear in your Feedback Logs panel.</span></div>
             <label class="toggle" aria-label="Toggle feedback capture"><input type="checkbox" id="w-feedback" checked><span class="toggle-slider"></span></label>
           </div>
         </div>
@@ -533,32 +539,72 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h1>&#128250; Embed Code</h1>
         <p>Copy and paste this snippet just before the <code style="color:var(--teal)">&lt;/body&gt;</code> closing tag on every page of your website.</p>
       </div>
-      <div class="card">
-        <h2>&#128196; Your Widget Embed Code</h2>
-        <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">This code is locked to your registered domain <strong style="color:var(--text)" class="stmt-domain">—</strong>. It will not activate on other domains.</p>
+
+      <!-- Universal code -->
+      <div class="card" style="margin-bottom:16px">
+        <h2>&#128196; Your Widget Code</h2>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px">Locked to <strong style="color:var(--text)" class="stmt-domain">—</strong>. Add it to <em>every page</em> of your site.</p>
         <div class="code-block">
           <button class="code-copy" onclick="copyCode('embed-code')" aria-label="Copy embed code">Copy</button>
-          <pre id="embed-code">Loading your embed code…</pre>
+          <pre id="embed-code">Loading…</pre>
         </div>
-        <h3>WordPress Plugin</h3>
-        <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Prefer a plugin? Add this to your <strong>functions.php</strong> or use a code snippet plugin:</p>
-        <div class="code-block">
-          <button class="code-copy" onclick="copyCode('wp-code')" aria-label="Copy WordPress code">Copy</button>
-          <pre id="wp-code">Loading your WordPress code…</pre>
+      </div>
+
+      <!-- Platform tabs -->
+      <div class="card">
+        <h2>&#128290; Platform Instructions</h2>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px">
+          <button class="btn-sm btn-primary" id="plt-wordpress"   onclick="showPlatform('wordpress')">WordPress</button>
+          <button class="btn-sm btn-ghost"   id="plt-shopify"     onclick="showPlatform('shopify')">Shopify</button>
+          <button class="btn-sm btn-ghost"   id="plt-squarespace" onclick="showPlatform('squarespace')">Squarespace</button>
+          <button class="btn-sm btn-ghost"   id="plt-wix"         onclick="showPlatform('wix')">Wix</button>
+          <button class="btn-sm btn-ghost"   id="plt-webflow"     onclick="showPlatform('webflow')">Webflow</button>
+          <button class="btn-sm btn-ghost"   id="plt-drupal"      onclick="showPlatform('drupal')">Drupal</button>
+          <button class="btn-sm btn-ghost"   id="plt-joomla"      onclick="showPlatform('joomla')">Joomla</button>
+          <button class="btn-sm btn-ghost"   id="plt-html"        onclick="showPlatform('html')">Pure HTML</button>
+          <button class="btn-sm btn-ghost"   id="plt-gtm"         onclick="showPlatform('gtm')">Google Tag Manager</button>
         </div>
-        <h3>Installation Instructions</h3>
-        <ol style="font-size:.85rem;color:var(--muted);padding-left:20px;line-height:2">
-          <li>Copy the embed code above.</li>
-          <li>Open your website's HTML template or CMS theme editor.</li>
-          <li>Paste the code immediately before the <code style="color:var(--teal)">&lt;/body&gt;</code> tag.</li>
-          <li>Save and publish your changes.</li>
-          <li>Visit your site and look for the ACC accessibility icon in the bottom-right corner.</li>
-          <li>Return to this dashboard — your widget status will update within 15 minutes.</li>
-        </ol>
+
+        <div id="platform-wordpress">
+          <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Add to <strong>functions.php</strong> or a code-snippet plugin:</p>
+          <div class="code-block"><button class="code-copy" onclick="copyCode('wp-code')">Copy</button><pre id="wp-code">Loading…</pre></div>
+          <p style="font-size:.78rem;color:var(--muted);margin-top:8px">Or: <strong>Appearance → Theme Editor → footer.php</strong> → paste before <code>&lt;/body&gt;</code>.</p>
+        </div>
+        <div id="platform-shopify" style="display:none">
+          <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px"><strong>Online Store → Themes → Edit code → Layout/theme.liquid</strong> → paste before <code>&lt;/body&gt;</code>:</p>
+          <div class="code-block"><button class="code-copy" onclick="copyCode('shopify-code')">Copy</button><pre id="shopify-code">Loading…</pre></div>
+        </div>
+        <div id="platform-squarespace" style="display:none">
+          <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px"><strong>Settings → Advanced → Code Injection → Footer</strong> → paste:</p>
+          <div class="code-block"><button class="code-copy" onclick="copyCode('squarespace-code')">Copy</button><pre id="squarespace-code">Loading…</pre></div>
+        </div>
+        <div id="platform-wix" style="display:none">
+          <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px"><strong>Settings → Custom Code → Add Code → Body - end</strong> → paste:</p>
+          <div class="code-block"><button class="code-copy" onclick="copyCode('wix-code')">Copy</button><pre id="wix-code">Loading…</pre></div>
+        </div>
+        <div id="platform-webflow" style="display:none">
+          <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px"><strong>Project Settings → Custom Code → Footer Code</strong> → paste:</p>
+          <div class="code-block"><button class="code-copy" onclick="copyCode('webflow-code')">Copy</button><pre id="webflow-code">Loading…</pre></div>
+        </div>
+        <div id="platform-drupal" style="display:none">
+          <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Add to <strong>html.html.twig</strong> before <code>&lt;/body&gt;</code>, or use the Script Manager module:</p>
+          <div class="code-block"><button class="code-copy" onclick="copyCode('drupal-code')">Copy</button><pre id="drupal-code">Loading…</pre></div>
+        </div>
+        <div id="platform-joomla" style="display:none">
+          <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px"><strong>Extensions → Templates → Edit → index.php</strong> → paste before <code>&lt;/body&gt;</code>:</p>
+          <div class="code-block"><button class="code-copy" onclick="copyCode('joomla-code')">Copy</button><pre id="joomla-code">Loading…</pre></div>
+        </div>
+        <div id="platform-html" style="display:none">
+          <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Paste before the <code>&lt;/body&gt;</code> closing tag on every page:</p>
+          <div class="code-block"><button class="code-copy" onclick="copyCode('html-code')">Copy</button><pre id="html-code">Loading…</pre></div>
+        </div>
+        <div id="platform-gtm" style="display:none">
+          <p style="font-size:.83rem;color:var(--muted);margin-bottom:10px">Create a <strong>Custom HTML Tag</strong>, trigger on <strong>All Pages</strong>, paste:</p>
+          <div class="code-block"><button class="code-copy" onclick="copyCode('gtm-code')">Copy</button><pre id="gtm-code">Loading…</pre></div>
+        </div>
+
         <div style="margin-top:16px">
-          <a class="dl-btn" href="#" onclick="downloadInstallGuide();return false">
-            &#8659; Download Installation Guide (PDF)
-          </a>
+          <a class="dl-btn" href="#" onclick="downloadInstallGuide();return false">&#8659; Download Installation Guide (PDF)</a>
         </div>
       </div>
     </div>
@@ -567,22 +613,34 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div class="panel" id="panel-reports">
       <div class="page-header">
         <h1>&#128202; Audit Reports</h1>
-        <p>Monthly WCAG 2.1 AA compliance reports generated automatically on the 1st of each month. Real-time monitoring runs every 24 hours.</p>
+        <p>Monthly WCAG 2.1 AA compliance reports generated automatically on the 1st of each month.</p>
       </div>
+
+      <!-- Context note -->
+      <div style="background:rgba(79,142,247,.05);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:5px">&#9432; How reports work</div>
+        <div style="font-size:.75rem;color:var(--muted);line-height:1.7">
+          Your ACC widget scans each page as visitors browse your site and sends results to Supabase automatically.
+          On the <strong style="color:var(--text)">1st of each month</strong>, all scans from that month are aggregated into a PDF — your compliance score covers your <em>entire site</em> across all pages scanned, not a single visit.
+          Your <strong style="color:var(--text)">Baseline Assessment</strong> is generated at onboarding and captured your site's Day 0 state.
+          The <strong style="color:var(--text)">Overview</strong> tab shows this month's aggregate score as a live indicator.
+        </div>
+      </div>
+
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <h2 style="margin:0">&#128202; Monthly Reports</h2>
-          <span style="font-size:.78rem;color:#8a9bbf">Auto-generated on the 1st of each month</span>
+          <h2 style="margin:0">&#128202; Reports</h2>
+          <span style="font-size:.78rem;color:#8a9bbf">Monthly PDFs auto-generated on the 1st</span>
         </div>
         <div id="client-reports-list">
           <div style="color:#8a9bbf;font-size:.82rem;padding:12px 0">Loading reports…</div>
         </div>
       </div>
       <div class="card">
-        <h2>&#128270; Real-Time Monitor</h2>
+        <h2>&#128270; Current Month Snapshot</h2>
         <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
           <span class="pill green">Live</span>
-          <span style="font-size:.82rem;color:var(--muted)" id="scan-last-time">Last scan: checking… &mdash; <span class="stmt-domain">—</span></span>
+          <span style="font-size:.82rem;color:var(--muted)" id="scan-last-time">Loading… <span class="stmt-domain"></span></span>
           <button class="btn-sm btn-ghost" style="margin-left:auto" onclick="runScanNow(this)">Run Scan Now</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
@@ -596,7 +654,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           </div>
           <div style="text-align:center;padding:16px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px">
             <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--accent)" id="scan-aria">—</div>
-            <div style="font-size:.72rem;color:var(--muted);margin-top:4px">ARIA Labels</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Pages Scanned</div>
           </div>
           <div style="text-align:center;padding:16px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px">
             <div style="font-family:var(--mono);font-size:1.4rem;font-weight:800;color:var(--teal)" id="scan-score">—</div>
@@ -627,6 +685,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h3>Document Checklist</h3>
         <div id="evidence-binder-list" style="display:grid;gap:6px;margin-bottom:12px">
           <p style="color:#8a9bbf;font-size:.82rem">No binder items configured yet. Your ACC admin will set these up.</p>
+        </div>
+        <div class="btn-row" style="margin-top:4px">
+          <button class="btn-sm btn-primary" id="binder-save-btn" onclick="saveClientBinder()">&#10003; Save Checklist</button>
         </div>
       </div>
       <div class="card">
@@ -2289,11 +2350,54 @@ function populateOverview(c) {
 }
 
 function populateEmbed(c) {
-  var embedCode = '<scr'+'ipt src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js?v=12" data-client="' + (c.client_code||'') + '" data-tier="' + (c.tier||'') + '" data-domain="' + (c.domain||'') + '" async><\/script>';
-  var wpCode = '[acc_widget client="' + (c.client_code||'') + '" tier="' + (c.tier||'') + '"]';
-  setHtml('embed-code', esc(embedCode));
-  setHtml('wp-code', esc(wpCode));
+  var base  = 'https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js';
+  var code  = c.client_code || '';
+  var tier  = c.tier || '1';
+  var dom   = c.domain || '';
+  var attrs = 'data-client="' + code + '" data-tier="' + tier + '" data-domain="' + dom + '"';
+
+  // Universal script tag (split to avoid browser parsing it as a real tag)
+  var scriptTag = '<scr'+'ipt\n  src="' + base + '"\n  ' + attrs + '\n  defer>\n<\\/scr'+'ipt>';
+
+  // WordPress functions.php snippet
+  var wpCode = 'function acc_widget_init() {\n'
+    + '  wp_enqueue_script(\n'
+    + "    'acc-widget',\n"
+    + "    '" + base + "',\n"
+    + '    array(), null, true\n'
+    + '  );\n'
+    + "  add_filter('script_loader_tag', function($tag, $handle) {\n"
+    + "    if ($handle !== 'acc-widget') return $tag;\n"
+    + "    return str_replace(' src=', '\n    " + attrs + "\n    src=', $tag);\n"
+    + '  }, 10, 2);\n'
+    + '}\n'
+    + "add_action('wp_enqueue_scripts', 'acc_widget_init');";
+
+  setHtml('embed-code',       esc(scriptTag));
+  setHtml('wp-code',          esc(wpCode));
+  setHtml('shopify-code',     esc(scriptTag));
+  setHtml('squarespace-code', esc(scriptTag));
+  setHtml('wix-code',         esc(scriptTag));
+  setHtml('webflow-code',     esc(scriptTag));
+  setHtml('drupal-code',      esc(scriptTag));
+  setHtml('joomla-code',      esc(scriptTag));
+  setHtml('html-code',        esc(scriptTag));
+  setHtml('gtm-code',         esc(scriptTag));
+
+  // Update domain references across the panel
+  document.querySelectorAll('.stmt-domain').forEach(function(el){ el.textContent = dom || '—'; });
 }
+
+function showPlatform(platform) {
+  var platforms = ['wordpress','shopify','squarespace','wix','webflow','drupal','joomla','html','gtm'];
+  platforms.forEach(function(p) {
+    var el  = document.getElementById('platform-' + p);
+    var btn = document.getElementById('plt-' + p);
+    if (el)  el.style.display = (p === platform) ? 'block' : 'none';
+    if (btn) btn.className    = (p === platform) ? 'btn-sm btn-primary' : 'btn-sm btn-ghost';
+  });
+}
+
 
 function populateRoadmap(milestones) {
   var container = document.getElementById('roadmap-year-cards');
@@ -2408,9 +2512,14 @@ function addClientRoadmapRow(yr) {
   tr.setAttribute('data-rid', 'new-' + Date.now());
   tr.setAttribute('data-year', yr);
   tr.innerHTML = '<td><input class="finput" style="padding:4px 6px;font-size:.78rem;width:100%" placeholder="Milestone title"></td>' +
-    '<td><input class="finput" type="text" placeholder="e.g. Jun 2026" style="padding:4px 6px;font-size:.78rem"></td>' +
+    '<td><input class="finput roadmap-date-picker" type="date" placeholder="' + yr + '-06-01" style="padding:4px 6px;font-size:.78rem"></td>' +
     '<td><select class="finput" style="padding:4px 6px;font-size:.78rem">'+sopts+'</select></td>';
   tbody.appendChild(tr);
+  // Init flatpickr on the new date input if available
+  var dateInput = tr.querySelector('.roadmap-date-picker');
+  if (dateInput && window.flatpickr) {
+    window.flatpickr(dateInput, { dateFormat: 'Y-m-d', allowInput: true });
+  }
 }
 
 
@@ -2563,6 +2672,11 @@ async function populateClientFiles(clientCode) {
 
 async function clientDownloadFile(bucket, path) {
   try {
+    // HTML files must be fetched and opened via Blob URL (Supabase adds Content-Disposition:attachment)
+    if (path.match(/\.html$/i)) {
+      await openHtmlReport(bucket, path);
+      return;
+    }
     var r = await _sb_client.storage.from(bucket).createSignedUrl(path, 3600);
     if (r.error) throw r.error;
     window.open(r.data.signedUrl, '_blank');
@@ -2893,12 +3007,14 @@ async function populateReports(c) {
   months.reverse();
 
   var availablePdfs = new Set();
+  var hasBaseline = false;
   try {
     var code = c.client_code || '';
     var { data: files } = await _sb_client.storage.from('reports').list(code);
     (files || []).forEach(function(f) {
-      var m = (f.name || '').match(/^(\d{4}-\d{2})\.pdf$/);
+      var m = (f.name || '').match(/^(\d{4}-\d{2})\.(pdf|html)$/);
       if (m) availablePdfs.add(m[1]);
+      if (f.name === 'baseline.pdf' || f.name === 'baseline.html') hasBaseline = true;
     });
   } catch(_) {}
 
@@ -2907,31 +3023,61 @@ async function populateReports(c) {
     return;
   }
 
-  container.innerHTML = months.map(function(m) {
+  // Baseline row pinned at top
+  var startLabel = c.start_date
+    ? new Date(c.start_date).toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' })
+    : 'Onboarding';
+  var baselineHtml = '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;'
+    + 'background:linear-gradient(135deg,rgba(56,217,169,.06),rgba(79,142,247,.04));'
+    + 'border:1px solid rgba(56,217,169,.25);border-radius:10px;gap:12px;margin-bottom:8px">'
+    + '<div>'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">'
+    + '<span style="font-size:.85rem;font-weight:700">Baseline Assessment Report</span>'
+    + '<span style="font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(56,217,169,.15);color:#38d9a9;text-transform:uppercase;letter-spacing:.06em">Initial</span>'
+    + '</div>'
+    + '<div style="font-size:.72rem;color:#8a9bbf;margin-top:1px">Day 0 snapshot at onboarding — ' + esc(startLabel) + '</div>'
+    + '<div style="font-size:.7rem;color:#5a6e8c;margin-top:2px;font-style:italic">All subsequent monthly reports measure progress from this baseline.</div>'
+    + '</div>'
+    + '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">';
+  if (hasBaseline) {
+    baselineHtml += '<span class="pill green" style="font-size:.72rem">&#10003; Available</span>'
+      + '<button class="btn-sm btn-ghost report-dl-baseline-btn" style="font-size:.72rem">&#8659; Download</button>';
+  } else {
+    baselineHtml += '<span class="pill" style="font-size:.72rem;background:rgba(100,116,139,.12);color:#64748b">Pending</span>'
+      + '<span style="font-size:.72rem;color:#64748b;font-style:italic">Auto-generated at signup</span>';
+  }
+  baselineHtml += '</div></div>';
+
+  container.innerHTML = baselineHtml + months.map(function(m) {
     var ym = m.year + '-' + String(m.month).padStart(2,'0');
     var label = new Date(m.year, m.month - 1, 1).toLocaleDateString('en-CA', { year:'numeric', month:'long' });
     var isCurrentMonth = m.year === now.getFullYear() && m.month === (now.getMonth()+1);
-    var hasPdf = availablePdfs.has(ym);
+    var hasReport = availablePdfs.has(ym);
     var statusPill, actionBtn;
+
     if (isCurrentMonth) {
-      statusPill = '<span class="pill yellow" style="font-size:.72rem">In Progress</span>';
-      actionBtn  = '<button class="btn-sm btn-primary report-gen-btn" data-ym="' + ym + '" style="font-size:.72rem">&#9658; Generate Now</button>';
-    } else if (hasPdf) {
+      // Current month: always "In Progress" — auto-generates on the 1st of next month
+      // Show "Open Report" if one was already generated this month, otherwise just the status
+      statusPill = '<span class="pill yellow" style="font-size:.72rem">&#9679; In Progress</span>';
+      if (hasReport) {
+        actionBtn = '<button class="btn-sm btn-ghost report-dl-btn" data-ym="' + ym + '" style="font-size:.72rem">&#128196; Open Report</button>';
+      } else {
+        actionBtn = '<span style="font-size:.72rem;color:#8a9bbf;font-style:italic">Auto-generates 1st of next month</span>';
+      }
+    } else if (hasReport) {
+      // Past month with a report — just show the link
       statusPill = '<span class="pill green" style="font-size:.72rem">&#10003; Available</span>';
-      actionBtn  = '<button class="btn-sm btn-ghost report-dl-btn" data-ym="' + ym + '" style="font-size:.72rem">&#8659; Download PDF</button>';
+      actionBtn  = '<button class="btn-sm btn-ghost report-dl-btn" data-ym="' + ym + '" style="font-size:.72rem">&#128196; Open Report</button>';
     } else {
-      var isPast = new Date(m.year, m.month, 1) < now;
-      statusPill = isPast
-        ? '<span class="pill" style="font-size:.72rem;background:rgba(247,95,95,.1);color:#f75f5f">Missing</span>'
-        : '<span class="pill" style="font-size:.72rem;background:rgba(79,142,247,.1);color:#8a9bbf">Scheduled</span>';
-      actionBtn = isPast
-        ? '<button class="btn-sm btn-ghost report-gen-btn" data-ym="' + ym + '" style="font-size:.72rem">&#9658; Regenerate</button>'
-        : '<span style="font-size:.72rem;color:#8a9bbf">Auto on 1st</span>';
+      // Past month with no report — no generate button, just a status note
+      statusPill = '<span class="pill" style="font-size:.72rem;background:rgba(100,116,139,.12);color:#64748b">No data</span>';
+      actionBtn  = '<span style="font-size:.72rem;color:#64748b;font-style:italic">Not generated for this period</span>';
     }
+
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;gap:12px">' +
       '<div><div style="font-size:.85rem;font-weight:600">' + label + '</div>' +
       '<div style="font-size:.72rem;color:#8a9bbf;margin-top:2px">Report #: RPT-' + (c.client_code||'') + '-' + ym.replace('-','') + '</div></div>' +
-      '<div style="display:flex;align-items:center;gap:10px">' + statusPill + actionBtn + '</div>' +
+      '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">' + statusPill + actionBtn + '</div>' +
       '</div>';
   }).join('');
 
@@ -2939,19 +3085,243 @@ async function populateReports(c) {
   container.addEventListener('click', function(e) {
     var btn = e.target.closest('button');
     if (!btn) return;
+    if (btn.classList.contains('report-dl-baseline-btn')) { downloadBaselineReport(); return; }
     var ym = btn.dataset.ym;
     if (!ym) return;
     if (btn.classList.contains('report-dl-btn')) {
       downloadReport(ym);
-    } else if (btn.classList.contains('report-gen-btn')) {
-      generateAndDownloadReport(ym);
     }
   });
 }
+
+async function downloadBaselineReport() {
+  if (!_clientData) return;
+  var code = _clientData.client_code || '';
+  try {
+    await openHtmlReport('reports', code + '/baseline.html');
+  } catch(e) {
+    showToast('Baseline report not yet available. Generate it first.');
+  }
+}
+
+async function generateBaselineClientSide(c) {
+  // Fallback: build baseline HTML report from available scan data in Supabase
+  // Tries scan_issues first (detailed), then scans table (summary), then shows empty baseline
+  var issues = [];
+  var scanSummary = null;
+
+  // Try scan_issues first (detailed per-element data)
+  try {
+    var { data: issueData } = await _sb_client
+      .from('scan_issues')
+      .select('criterion,type,title,description,section,requires_dev,element_count,page_url')
+      .eq('client_code', c.client_code)
+      .order('scanned_at', { ascending: true })
+      .limit(500);
+    issues = issueData || [];
+  } catch(e) { issues = []; }
+
+  // If no scan_issues, try scans table for summary data
+  if (!issues.length) {
+    try {
+      var { data: scanData } = await _sb_client
+        .from('scans')
+        .select('score,critical,warnings,fixes_applied,scanned_at,page_url')
+        .eq('client_code', c.client_code)
+        .order('scanned_at', { ascending: false })
+        .limit(50);
+      if (scanData && scanData.length) {
+        scanSummary = scanData;
+        // Convert scan summary rows into pseudo-issues for display
+        var totalCritical = scanData.reduce(function(t,s){ return t+(s.critical||0); }, 0);
+        var totalWarnings = scanData.reduce(function(t,s){ return t+(s.warnings||0); }, 0);
+        var totalFixes    = scanData.reduce(function(t,s){ return t+(s.fixes_applied||0); }, 0);
+        var avgScore      = Math.round(scanData.reduce(function(t,s){ return t+(s.score||0); },0)/scanData.length);
+        // Create synthetic issue entries from the scan summary
+        if (totalFixes > 0)    issues.push({ criterion:'auto-fixes', type:'fixed',   title:'Auto-Fixed Issues', requiresDev:false, element_count:totalFixes,    pagesAffected: scanData.length });
+        if (totalCritical > 0) issues.push({ criterion:'critical',   type:'error',   title:'Critical Issues',   requiresDev:false, element_count:totalCritical,  pagesAffected: scanData.length });
+        if (totalWarnings > 0) issues.push({ criterion:'warnings',   type:'warning', title:'Warnings',          requiresDev:false, element_count:totalWarnings,  pagesAffected: scanData.length });
+      }
+    } catch(e2) {}
+  }
+
+  // If still no data, generate an empty baseline with a note
+  var hasData = issues.length > 0;
+
+  // Aggregate by criterion+type
+  var map = {};
+  issues.forEach(function(row) {
+    var key = (row.criterion||'') + '::' + (row.type||'');
+    if (!map[key]) {
+      map[key] = {
+        criterion: row.criterion||'', type: row.type||'warning',
+        title: row.title||row.criterion||'',
+        requiresDev: !!row.requires_dev,
+        totalElements: row.element_count||1, pagesAffected: 1
+      };
+    } else {
+      map[key].totalElements += row.element_count||1;
+      map[key].pagesAffected++;
+    }
+  });
+
+  var issueList = Object.values(map);
+  issueList.sort(function(a, b) {
+    var rank = function(i) { return i.type==='fixed'?0:i.type==='error'?1:i.requiresDev?2:3; };
+    return rank(a) - rank(b);
+  });
+
+  var nFixed = issueList.filter(function(i){ return i.type==='fixed'; }).length;
+  var nErr   = issueList.filter(function(i){ return i.type==='error'&&!i.requiresDev; }).length;
+  var nDev   = issueList.filter(function(i){ return i.requiresDev&&i.type!=='fixed'; }).length;
+  var nWarn  = issueList.filter(function(i){ return i.type==='warning'&&!i.requiresDev; }).length;
+  // Use real scan score if available, otherwise estimate from issue counts
+  var score = scanSummary && scanSummary.length
+    ? Math.round(scanSummary.reduce(function(t,s){ return t+(s.score||0); },0)/scanSummary.length)
+    : Math.max(0, Math.min(100, Math.round(100 - nErr*14 - nDev*7 - nWarn*3)));
+  var today  = new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'});
+  var startLabel = c.start_date ? new Date(c.start_date).toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}) : today;
+  var scoreColor = score>=80?'#065f46':score>=60?'#92400e':'#991b1b';
+
+  function escH(s){ var d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
+
+  function section(label, color, bg, list) {
+    if (!list.length) return '';
+    return '<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:'+color+';padding:10px 28px 8px;background:#fafafa;border-top:2px solid '+color+';border-bottom:1px solid #e5e7eb">'+label+' ('+list.length+')</div>'
+      + '<table style="width:100%;border-collapse:collapse"><thead><tr>'
+      + '<th style="padding:8px 12px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;text-align:left;background:#f1f3f9;border-bottom:1px solid #e5e7eb">Issue</th>'
+      + '<th style="padding:8px 12px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;background:#f1f3f9;border-bottom:1px solid #e5e7eb">WCAG</th>'
+      + '<th style="padding:8px 12px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;background:#f1f3f9;border-bottom:1px solid #e5e7eb">Pages</th>'
+      + '</tr></thead><tbody>'
+      + list.map(function(i) {
+          return '<tr><td style="padding:9px 12px;border-bottom:1px solid #f0f0f0;border-left:3px solid '+color+'">'
+            + '<div style="font-weight:600;font-size:.82rem">' + escH(i.title) + '</div>'
+            + (i.requiresDev&&i.type!=='fixed'?'<div style="font-size:.7rem;color:#92400e;margin-top:2px">Requires developer code</div>':'')
+            + '</td><td style="padding:9px 12px;border-bottom:1px solid #f0f0f0;font-family:monospace;font-size:.8rem;color:#6b7280">' + escH(i.criterion) + '</td>'
+            + '<td style="padding:9px 12px;border-bottom:1px solid #f0f0f0;text-align:center;font-size:.82rem">' + i.pagesAffected + '</td></tr>';
+        }).join('')
+      + '</tbody></table>';
+  }
+
+  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
+    + '<title>ACC Baseline Assessment — ' + escH(c.name||c.domain) + '</title>'
+    + '<style>*{box-sizing:border-box}body{font-family:"Segoe UI",sans-serif;background:#f4f5f7;margin:0;padding:32px}'
+    + '.report{max-width:960px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}'
+    + '.print-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#0a1628;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer}'
+    + '.print-btn:hover{background:#1e3a6b}'
+    + '@media print{body{background:#fff;padding:0}.report{box-shadow:none}.no-print{display:none}}'
+    + '</style></head><body><div class="report">'
+    + '<div class="no-print" style="display:flex;align-items:center;justify-content:space-between;padding:10px 28px;background:#f8f9fc;border-bottom:1px solid #e5e7eb">'
+    + '<span style="font-size:.82rem;font-weight:700;color:#0a1628">ACC Baseline Assessment Report</span>'
+    + '<button class="print-btn" onclick="window.print()">&#8659; Download PDF</button>'
+    + '</div>'
+    + '<div style="background:linear-gradient(135deg,#0a1628,#0d1f3c);color:#fff;padding:28px 32px">'
+    + '<div style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#38d9a9;margin-bottom:6px">Initial Accessibility Assessment · Day 0 Baseline</div>'
+    + '<h1 style="font-size:1.2rem;font-weight:800;margin:0 0 4px;color:#fff">' + escH(c.name||c.domain||'Your Website') + '</h1>'
+    + '<div style="font-size:.78rem;color:#94a3b8">' + escH(c.domain||'') + ' · Onboarding: ' + escH(startLabel) + ' · RPT-' + escH(c.client_code||'') + '-BASELINE</div>'
+    + '</div>'
+    + '<div style="display:flex;gap:12px;padding:16px 28px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;flex-wrap:wrap">'
+    + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:2px solid ' + scoreColor + '">'
+    + '<div style="font-size:2rem;font-weight:800;color:'+scoreColor+'">'+score+'<span style="font-size:.9rem;color:#9ca3af">/100</span></div>'
+    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:'+scoreColor+';margin-top:4px">Baseline Score</div></div>'
+    + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:1.5px solid #10b981">'
+    + '<div style="font-size:2rem;font-weight:800;color:#065f46">'+nFixed+'</div>'
+    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#10b981;margin-top:4px">Auto-Fixed</div></div>'
+    + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:1.5px solid #ef4444">'
+    + '<div style="font-size:2rem;font-weight:800;color:#991b1b">'+nErr+'</div>'
+    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#ef4444;margin-top:4px">Critical</div></div>'
+    + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:1.5px solid #f59e0b">'
+    + '<div style="font-size:2rem;font-weight:800;color:#92400e">'+nDev+'</div>'
+    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#f59e0b;margin-top:4px">Needs Dev</div></div>'
+    + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:1.5px solid #3b82f6">'
+    + '<div style="font-size:2rem;font-weight:800;color:#1e40af">'+nWarn+'</div>'
+    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#3b82f6;margin-top:4px">Warnings</div></div>'
+    + '</div>'
+    + '<div style="padding:12px 28px;font-size:.75rem;color:#6b7280;background:#fffbeb;border-bottom:1px solid #fde68a;line-height:1.6">'
+    + '<strong style="color:#92400e">Day 0 baseline</strong> — captured at onboarding (' + escH(startLabel) + '). '
+    + 'Auto-Fixed issues are resolved by the ACC widget on every page visit. '
+    + 'Critical and Needs Dev items require developer action. '
+    + 'Monthly reports will show progress against this baseline.'
+    + (scanSummary ? ' <em>Note: detailed issue breakdown unavailable — showing scan summary from widget data.</em>' : '')
+    + (!hasData ? ' <strong style="color:#991b1b">No scan data found yet.</strong> Install the ACC widget on your site and visit a few pages — scan data will appear here within minutes.' : '')
+    + '</div>'
+    + (!hasData
+        ? '<div style="padding:32px;text-align:center;color:#9ca3af;font-size:.88rem">&#128269; No scan data recorded yet for this account.<br>The baseline report will populate automatically once the ACC widget is installed and visitors browse your site.</div>'
+        : section('Auto-Fixed by ACC Widget', '#10b981', '#d1fae5', issueList.filter(function(i){ return i.type==='fixed'; }))
+          + section('Critical Issues', '#ef4444', '#fee2e2', issueList.filter(function(i){ return i.type==='error'&&!i.requiresDev; }))
+          + section('Needs Developer Code', '#f59e0b', '#fef3c7', issueList.filter(function(i){ return i.requiresDev&&i.type!=='fixed'; }))
+          + section('Warnings', '#3b82f6', '#dbeafe', issueList.filter(function(i){ return i.type==='warning'&&!i.requiresDev; }))
+      )
+    + '<div style="padding:12px 28px;font-size:.65rem;color:#9ca3af;text-align:center;border-top:1px solid #e5e7eb">'
+    + 'ACC · accessibilitycompliance.ca · ' + today + ' · WCAG 2.1 AA · RPT-' + escH(c.client_code||'') + '-BASELINE'
+    + '<br><button class="print-btn no-print" onclick="window.print()" style="margin-top:8px;font-size:.72rem;padding:6px 14px">&#8659; Download PDF</button>'
+    + '</div></div></body></html>';
+
+  // Open in new tab via document.write — renders HTML correctly, no MIME/blob issues
+  var win = window.open('', '_blank');
+  if (win) {
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    showToast('Baseline report opened. Use the Download PDF button inside to save.');
+  } else {
+    // Popup blocked — fall back to download
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    a.download = 'ACC-Baseline-' + (c.client_code||'report') + '.html';
+    a.click();
+    showToast('Baseline report downloaded. Open the file to view and print.');
+  }
+  if (window._clientData) await populateReports(window._clientData);
+}
+
+async function generateBaselineReport(btn) {
+  if (!_clientData) return;
+  var orig = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = '⏳ Generating…'; btn.disabled = true; }
+  try {
+    // Use callEdgeFunction so the session token is included automatically
+    var result = await callEdgeFunction('generate-baseline-report', {
+      client_code: _clientData.client_code,
+      client_id:   _clientData.id
+    });
+    // Open the generated HTML baseline report in a new tab
+    if (result && result.file) {
+      try { await openHtmlReport('reports', result.file); } catch(_) {}
+    }
+    showToast('Baseline report generated!');
+    await populateReports(_clientData);
+  } catch(e) {
+    // Edge function not deployed yet — generate client-side from scan_issues
+    console.warn('generate-baseline-report edge fn unavailable, falling back to client-side:', e.message);
+    await generateBaselineClientSide(_clientData);
+  } finally {
+    if (btn) { btn.textContent = orig; btn.disabled = false; }
+  }
+}
+
 async function getSignedUrl(bucket, path) {
   var r = await _sb_client.storage.from(bucket).createSignedUrl(path, 3600);
   if (r.error) throw r.error;
   return r.data.signedUrl;
+}
+
+// Open an HTML report stored in Supabase Storage.
+// Supabase serves files with Content-Disposition:attachment so browsers show raw text.
+// Fix: fetch the content, create a Blob URL, open that instead.
+async function openHtmlReport(bucket, path) {
+  var r = await _sb_client.storage.from(bucket).createSignedUrl(path, 3600);
+  if (r.error) throw r.error;
+  var res = await fetch(r.data.signedUrl);
+  if (!res.ok) throw new Error('Could not fetch report: ' + res.status);
+  var html = await res.text();
+  // Open a new window and write HTML directly — avoids all MIME/blob URL issues
+  var win = window.open('', '_blank');
+  if (!win) { alert('Please allow popups for this site to view reports.'); return; }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  return win;
 }
 
 async function downloadSigned(bucket, path, filename) {
@@ -2970,8 +3340,11 @@ async function downloadSigned(bucket, path, filename) {
 async function downloadReport(monthKey) {
   if (!window._clientData) { alert('Please log in to download reports.'); return; }
   var code = _clientData.client_code;
-  var path = code + '/' + monthKey + '.pdf';
-  await downloadSigned('reports', path, 'ACC_Report_' + monthKey + '_' + code + '.pdf');
+  try {
+    await openHtmlReport('reports', code + '/' + monthKey + '.html');
+  } catch(e) {
+    showToast('Report not available yet. Generate it first.');
+  }
 }
 
 async function downloadTemplate(templateKey) {
@@ -3051,8 +3424,8 @@ async function generateAndDownloadReport(monthKey) {
       client_id:    _clientData.id,
       target_month: ym
     });
-    var filePath = (result && result.file) ? result.file : (code + '/' + ym + '.pdf');
-    await downloadSigned('reports', filePath, 'ACC_Report_' + ym + '_' + code + '.pdf');
+    var filePath = (result && result.file) ? result.file : (code + '/' + ym + '.html');
+    await openHtmlReport('reports', filePath);
     await populateReports(_clientData);
   } catch(e) {
     console.error('generateAndDownloadReport:', e);
@@ -3089,14 +3462,87 @@ async function generateAndDownloadBinder(year) {
     var result = await callEdgeFunction('generate-evidence-binder', { client_id: _clientData.id });
     var code = _clientData.client_code;
     var yr = year || new Date().getFullYear();
-    var filePath = (result && result.file) ? result.file : (code + '/' + yr + '-binder.pdf');
-    await downloadSigned('evidence', filePath, 'ACC_Evidence_Binder_' + yr + '_' + code + '.pdf');
+    var filePath = (result && result.file) ? result.file : (code + '/' + yr + '-binder.html');
+    await openHtmlReport('evidence', filePath);
   } catch(e) {
-    console.error('generateAndDownloadBinder:', e);
-    alert('Could not generate binder: ' + e.message);
+    console.warn('generateAndDownloadBinder edge fn unavailable, generating client-side:', e.message);
+    generateBinderClientSide(_clientData);
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = orig; }
   }
+}
+
+function generateBinderClientSide(c) {
+  var items = (c.binder_items && c.binder_items.length) ? c.binder_items : [
+    { title: 'Accessibility Policy & Statement of Commitment', status: 'Pending Review' },
+    { title: 'Multi-Year Accessibility Plan (MYAP)', status: 'Pending Review' },
+    { title: 'Staff AODA Training Registry', status: 'Pending Review' },
+    { title: 'Accessible Customer Feedback Process', status: 'Pending Review' },
+    { title: 'Accessible Formats Request Procedure', status: 'Pending Review' },
+    { title: 'Accessibility Statement (Web)', status: 'Pending Review' },
+    { title: 'Accommodation Clause - Job Postings', status: 'Pending Review' },
+    { title: 'Accessibility Clause - Offer Letters', status: 'Pending Review' },
+    { title: 'Service Animals & Support Persons Policy', status: 'Pending Review' },
+    { title: 'Notice of Temporary Disruption of Services', status: 'Pending Review' },
+    { title: 'HR Accommodation Policy', status: 'Pending Review' },
+    { title: 'Monthly Audit Reports (all months)', status: 'Pending Review' },
+    { title: 'Scope of Responsibility Acknowledgment', status: 'Pending Review' },
+    { title: 'AODA Filing Checklist', status: 'Pending Review' },
+  ];
+  var yr = new Date().getFullYear();
+  var today = new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'});
+  var statColors = { 'Verified':'#065f46','On File':'#1e40af','Pending Review':'#92400e','Missing':'#991b1b' };
+  var statBg = { 'Verified':'#d1fae5','On File':'#dbeafe','Pending Review':'#fef3c7','Missing':'#fee2e2' };
+  function escH(s){ var d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
+  var verified = items.filter(function(i){ return i.status==='Verified'||i.status==='On File'; }).length;
+  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
+    + '<title>ACC Evidence Binder ' + yr + ' — ' + escH(c.name||'') + '</title>'
+    + '<style>*{box-sizing:border-box}body{font-family:"Segoe UI",sans-serif;background:#f4f5f7;margin:0;padding:32px}'
+    + '.report{max-width:900px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}'
+    + '.print-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#0a1628;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer}'
+    + '@media print{body{background:#fff;padding:0}.report{box-shadow:none}.no-print{display:none}}'
+    + '</style></head><body><div class="report">'
+    + '<div class="no-print" style="display:flex;align-items:center;justify-content:space-between;padding:10px 28px;background:#f8f9fc;border-bottom:1px solid #e5e7eb">'
+    + '<span style="font-size:.82rem;font-weight:700;color:#0a1628">ACC Evidence Binder ' + yr + '</span>'
+    + '<button class="print-btn" onclick="window.print()">&#8659; Download PDF</button>'
+    + '</div>'
+    + '<div style="background:linear-gradient(135deg,#0a1628,#0d1f3c);color:#fff;padding:28px 32px">'
+    + '<div style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#38d9a9;margin-bottom:6px">AODA Compliance Evidence Binder</div>'
+    + '<h1 style="font-size:1.2rem;font-weight:800;margin:0 0 4px;color:#fff">' + escH(c.name||'') + '</h1>'
+    + '<div style="font-size:.78rem;color:#94a3b8">' + escH(c.domain||'') + ' · ' + yr + ' · Generated: ' + today + '</div>'
+    + '</div>'
+    + '<div style="padding:16px 28px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;display:flex;gap:20px;align-items:center">'
+    + '<div style="font-size:1.8rem;font-weight:800;color:#0a1628">' + verified + '<span style="font-size:.9rem;color:#9ca3af">/' + items.length + '</span></div>'
+    + '<div><div style="font-size:.78rem;font-weight:700;color:#0a1628">Documents Complete</div>'
+    + '<div style="font-size:.72rem;color:#9ca3af">WCAG 2.1 AA · AODA Compliance Framework</div></div>'
+    + '</div>'
+    + '<table style="width:100%;border-collapse:collapse">'
+    + '<thead><tr>'
+    + '<th style="padding:10px 16px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;text-align:left;background:#f8f9fc;border-bottom:1px solid #e5e7eb">#</th>'
+    + '<th style="padding:10px 16px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;text-align:left;background:#f8f9fc;border-bottom:1px solid #e5e7eb">Document</th>'
+    + '<th style="padding:10px 16px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;text-align:center;background:#f8f9fc;border-bottom:1px solid #e5e7eb">Status</th>'
+    + '</tr></thead><tbody>'
+    + items.map(function(item, i) {
+        var col = statColors[item.status]||'#6b7280';
+        var bg  = statBg[item.status]||'#f3f4f6';
+        return '<tr><td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;color:#9ca3af;font-size:.82rem">' + (i+1) + '</td>'
+          + '<td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:.85rem;font-weight:600">' + escH(item.title) + '</td>'
+          + '<td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;text-align:center">'
+          + '<span style="padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:700;background:'+bg+';color:'+col+'">' + escH(item.status) + '</span></td></tr>';
+      }).join('')
+    + '</tbody></table>'
+    + '<div style="padding:12px 28px;font-size:.65rem;color:#9ca3af;text-align:center;border-top:1px solid #e5e7eb">'
+    + 'ACC · accessibilitycompliance.ca · ' + yr + ' Evidence Binder · ' + escH(c.name||'') + '<br>'
+    + '<button class="print-btn no-print" onclick="window.print()" style="margin-top:8px;font-size:.72rem;padding:6px 14px">&#8659; Download PDF</button>'
+    + '</div></div></body></html>';
+
+  var blob = new Blob([html], {type:'text/html'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ACC-EvidenceBinder-' + yr + '-' + (c.client_code||'') + '.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('Evidence Binder downloaded. Use Print button inside to save as PDF.');
 }
 
 // Generate + download an invoice for the given YYYY-MM key.
@@ -3130,9 +3576,8 @@ async function generateReadinessLetter() {
       client_id: _clientData.id,
       letter_type: 'compliance_confirmation',
     });
-    // result.file = "CLIENT_CODE/YYYY-MM-compliance_confirmation.pdf"
-    await downloadSigned('reports', result.file,
-      'ACC_Compliance_Letter_' + _clientData.client_code + '.pdf');
+    // Open the HTML letter in a new tab (rendered via blob URL)
+    await openHtmlReport('reports', result.file);
   } catch(e) {
     console.error('generateReadinessLetter:', e);
     alert('Could not generate letter: ' + e.message);
@@ -3170,33 +3615,74 @@ async function generateCertificate(employeeName, courseName, completionDate) {
 
 // ── Item 1 & 2: Populate overview stats + scan data from DB ──
 async function populateScanData(clientCode) {
-  // Load latest scan from scans table; fall back to zeros if table missing or no rows
+  // Use monthly aggregate — same source as the monthly report.
+  // Averaging across all unique pages scanned this month gives a stable number
+  // instead of whichever single page happened to be scanned last.
   var scan = null;
+  var pageCount = 0;
   try {
-    var scanResult = await _sb_client
+    var now = new Date();
+    var monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    var monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+
+    var { data: monthScans } = await _sb_client
       .from('scans')
-      .select('*')
+      .select('score,critical,warnings,fixes_applied,perceivable,operable,understandable,robust,scanned_at,page_url')
       .eq('client_code', clientCode)
-      .order('scanned_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    scan = scanResult.data;
+      .gte('scanned_at', monthStart)
+      .lt('scanned_at', monthEnd)
+      .order('scanned_at', { ascending: false });
+
+    if (monthScans && monthScans.length > 0) {
+      // De-duplicate by page_url — keep most recent scan per page
+      var pageMap = {};
+      monthScans.forEach(function(s) {
+        var key = s.page_url || ('__' + Math.random());
+        if (!pageMap[key]) pageMap[key] = s;
+      });
+      var unique = Object.values(pageMap);
+      pageCount = unique.length;
+      var avg = function(key) {
+        return Math.round(unique.reduce(function(t,s){ return t + (s[key] || 0); }, 0) / unique.length);
+      };
+      scan = {
+        score:          avg('score'),
+        critical:       unique.reduce(function(t,s){ return t + (s.critical||0); }, 0),
+        warnings:       unique.reduce(function(t,s){ return t + (s.warnings||0); }, 0),
+        fixes_applied:  unique.reduce(function(t,s){ return t + (s.fixes_applied||0); }, 0),
+        perceivable:    avg('perceivable'),
+        operable:       avg('operable'),
+        understandable: avg('understandable'),
+        robust:         avg('robust'),
+        scanned_at:     monthScans[0].scanned_at,
+        _monthly: true, _pageCount: pageCount
+      };
+    } else {
+      // No scans this month — fall back to most recent single scan
+      var { data: latest } = await _sb_client
+        .from('scans').select('*').eq('client_code', clientCode)
+        .order('scanned_at', { ascending: false }).limit(1).maybeSingle();
+      scan = latest || null;
+    }
   } catch(_) { scan = null; }
 
   var score    = scan ? (scan.score    ?? 0) : 0;
   var critical = scan ? (scan.critical ?? 0) : 0;
   var warnings = scan ? (scan.warnings ?? 0) : 0;
-  var aria     = scan ? (scan.aria     ?? 0) : 0;
+  var fixes    = scan ? (scan.fixes_applied ?? 0) : 0;
   var lastTime = scan ? fmtDate(scan.scanned_at) : 'Never';
+  var scoreSub = scan && scan._monthly
+    ? '/ 100 — ' + scan._pageCount + ' page' + (scan._pageCount !== 1 ? 's' : '') + ' scanned this month'
+    : '/ 100 — Last scanned ' + lastTime;
 
   // Overview stat cards
   var scoreEl = document.getElementById('stat-score');
   if (scoreEl) scoreEl.textContent = score;
   var scoreSubEl = document.getElementById('stat-score-sub');
-  if (scoreSubEl) scoreSubEl.textContent = '/ 100 — Last scanned ' + lastTime;
+  if (scoreSubEl) scoreSubEl.textContent = scoreSub;
 
   var fixesEl = document.getElementById('stat-fixes');
-  if (fixesEl) fixesEl.textContent = scan ? (scan.fixes_applied ?? 0) : 0;
+  if (fixesEl) fixesEl.textContent = fixes;
   var fixesSubEl = document.getElementById('stat-fixes-sub');
   if (fixesSubEl) fixesSubEl.textContent = critical === 0 ? 'No critical issues' : critical + ' critical';
 
@@ -3210,14 +3696,14 @@ async function populateScanData(clientCode) {
   if (pctEl) pctEl.textContent = score + '%';
   var critSubEl = document.getElementById('wcag-critical-sub');
   if (critSubEl) critSubEl.textContent = critical + ' Critical issue' + (critical === 1 ? '' : 's');
-  // Update SVG ring — circumference 213.6, offset = 213.6 * (1 - score/100)
   var ringCircle = document.getElementById('wcag-ring-circle');
   if (ringCircle) {
     var offset = (213.6 * (1 - score / 100)).toFixed(1);
     ringCircle.setAttribute('stroke-dashoffset', offset);
     ringCircle.setAttribute('stroke', score >= 80 ? '#38d9a9' : score >= 50 ? '#f5a623' : '#f05f5f');
   }
-  // Update WCAG category breakdown bars from scan data
+
+  // WCAG category breakdown bars
   var cats = [
     { key: 'perceivable',    idPfx: 'wcag-p' },
     { key: 'operable',       idPfx: 'wcag-o' },
@@ -3226,27 +3712,27 @@ async function populateScanData(clientCode) {
   ];
   cats.forEach(function(cat) {
     var val = scan && scan[cat.key] != null ? scan[cat.key] : score;
-    var pctEl = document.getElementById(cat.idPfx + '-pct');
-    var barEl = document.getElementById(cat.idPfx + '-bar');
-    if (pctEl) pctEl.textContent = val + '%';
-    if (barEl) { barEl.style.width = val + '%'; barEl.className = 'progress-fill' + (val < 80 ? ' warn' : ''); }
+    var pe = document.getElementById(cat.idPfx + '-pct');
+    var be = document.getElementById(cat.idPfx + '-bar');
+    if (pe) pe.textContent = val + '%';
+    if (be) { be.style.width = val + '%'; be.className = 'progress-fill' + (val < 80 ? ' warn' : ''); }
   });
 
-  // Real-time monitor panel
+  // Real-time monitor panel (reports tab)
   var scanTimeEl = document.getElementById('scan-last-time');
   if (scanTimeEl) {
     var domain = _clientData ? (_clientData.domain || '') : '';
-    scanTimeEl.innerHTML = 'Last scan: ' + lastTime + ' &mdash; ' + esc(domain);
+    var timeNote = scan && scan._monthly
+      ? 'This month: ' + scan._pageCount + ' page' + (scan._pageCount !== 1 ? 's' : '') + ' scanned — ' + esc(domain)
+      : 'Last scan: ' + lastTime + ' — ' + esc(domain);
+    scanTimeEl.innerHTML = timeNote;
   }
-  var critEl = document.getElementById('scan-critical');
-  if (critEl) critEl.textContent = critical;
-  var wEl = document.getElementById('scan-warnings');
-  if (wEl) wEl.textContent = warnings;
-  var ariaEl = document.getElementById('scan-aria');
-  if (ariaEl) ariaEl.textContent = aria;
-  var sEl = document.getElementById('scan-score');
-  if (sEl) sEl.textContent = score;
+  var critEl = document.getElementById('scan-critical');  if (critEl) critEl.textContent = critical;
+  var wEl    = document.getElementById('scan-warnings');   if (wEl)    wEl.textContent    = warnings;
+  var ariaEl = document.getElementById('scan-aria');       if (ariaEl) ariaEl.textContent  = scan && scan._pageCount ? scan._pageCount : (scan ? (scan.aria || 0) : 0);
+  var sEl    = document.getElementById('scan-score');      if (sEl)    sEl.textContent     = score;
 }
+
 
 async function populateRecentActivity(c) {
   var list = document.getElementById('recent-activity-list');
@@ -3355,10 +3841,12 @@ async function signScopeAck() {
     if (signerEl) signerEl.textContent = _clientData.name || '—';
     if (dateEl)   dateEl.textContent = now.toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
 
-    // Store file path for later download
+    // Store file path for later download/view
     window._scopeAckFile = result.file;
 
-    showToast('✅ Scope Acknowledgment signed and PDF saved to your portal.');
+    // Open the generated letter immediately
+    try { await openHtmlReport('reports', result.file); } catch(_) {}
+    showToast('✅ Scope Acknowledgment signed and saved to your portal.');
   } catch(e) {
     console.error('signScopeAck:', e);
     alert('Could not save acknowledgment: ' + (e.message || e));
@@ -3369,15 +3857,16 @@ async function signScopeAck() {
 async function downloadLatestScopeAck() {
   if (!window._clientData) return;
   try {
-    // Try stored path first, otherwise construct it
+    // Try stored path first, otherwise construct from .html extension
     var path = window._scopeAckFile;
     if (!path) {
       var yr = new Date().getFullYear();
-      path = _clientData.client_code + '/' + yr + '-' + String(new Date().getMonth()+1).padStart(2,'0') + '-scope_acknowledgment.pdf';
+      var mo = String(new Date().getMonth()+1).padStart(2,'0');
+      path = _clientData.client_code + '/' + yr + '-' + mo + '-scope_acknowledgment.html';
     }
-    await downloadSigned('reports', path, 'ACC_Scope_Acknowledgment_' + _clientData.client_code + '.pdf');
+    await openHtmlReport('reports', path);
   } catch(e) {
-    alert('Could not download: ' + (e.message || e));
+    alert('Could not open: ' + (e.message || e));
   }
 }
 
@@ -3555,7 +4044,7 @@ function applyWidgetSettingsToPanel(cfg) {
   var autofix  = document.getElementById('w-autofix');
   var contrast = document.getElementById('w-contrast');
   var reading  = document.getElementById('w-reading');
-  var history  = document.getElementById('w-history');
+  var history  = document.getElementById('w-language');
   var feedback = document.getElementById('w-feedback');
 
   if (pos && cfg.position)      pos.value = cfg.position;
@@ -3565,7 +4054,7 @@ function applyWidgetSettingsToPanel(cfg) {
   if (autofix)  autofix.checked  = !!cfg.enable_autofix;
   if (contrast) contrast.checked = cfg.enable_contrast !== false;
   if (reading)  reading.checked  = cfg.enable_reading  !== false;
-  if (history)  history.checked  = !cfg.hide_history;
+  if (history)  history.checked  = !cfg.hide_language;
   if (feedback) feedback.checked = !cfg.hide_feedback;
 }
 
@@ -3630,7 +4119,7 @@ async function saveWidgetSettings() {
     enable_autofix:   (document.getElementById('w-autofix')  || {}).checked || false,
     enable_contrast:  (document.getElementById('w-contrast') || {checked:true}).checked,
     enable_reading:   (document.getElementById('w-reading')  || {checked:true}).checked,
-    hide_history:    !(document.getElementById('w-history')  || {}).checked,
+    hide_history:    !(document.getElementById('w-language')  || {}).checked,
     hide_feedback:   !(document.getElementById('w-feedback') || {checked:true}).checked,
     updated_at:       new Date().toISOString(),
   };
@@ -3656,7 +4145,7 @@ async function resetWidgetSettings() {
     client_id: _clientData.id,
     position: 'Bottom Right', accent_color: '#4f8ef7', language: 'English',
     hide_profiles: false, enable_autofix: false, enable_contrast: true,
-    enable_reading: true, hide_history: false, hide_feedback: false,
+    enable_reading: true, hide_language: false, hide_feedback: false,
   };
   applyWidgetSettingsToPanel(defaults);
   updateEmbedCode(_clientData, defaults);
@@ -3914,10 +4403,10 @@ function openStmtModal() {
     window._clientData = cr.data;
 
     var [rr, br, fr, tar] = await Promise.all([
-      _sb_client.from('roadmap').select('*').eq('client_id', _clientData.id).is('deleted_at', null).order('year').order('target_date'),
-      _sb_client.from('billing').select('*').eq('client_id', _clientData.id).order('created_at', { ascending: false }).limit(12),
-      _sb_client.from('feedback').select('*').eq('client_id', _clientData.id).order('created_at', { ascending: false }).limit(50),
-      _sb_client.from('template_access').select('*').eq('client_id', _clientData.id)
+      Promise.resolve(_sb_client.from('roadmap').select('*').eq('client_id', _clientData.id).is('deleted_at', null).order('year').order('target_date')).catch(function(){ return {data:[]}; }),
+      Promise.resolve(_sb_client.from('billing').select('*').eq('client_id', _clientData.id).order('created_at', { ascending: false }).limit(12)).catch(function(){ return {data:[]}; }),
+      Promise.resolve(_sb_client.from('feedback').select('*').eq('client_id', _clientData.id).order('created_at', { ascending: false }).limit(50)).catch(function(){ return {data:[]}; }),
+      Promise.resolve(_sb_client.from('template_access').select('*').eq('client_id', _clientData.id)).catch(function(){ return {data:[]}; })
     ]);
 
     populateOverview(_clientData);
