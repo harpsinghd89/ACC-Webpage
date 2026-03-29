@@ -511,40 +511,24 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             </div>
           </div>
           <div class="fgroup">
-            <label for="w-lang">Default Widget Language</label>
-            <select class="finput" id="w-lang" style="width:100%">
-              <option value="en">English</option>
-              <option value="fr">French (Français)</option>
-            </select>
-            <p style="font-size:.72rem;color:var(--muted);margin-top:6px;line-height:1.6">Controls the widget UI labels on first load. The 🌐 Language Selector lets visitors choose from 90+ languages at any time.</p>
+            <p style="font-size:.72rem;color:var(--muted);line-height:1.7;padding:10px 12px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.12);border-radius:8px">
+              &#9432; The widget displays in <strong>English by default</strong>. Visitors can switch to any of 90+ languages using the 🌐 Language Selector in the widget header.
+            </p>
           </div>
         </div>
         <div class="card">
           <h2>&#127895; Widget Features</h2>
           <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Accessibility Profiles</strong><span>Shows 6 disability-optimized presets (Visually Impaired, Motor, Senior, ADHD, Deaf, Cognitive). Visitors click one to instantly apply a full set of adjustments.</span></div>
+            <div class="toggle-info"><strong>Accessibility Profiles Tab</strong><span>Shows the Profiles tab with 6 disability-optimised presets (Visually Impaired, Motor, Senior, ADHD, Deaf, Cognitive). When off, the tab is hidden from visitors.</span></div>
             <label class="toggle" aria-label="Toggle profiles"><input type="checkbox" id="w-profiles" checked><span class="toggle-slider"></span></label>
           </div>
           <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Auto-Fix Engine</strong><span>Widget automatically patches detectable issues at runtime — missing alt text, skip links, empty ARIA labels. Does not require code changes on your site.</span></div>
-            <label class="toggle" aria-label="Toggle auto-fix"><input type="checkbox" id="w-autofix" checked><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Colour &amp; Contrast Tools</strong><span>Enables colour filter swatches (high-contrast, greyscale, inverted) and contrast adjustment slider in the widget settings tab.</span></div>
-            <label class="toggle" aria-label="Toggle contrast"><input type="checkbox" id="w-contrast" checked><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Reading Tools</strong><span>Enables the Reading Guide (highlights the current line), Reading Mask (dims surrounding content), and text spacing controls.</span></div>
-            <label class="toggle" aria-label="Toggle reading guide"><input type="checkbox" id="w-reading" checked><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Language Selector</strong><span>Shows the 🌐 globe button in the widget header. Visitors can translate the entire page into 90+ languages via Google Translate. EN/FR default is set in Appearance above.</span></div>
-            <label class="toggle" aria-label="Toggle language selector"><input type="checkbox" id="w-language" checked><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-wrap">
-            <div class="toggle-info"><strong>Visitor Feedback Tab</strong><span>Adds a Feedback tab in the widget where visitors can report accessibility issues directly. Submissions appear in your Feedback Logs panel.</span></div>
+            <div class="toggle-info"><strong>Visitor Feedback Tab</strong><span>Shows the Feedback tab in the widget so visitors can report accessibility issues. Submissions appear in your Feedback Logs panel. When off, the tab is hidden.</span></div>
             <label class="toggle" aria-label="Toggle feedback capture"><input type="checkbox" id="w-feedback" checked><span class="toggle-slider"></span></label>
           </div>
+          <p style="font-size:.72rem;color:var(--muted);margin-top:12px;padding:10px 12px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.12);border-radius:8px;line-height:1.7">
+            &#9432; <strong>Colour &amp; Contrast Tools</strong>, <strong>Reading Tools</strong>, <strong>Language Selector</strong>, and <strong>Auto-Fix Engine</strong> are always available to visitors and cannot be turned off — they are core WCAG 2.1 accessibility features. The toggles above control which <em>tabs</em> appear in the widget panel.
+          </p>
         </div>
       </div>
       <div class="btn-row" style="margin-top:8px">
@@ -3052,13 +3036,13 @@ async function populateReports(c) {
     var statusPill, actionBtn;
 
     if (isCurrentMonth) {
-      // Current month: always "In Progress" — auto-generates on the 1st of next month
-      // Show "Open Report" if one was already generated this month, otherwise just the status
+      // Current month — always offer to generate from current scan data
       statusPill = '<span class="pill yellow" style="font-size:.72rem">&#9679; In Progress</span>';
       if (hasReport) {
-        actionBtn = '<button class="btn-sm btn-ghost report-dl-btn" data-ym="' + ym + '" style="font-size:.72rem">&#128196; Open Report</button>';
+        actionBtn = '<button class="btn-sm btn-ghost report-dl-btn" data-ym="' + ym + '" style="font-size:.72rem">&#128196; Open Report</button>'
+          + ' <button class="btn-sm btn-ghost report-gen-btn" data-ym="' + ym + '" style="font-size:.72rem;opacity:.7">&#8635; Regenerate</button>';
       } else {
-        actionBtn = '<span style="font-size:.72rem;color:#8a9bbf;font-style:italic">Auto-generates 1st of next month</span>';
+        actionBtn = '<button class="btn-sm btn-primary report-gen-btn" data-ym="' + ym + '" style="font-size:.72rem">&#9654; Generate Now</button>';
       }
     } else if (hasReport) {
       // Past month with a report — just show the link
@@ -3086,6 +3070,9 @@ async function populateReports(c) {
     if (!ym) return;
     if (btn.classList.contains('report-dl-btn')) {
       downloadReport(ym);
+    }
+    if (btn.classList.contains('report-gen-btn')) {
+      generateAndDownloadReport(ym);
     }
   });
 }
@@ -3480,78 +3467,190 @@ async function generateAndDownloadBinder(year) {
   }
 }
 
-function generateBinderClientSide(c) {
-  var items = (c.binder_items && c.binder_items.length) ? c.binder_items : [
-    { title: 'Accessibility Policy & Statement of Commitment', status: 'Pending Review' },
-    { title: 'Multi-Year Accessibility Plan (MYAP)', status: 'Pending Review' },
-    { title: 'Staff AODA Training Registry', status: 'Pending Review' },
-    { title: 'Accessible Customer Feedback Process', status: 'Pending Review' },
-    { title: 'Accessible Formats Request Procedure', status: 'Pending Review' },
-    { title: 'Accessibility Statement (Web)', status: 'Pending Review' },
-    { title: 'Accommodation Clause - Job Postings', status: 'Pending Review' },
-    { title: 'Accessibility Clause - Offer Letters', status: 'Pending Review' },
-    { title: 'Service Animals & Support Persons Policy', status: 'Pending Review' },
-    { title: 'Notice of Temporary Disruption of Services', status: 'Pending Review' },
-    { title: 'HR Accommodation Policy', status: 'Pending Review' },
-    { title: 'Monthly Audit Reports (all months)', status: 'Pending Review' },
-    { title: 'Scope of Responsibility Acknowledgment', status: 'Pending Review' },
-    { title: 'AODA Filing Checklist', status: 'Pending Review' },
-  ];
-  var yr = new Date().getFullYear();
+async function generateBinderClientSide(c) {
+  // Full evidence binder — pulls real data from Supabase
+  var yr    = new Date().getFullYear();
   var today = new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'});
-  var statColors = { 'Verified':'#065f46','On File':'#1e40af','Pending Review':'#92400e','Missing':'#991b1b' };
-  var statBg = { 'Verified':'#d1fae5','On File':'#dbeafe','Pending Review':'#fef3c7','Missing':'#fee2e2' };
   function escH(s){ var d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
-  var verified = items.filter(function(i){ return i.status==='Verified'||i.status==='On File'; }).length;
-  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
+
+  // Fetch supporting data in parallel
+  var trainingRows = [], scanRows = [], feedbackRows = [], roadmapRows = [];
+  try {
+    var tr = await _sb_client.from('training_logs').select('*').eq('client_id', c.id).order('completed_at',{ascending:false}).limit(100);
+    trainingRows = tr.data || [];
+  } catch(_) {}
+  try {
+    var sr = await _sb_client.from('scans').select('score,critical,warnings,fixes_applied,scanned_at,page_url').eq('client_code', c.client_code||'').order('scanned_at',{ascending:false}).limit(50);
+    scanRows = sr.data || [];
+  } catch(_) {}
+  try {
+    var fr = await _sb_client.from('feedback').select('*').eq('client_id', c.id).order('created_at',{ascending:false}).limit(50);
+    feedbackRows = fr.data || [];
+  } catch(_) {}
+  try {
+    var rr = await _sb_client.from('roadmap').select('*').eq('client_id', c.id).is('deleted_at',null).order('year').order('target_date');
+    roadmapRows = rr.data || [];
+  } catch(_) {}
+
+  // Binder checklist items
+  var items = (c.binder_items && c.binder_items.length) ? c.binder_items : [
+    {title:'Accessibility Policy & Statement of Commitment',status:'Pending Review'},
+    {title:'Multi-Year Accessibility Plan (MYAP)',status:'Pending Review'},
+    {title:'Staff AODA Training Registry',status:'Pending Review'},
+    {title:'Accessible Customer Feedback Process',status:'Pending Review'},
+    {title:'Accessible Formats Request Procedure',status:'Pending Review'},
+    {title:'Accessibility Statement (Web)',status:'Pending Review'},
+    {title:'Accommodation Clause — Job Postings',status:'Pending Review'},
+    {title:'Accessibility Clause — Offer Letters',status:'Pending Review'},
+    {title:'Service Animals & Support Persons Policy',status:'Pending Review'},
+    {title:'Notice of Temporary Disruption of Services',status:'Pending Review'},
+    {title:'HR Accommodation Policy',status:'Pending Review'},
+    {title:'Monthly Audit Reports (all months)',status:'Pending Review'},
+    {title:'Scope of Responsibility Acknowledgment',status:'Pending Review'},
+    {title:'AODA Filing Checklist',status:'Pending Review'},
+  ];
+  var verified  = items.filter(function(i){ return i.status==='Verified'||i.status==='On File'; }).length;
+  var statColors = {'Verified':'#065f46','On File':'#1e40af','Pending Review':'#92400e','Missing':'#991b1b'};
+  var statBg     = {'Verified':'#d1fae5','On File':'#dbeafe','Pending Review':'#fef3c7','Missing':'#fee2e2'};
+
+  var avgScore = scanRows.length
+    ? Math.round(scanRows.reduce(function(t,s){return t+(s.score||0);},0)/scanRows.length) : null;
+  var latestScan = scanRows[0] || null;
+  var TH = 'padding:8px 12px;font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;text-align:left;background:#f8f9fc;border-bottom:1px solid #e5e7eb';
+  var TD = 'padding:8px 12px;font-size:.82rem;border-bottom:1px solid #f0f0f0';
+
+  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
     + '<title>ACC Evidence Binder ' + yr + ' — ' + escH(c.name||'') + '</title>'
-    + '<style>*{box-sizing:border-box}body{font-family:"Segoe UI",sans-serif;background:#f4f5f7;margin:0;padding:32px}'
-    + '.report{max-width:900px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}'
-    + '.print-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#0a1628;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer}'
-    + '@media print{body{background:#fff;padding:0}.report{box-shadow:none}.no-print{display:none}}'
-    + '</style></head><body><div class="report">'
-    + '<div class="no-print" style="display:flex;align-items:center;justify-content:space-between;padding:10px 28px;background:#f8f9fc;border-bottom:1px solid #e5e7eb">'
+    + '<style>*{box-sizing:border-box}body{font-family:"Segoe UI",system-ui,sans-serif;background:#f4f5f7;margin:0;padding:24px}'
+    + '.report{max-width:960px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}'
+    + '.print-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#0a1628;color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer}'
+    + '.section-head{padding:12px 24px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#4f8ef7;background:#f8f9fc;border-top:2px solid #4f8ef7;border-bottom:1px solid #e5e7eb}'
+    + '@media print{body{background:#fff;padding:0}.report{box-shadow:none;border-radius:0}.no-print{display:none}}</style>'
+    + '</head><body><div class="report">'
+
+    // Print bar
+    + '<div class="no-print" style="display:flex;align-items:center;justify-content:space-between;padding:10px 24px;background:#f8f9fc;border-bottom:1px solid #e5e7eb;gap:12px;flex-wrap:wrap">'
     + '<span style="font-size:.82rem;font-weight:700;color:#0a1628">ACC Evidence Binder ' + yr + '</span>'
-    + '<button class="print-btn" onclick="window.print()">&#8659; Download PDF</button>'
+    + '<div style="display:flex;gap:8px"><span style="font-size:.72rem;color:#9ca3af;align-self:center">Save as PDF in the print dialog</span>'
+    + '<button class="print-btn" onclick="window.print()">&#8659; Download PDF</button></div></div>'
+
+    // Header
+    + '<div style="background:linear-gradient(135deg,#0a1628,#0d1f3c);color:#fff;padding:28px 28px 24px">'
+    + '<div style="font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:#38d9a9;margin-bottom:6px">AODA Compliance Evidence Binder · ' + yr + '</div>'
+    + '<h1 style="font-size:1.3rem;font-weight:800;margin:0 0 4px;color:#fff">' + escH(c.name||'') + '</h1>'
+    + '<div style="font-size:.78rem;color:#94a3b8">' + escH(c.domain||'—') + ' · ' + escH(c.client_code||'') + ' · Generated: ' + today + '</div>'
     + '</div>'
-    + '<div style="background:linear-gradient(135deg,#0a1628,#0d1f3c);color:#fff;padding:28px 32px">'
-    + '<div style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#38d9a9;margin-bottom:6px">AODA Compliance Evidence Binder</div>'
-    + '<h1 style="font-size:1.2rem;font-weight:800;margin:0 0 4px;color:#fff">' + escH(c.name||'') + '</h1>'
-    + '<div style="font-size:.78rem;color:#94a3b8">' + escH(c.domain||'') + ' · ' + yr + ' · Generated: ' + today + '</div>'
+    + '<div style="height:3px;background:linear-gradient(90deg,#38d9a9,#4f8ef7)"></div>'
+
+    // Summary stats
+    + '<div style="display:flex;border-bottom:1px solid #e5e7eb;flex-wrap:wrap">'
+    + '<div style="flex:1;min-width:120px;padding:14px 20px;text-align:center;border-right:1px solid #e5e7eb">'
+    + '<div style="font-size:2rem;font-weight:800;color:#0a1628">' + verified + '<span style="font-size:.9rem;color:#9ca3af">/' + items.length + '</span></div>'
+    + '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-top:2px">Documents Complete</div></div>'
+    + '<div style="flex:1;min-width:120px;padding:14px 20px;text-align:center;border-right:1px solid #e5e7eb">'
+    + '<div style="font-size:2rem;font-weight:800;color:' + (avgScore>=80?'#065f46':avgScore>=60?'#92400e':'#991b1b') + '">' + (avgScore!==null?avgScore:'—') + '<span style="font-size:.9rem;color:#9ca3af">/100</span></div>'
+    + '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-top:2px">Avg WCAG Score</div></div>'
+    + '<div style="flex:1;min-width:120px;padding:14px 20px;text-align:center;border-right:1px solid #e5e7eb">'
+    + '<div style="font-size:2rem;font-weight:800;color:#0a1628">' + trainingRows.length + '</div>'
+    + '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-top:2px">Training Records</div></div>'
+    + '<div style="flex:1;min-width:120px;padding:14px 20px;text-align:center">'
+    + '<div style="font-size:2rem;font-weight:800;color:#0a1628">' + feedbackRows.length + '</div>'
+    + '<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-top:2px">Feedback Received</div></div>'
     + '</div>'
-    + '<div style="padding:16px 28px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;display:flex;gap:20px;align-items:center">'
-    + '<div style="font-size:1.8rem;font-weight:800;color:#0a1628">' + verified + '<span style="font-size:.9rem;color:#9ca3af">/' + items.length + '</span></div>'
-    + '<div><div style="font-size:.78rem;font-weight:700;color:#0a1628">Documents Complete</div>'
-    + '<div style="font-size:.72rem;color:#9ca3af">WCAG 2.1 AA · AODA Compliance Framework</div></div>'
-    + '</div>'
+
+    // Section 1: Document Checklist
+    + '<div class="section-head">Section 1 — AODA Document Checklist</div>'
     + '<table style="width:100%;border-collapse:collapse">'
-    + '<thead><tr>'
-    + '<th style="padding:10px 16px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;text-align:left;background:#f8f9fc;border-bottom:1px solid #e5e7eb">#</th>'
-    + '<th style="padding:10px 16px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;text-align:left;background:#f8f9fc;border-bottom:1px solid #e5e7eb">Document</th>'
-    + '<th style="padding:10px 16px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;text-align:center;background:#f8f9fc;border-bottom:1px solid #e5e7eb">Status</th>'
-    + '</tr></thead><tbody>'
+    + '<thead><tr><th style="' + TH + '">#</th><th style="' + TH + '">Document</th><th style="' + TH + ';text-align:center">Status</th></tr></thead><tbody>'
     + items.map(function(item, i) {
         var col = statColors[item.status]||'#6b7280';
         var bg  = statBg[item.status]||'#f3f4f6';
-        return '<tr><td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;color:#9ca3af;font-size:.82rem">' + (i+1) + '</td>'
-          + '<td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:.85rem;font-weight:600">' + escH(item.title) + '</td>'
-          + '<td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;text-align:center">'
-          + '<span style="padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:700;background:'+bg+';color:'+col+'">' + escH(item.status) + '</span></td></tr>';
+        return '<tr><td style="' + TD + ';color:#9ca3af">' + (i+1) + '</td>'
+          + '<td style="' + TD + ';font-weight:600">' + escH(item.title) + '</td>'
+          + '<td style="' + TD + ';text-align:center"><span style="padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:700;background:'+bg+';color:'+col+'">' + escH(item.status) + '</span></td></tr>';
       }).join('')
     + '</tbody></table>'
-    + '<div style="padding:12px 28px;font-size:.65rem;color:#9ca3af;text-align:center;border-top:1px solid #e5e7eb">'
+
+    // Section 2: WCAG Audit Summary
+    + '<div class="section-head">Section 2 — WCAG 2.1 AA Scan Summary</div>'
+    + (scanRows.length ? (
+        '<div style="padding:12px 24px;font-size:.8rem;color:#374151;line-height:1.8">'
+        + 'Average accessibility score: <strong>' + avgScore + '/100</strong> across ' + scanRows.length + ' scans. '
+        + 'Latest scan: ' + (latestScan ? new Date(latestScan.scanned_at).toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}) : '—') + '.'
+        + '</div>'
+        + '<table style="width:100%;border-collapse:collapse">'
+        + '<thead><tr><th style="' + TH + '">Page</th><th style="' + TH + ';text-align:center">Score</th><th style="' + TH + ';text-align:center">Critical</th><th style="' + TH + ';text-align:center">Warnings</th><th style="' + TH + ';text-align:center">Auto-Fixed</th><th style="' + TH + '">Date</th></tr></thead><tbody>'
+        + scanRows.slice(0,15).map(function(s) {
+            var sc = s.score||0;
+            var col2 = sc>=80?'#065f46':sc>=60?'#92400e':'#991b1b';
+            return '<tr><td style="' + TD + ';max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem">' + escH(s.page_url||'—') + '</td>'
+              + '<td style="' + TD + ';text-align:center;font-weight:700;color:'+col2+'">' + sc + '</td>'
+              + '<td style="' + TD + ';text-align:center;color:#991b1b">' + (s.critical||0) + '</td>'
+              + '<td style="' + TD + ';text-align:center;color:#92400e">' + (s.warnings||0) + '</td>'
+              + '<td style="' + TD + ';text-align:center;color:#065f46">' + (s.fixes_applied||0) + '</td>'
+              + '<td style="' + TD + ';font-size:.75rem;color:#6b7280">' + (s.scanned_at ? new Date(s.scanned_at).toLocaleDateString('en-CA') : '—') + '</td></tr>';
+          }).join('')
+        + '</tbody></table>'
+      ) : '<div style="padding:16px 24px;font-size:.82rem;color:#9ca3af">No scan data available for this period.</div>')
+
+    // Section 3: Compliance Roadmap
+    + '<div class="section-head">Section 3 — Multi-Year Compliance Roadmap</div>'
+    + (roadmapRows.length ? (
+        '<table style="width:100%;border-collapse:collapse">'
+        + '<thead><tr><th style="' + TH + '">Milestone</th><th style="' + TH + '">Target Date</th><th style="' + TH + ';text-align:center">Status</th></tr></thead><tbody>'
+        + roadmapRows.map(function(r) {
+            var stCol = r.status==='complete'?'#065f46':r.status==='in-progress'?'#1e40af':'#92400e';
+            var stBg  = r.status==='complete'?'#d1fae5':r.status==='in-progress'?'#dbeafe':'#fef3c7';
+            return '<tr><td style="' + TD + ';font-weight:600">' + escH(r.milestone||r.title||'') + '</td>'
+              + '<td style="' + TD + ';color:#6b7280">' + (r.target_date ? new Date(r.target_date).toLocaleDateString('en-CA',{year:'numeric',month:'long'}) : '—') + '</td>'
+              + '<td style="' + TD + ';text-align:center"><span style="padding:2px 8px;border-radius:6px;font-size:.72rem;font-weight:700;background:'+stBg+';color:'+stCol+'">' + escH((r.status||'planned').replace('-',' ')) + '</span></td></tr>';
+          }).join('')
+        + '</tbody></table>'
+      ) : '<div style="padding:16px 24px;font-size:.82rem;color:#9ca3af">No roadmap items defined yet.</div>')
+
+    // Section 4: Staff Training Registry
+    + '<div class="section-head">Section 4 — Staff AODA Training Registry</div>'
+    + (trainingRows.length ? (
+        '<table style="width:100%;border-collapse:collapse">'
+        + '<thead><tr><th style="' + TH + '">Staff Name</th><th style="' + TH + '">Course</th><th style="' + TH + '">Completed</th><th style="' + TH + '">Notes</th></tr></thead><tbody>'
+        + trainingRows.map(function(t) {
+            return '<tr><td style="' + TD + ';font-weight:600">' + escH(t.staff_name||'—') + '</td>'
+              + '<td style="' + TD + '">' + escH(t.course_name||'—') + '</td>'
+              + '<td style="' + TD + ';color:#6b7280">' + (t.completed_at ? new Date(t.completed_at).toLocaleDateString('en-CA') : '—') + '</td>'
+              + '<td style="' + TD + ';color:#6b7280;font-size:.78rem">' + escH(t.notes||'') + '</td></tr>';
+          }).join('')
+        + '</tbody></table>'
+      ) : '<div style="padding:16px 24px;font-size:.82rem;color:#9ca3af">No training records logged yet.</div>')
+
+    // Section 5: Visitor Feedback Log
+    + '<div class="section-head">Section 5 — Visitor Accessibility Feedback Log</div>'
+    + (feedbackRows.length ? (
+        '<table style="width:100%;border-collapse:collapse">'
+        + '<thead><tr><th style="' + TH + '">Date</th><th style="' + TH + '">Type</th><th style="' + TH + '">Message</th><th style="' + TH + ';text-align:center">Status</th></tr></thead><tbody>'
+        + feedbackRows.slice(0,20).map(function(f) {
+            return '<tr><td style="' + TD + ';color:#6b7280;font-size:.78rem">' + (f.created_at ? new Date(f.created_at).toLocaleDateString('en-CA') : '—') + '</td>'
+              + '<td style="' + TD + ';font-size:.78rem">' + escH(f.type||'—') + '</td>'
+              + '<td style="' + TD + ';font-size:.82rem">' + escH((f.message||'').substring(0,120)) + '</td>'
+              + '<td style="' + TD + ';text-align:center"><span style="font-size:.7rem;padding:2px 8px;border-radius:6px;background:#f0f4ff;color:#4f8ef7;font-weight:600">' + escH(f.status||'open') + '</span></td></tr>';
+          }).join('')
+        + '</tbody></table>'
+      ) : '<div style="padding:16px 24px;font-size:.82rem;color:#9ca3af">No visitor feedback received yet.</div>')
+
+    // Footer
+    + '<div style="padding:12px 24px;font-size:.65rem;color:#9ca3af;text-align:center;border-top:1px solid #e5e7eb;background:#f8f9fc">'
     + 'ACC · accessibilitycompliance.ca · ' + yr + ' Evidence Binder · ' + escH(c.name||'') + '<br>'
+    + 'Generated: ' + today + ' · WCAG 2.1 AA · AODA Compliance Framework<br>'
     + '<button class="print-btn no-print" onclick="window.print()" style="margin-top:8px;font-size:.72rem;padding:6px 14px">&#8659; Download PDF</button>'
     + '</div></div></body></html>';
 
-  // Open in new tab (same as other reports) — user can print/save from there
   var win = window.open('', '_blank');
   if (!win) { alert('Please allow popups to view the binder.'); return; }
   win.document.open();
   win.document.write(html);
   win.document.close();
-  showToast('Evidence Binder opened in new tab. Use the Download PDF button inside.');
+  showToast('Evidence Binder opened in new tab. Use Download PDF button inside.');
 }
+
 
 // Generate + download an invoice for the given YYYY-MM key.
 async function generateAndDownloadInvoice(yearMonth) {
@@ -4065,24 +4164,18 @@ async function saveAccountDetails() {
 // ── Widget settings helpers ──────────────────────────────
 
 function applyWidgetSettingsToPanel(cfg) {
-  var pos = document.getElementById('w-position');
-  var col = document.getElementById('w-color');
-  var lang = document.getElementById('w-lang');
+  var pos      = document.getElementById('w-position');
+  var col      = document.getElementById('w-color');
+  var colHex   = document.getElementById('w-color-hex');
   var profiles = document.getElementById('w-profiles');
-  var autofix  = document.getElementById('w-autofix');
-  var contrast = document.getElementById('w-contrast');
-  var reading  = document.getElementById('w-reading');
-  var history  = document.getElementById('w-language');
   var feedback = document.getElementById('w-feedback');
 
-  if (pos && cfg.position)      pos.value = cfg.position;
-  if (col && cfg.accent_color)  { col.value = cfg.accent_color; var hex = col.nextElementSibling; if (hex) hex.value = cfg.accent_color; }
-  if (lang && cfg.language)     lang.value = cfg.language;
+  if (pos && cfg.position)     pos.value = cfg.position;
+  if (col && cfg.accent_color) {
+    col.value = cfg.accent_color;
+    if (colHex) colHex.value = cfg.accent_color;
+  }
   if (profiles) profiles.checked = !cfg.hide_profiles;
-  if (autofix)  autofix.checked  = !!cfg.enable_autofix;
-  if (contrast) contrast.checked = cfg.enable_contrast !== false;
-  if (reading)  reading.checked  = cfg.enable_reading  !== false;
-  if (history)  history.checked  = !cfg.hide_history;
   if (feedback) feedback.checked = !cfg.hide_feedback;
 }
 
@@ -4139,18 +4232,13 @@ async function saveWidgetSettings() {
   if (btn) { btn.disabled = true; btn.innerHTML = 'Saving&hellip;'; }
 
   var settings = {
-    client_id:        _clientData.id,
-    client_code:      _clientData.client_code || '',
-    position:         (document.getElementById('w-position') || {}).value || 'Bottom Right',
-    accent_color:     (document.getElementById('w-color')    || {}).value || '#4f8ef7',
-    language:         (document.getElementById('w-lang')     || {}).value || 'English',
-    hide_profiles:   !(document.getElementById('w-profiles') || {checked:true}).checked,
-    enable_autofix:   (document.getElementById('w-autofix')  || {}).checked || false,
-    enable_contrast:  (document.getElementById('w-contrast') || {checked:true}).checked,
-    enable_reading:   (document.getElementById('w-reading')  || {checked:true}).checked,
-    hide_history:    !(document.getElementById('w-language')  || {}).checked,
-    hide_feedback:   !(document.getElementById('w-feedback') || {checked:true}).checked,
-    updated_at:       new Date().toISOString(),
+    client_id:    _clientData.id,
+    client_code:  _clientData.client_code || '',
+    position:     (document.getElementById('w-position') || {}).value || 'Bottom Right',
+    accent_color: (document.getElementById('w-color')    || {}).value || '#4f8ef7',
+    hide_profiles: !(document.getElementById('w-profiles') || {checked:true}).checked,
+    hide_feedback: !(document.getElementById('w-feedback') || {checked:true}).checked,
+    updated_at:   new Date().toISOString(),
   };
 
   try {
@@ -4173,8 +4261,7 @@ async function resetWidgetSettings() {
   var defaults = {
     client_id: _clientData.id,
     position: 'Bottom Right', accent_color: '#4f8ef7', language: 'English',
-    hide_profiles: false, enable_autofix: false, enable_contrast: true,
-    enable_reading: true, hide_history: false, hide_feedback: false,
+    hide_profiles: false, hide_feedback: false,
   };
   applyWidgetSettingsToPanel(defaults);
   updateEmbedCode(_clientData, defaults);
