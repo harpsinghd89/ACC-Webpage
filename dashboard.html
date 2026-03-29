@@ -2945,6 +2945,7 @@ async function saveClientBinder() {
     var r = await _sb_client.from('clients').update({ binder_items: items, updated_at: new Date().toISOString() }).eq('id', _clientData.id);
     if (r.error) throw r.error;
     _clientData.binder_items = items;
+    populateEvidence(_clientData, window._roadmapData || []);
     showToast('✓ Checklist saved.');
   } catch(e) {
     alert('Could not save checklist: ' + (e.message || e));
@@ -3443,6 +3444,8 @@ async function generateAndDownloadBinder(year) {
     var yr = year || new Date().getFullYear();
     var filePath = (result && result.file) ? result.file : (code + '/' + yr + '-binder.html');
     await openHtmlReport('evidence', filePath);
+    // Refresh evidence panel so the new binder link appears immediately
+    if (window._clientData) populateEvidence(_clientData, window._roadmapData || []);
   } catch(e) {
     console.warn('generateAndDownloadBinder edge fn unavailable, generating client-side:', e.message);
     generateBinderClientSide(_clientData);
