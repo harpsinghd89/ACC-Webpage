@@ -2966,6 +2966,7 @@ async function populateReports(c) {
   var container = document.getElementById('client-reports-list');
   if (!container) return;
 
+  // ── Build month list from start_date → now ────────────────────────────────
   var startDate = c.start_date || c.created_at || c.renewal_date;
   var start;
   if (startDate) {
@@ -2976,25 +2977,41 @@ async function populateReports(c) {
     start.setMonth(start.getMonth() - 5);
     start.setDate(1);
   }
-
   var now = new Date();
   var months = [];
-  var cur = new Date(start);
+  var cur = new Date(start.getFullYear(), start.getMonth(), 1);
   while (cur <= now) {
     months.push({ year: cur.getFullYear(), month: cur.getMonth() + 1 });
     cur.setMonth(cur.getMonth() + 1);
   }
-  months.reverse();
+  months.reverse(); // Most recent first
 
-  var availablePdfs = new Set();
+  // ── Check storage for existing reports ────────────────────────────────────
+  var availableReports = new Set(); // ym strings like "2026-03"
   var hasBaseline = false;
+  var code = c.client_code || '';
   try {
-    var code = c.client_code || '';
     var { data: files } = await _sb_client.storage.from('reports').list(code);
     (files || []).forEach(function(f) {
       var m = (f.name || '').match(/^(\d{4}-\d{2})\.(pdf|html)$/);
-      if (m) availablePdfs.add(m[1]);
+      if (m) availableReports.add(m[1]);
       if (f.name === 'baseline.pdf' || f.name === 'baseline.html') hasBaseline = true;
+    });
+  } catch(_) {}
+
+  // ── Check which months actually have scan data ────────────────────────────
+  var monthsWithScans = new Set();
+  try {
+    var { data: scanSummary } = await _sb_client
+      .from('scans')
+      .select('scanned_at')
+      .eq('client_code', code)
+      .order('scanned_at', { ascending: false });
+    (scanSummary || []).forEach(function(s) {
+      if (s.scanned_at) {
+        var d = new Date(s.scanned_at);
+        monthsWithScans.add(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'));
+      }
     });
   } catch(_) {}
 
@@ -3003,79 +3020,106 @@ async function populateReports(c) {
     return;
   }
 
-  // Baseline row pinned at top
+  // ── Baseline row pinned at top ────────────────────────────────────────────
   var startLabel = c.start_date
     ? new Date(c.start_date).toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' })
     : 'Onboarding';
+
   var baselineHtml = '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;'
     + 'background:linear-gradient(135deg,rgba(56,217,169,.06),rgba(79,142,247,.04));'
     + 'border:1px solid rgba(56,217,169,.25);border-radius:10px;gap:12px;margin-bottom:8px">'
     + '<div>'
     + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">'
     + '<span style="font-size:.85rem;font-weight:700">Baseline Assessment Report</span>'
-    + '<span style="font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(56,217,169,.15);color:#38d9a9;text-transform:uppercase;letter-spacing:.06em">Initial</span>'
+    + '<span style="font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(56,217,169,.15);color:#38d9a9;text-transform:uppercase;letter-spacing:.06em">Day 0</span>'
     + '</div>'
-    + '<div style="font-size:.72rem;color:#8a9bbf;margin-top:1px">Day 0 snapshot at onboarding — ' + esc(startLabel) + '</div>'
-    + '<div style="font-size:.7rem;color:#5a6e8c;margin-top:2px;font-style:italic">All subsequent monthly reports measure progress from this baseline.</div>'
+    + '<div style="font-size:.72rem;color:#8a9bbf;margin-top:1px">Onboarding snapshot — ' + esc(startLabel) + '</div>'
+    + '<div style="font-size:.7rem;color:#5a6e8c;margin-top:2px">Monthly reports measure your accessibility progress against this baseline.</div>'
     + '</div>'
     + '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">';
+
   if (hasBaseline) {
     baselineHtml += '<span class="pill green" style="font-size:.72rem">&#10003; Available</span>'
-      + '<button class="btn-sm btn-ghost report-dl-baseline-btn" style="font-size:.72rem">&#8659; Download</button>';
+      + '<button class="btn-sm btn-ghost report-dl-baseline-btn" style="font-size:.72rem">&#128196; View Report</button>';
   } else {
     baselineHtml += '<span class="pill" style="font-size:.72rem;background:rgba(100,116,139,.12);color:#64748b">Pending</span>'
       + '<span style="font-size:.72rem;color:#64748b;font-style:italic">Auto-generated at signup</span>';
   }
   baselineHtml += '</div></div>';
 
-  container.innerHTML = baselineHtml + months.map(function(m) {
-    var ym = m.year + '-' + String(m.month).padStart(2,'0');
-    var label = new Date(m.year, m.month - 1, 1).toLocaleDateString('en-CA', { year:'numeric', month:'long' });
-    var isCurrentMonth = m.year === now.getFullYear() && m.month === (now.getMonth()+1);
-    var hasReport = availablePdfs.has(ym);
-    var statusPill, actionBtn;
+  // ── Monthly report rows ────────────────────────────────────────────────────
+  var isCurrentYr  = now.getFullYear();
+  var isCurrentMth = now.getMonth() + 1;
 
-    if (isCurrentMonth) {
-      // Current month — always offer to generate from current scan data
+  var rows = months.map(function(m) {
+    var ym    = m.year + '-' + String(m.month).padStart(2,'0');
+    var label = new Date(m.year, m.month - 1, 1).toLocaleDateString('en-CA', { year:'numeric', month:'long' });
+    var isCurrent  = m.year === isCurrentYr && m.month === isCurrentMth;
+    var hasReport  = availableReports.has(ym);
+    var hasScanData = monthsWithScans.has(ym);
+    var statusPill, actionBtn, subNote;
+
+    if (isCurrent) {
+      // ── Current month: always "In Progress", show preview link ──────────────
       statusPill = '<span class="pill yellow" style="font-size:.72rem">&#9679; In Progress</span>';
+      subNote    = 'Collects all widget scans this month. Auto-publishes on the 1st.';
       if (hasReport) {
-        actionBtn = '<button class="btn-sm btn-ghost report-dl-btn" data-ym="' + ym + '" style="font-size:.72rem">&#128196; Open Report</button>'
-          + ' <button class="btn-sm btn-ghost report-gen-btn" data-ym="' + ym + '" style="font-size:.72rem;opacity:.7">&#8635; Regenerate</button>';
+        // A preview was already generated
+        actionBtn = '<button class="btn-sm btn-ghost report-dl-btn" data-ym="' + ym + '" style="font-size:.72rem">&#128196; View Draft</button>'
+          + ' <button class="btn-sm btn-ghost report-preview-btn" data-ym="' + ym + '" style="font-size:.72rem;opacity:.8">&#8635; Refresh Preview</button>';
+      } else if (hasScanData) {
+        // Has scan data but no saved preview yet
+        actionBtn = '<button class="btn-sm btn-ghost report-preview-btn" data-ym="' + ym + '" style="font-size:.72rem">&#128065; Preview Draft</button>';
       } else {
-        actionBtn = '<button class="btn-sm btn-primary report-gen-btn" data-ym="' + ym + '" style="font-size:.72rem">&#9654; Generate Now</button>';
+        actionBtn = '<span style="font-size:.72rem;color:#64748b;font-style:italic">No scans yet this month</span>';
       }
     } else if (hasReport) {
-      // Past month with a report — just show the link
+      // ── Past month: report exists ────────────────────────────────────────────
       statusPill = '<span class="pill green" style="font-size:.72rem">&#10003; Available</span>';
-      actionBtn  = '<button class="btn-sm btn-ghost report-dl-btn" data-ym="' + ym + '" style="font-size:.72rem">&#128196; Open Report</button>';
+      subNote    = '';
+      actionBtn  = '<button class="btn-sm btn-ghost report-dl-btn" data-ym="' + ym + '" style="font-size:.72rem">&#128196; View Report</button>';
+    } else if (hasScanData) {
+      // ── Past month: scans exist but report not generated ─────────────────────
+      statusPill = '<span class="pill" style="font-size:.72rem;background:rgba(245,166,35,.15);color:#92400e">&#9888; Not Generated</span>';
+      subNote    = 'Widget scan data exists but the monthly report was not auto-generated.';
+      actionBtn  = '';
     } else {
-      // Past month with no report — no generate button, just a status note
-      statusPill = '<span class="pill" style="font-size:.72rem;background:rgba(100,116,139,.12);color:#64748b">No data</span>';
-      actionBtn  = '<span style="font-size:.72rem;color:#64748b;font-style:italic">Not generated for this period</span>';
+      // ── Past month: no scans, no report ──────────────────────────────────────
+      statusPill = '<span class="pill" style="font-size:.72rem;background:rgba(100,116,139,.12);color:#64748b">No Data</span>';
+      subNote    = 'No widget scans recorded for this month.';
+      actionBtn  = '';
     }
 
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;gap:12px">' +
-      '<div><div style="font-size:.85rem;font-weight:600">' + label + '</div>' +
-      '<div style="font-size:.72rem;color:#8a9bbf;margin-top:2px">Report #: RPT-' + (c.client_code||'') + '-' + ym.replace('-','') + '</div></div>' +
-      '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">' + statusPill + actionBtn + '</div>' +
-      '</div>';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;gap:12px">'
+      + '<div style="min-width:0">'
+      + '<div style="font-size:.85rem;font-weight:600">' + label + '</div>'
+      + '<div style="font-size:.7rem;color:#8a9bbf;margin-top:1px">' + (subNote ? esc(subNote) : 'RPT-' + (c.client_code||'') + '-' + ym.replace('-','')) + '</div>'
+      + '</div>'
+      + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0">'
+      + statusPill + (actionBtn ? ' ' + actionBtn : '')
+      + '</div>'
+      + '</div>';
   }).join('');
 
-  // Wire up buttons via event delegation — avoids all quote-escaping issues
-  container.addEventListener('click', function(e) {
+  container.innerHTML = baselineHtml + rows;
+
+  // ── Event delegation for all buttons ──────────────────────────────────────
+  // Remove old listener by replacing the container (clone trick)
+  var newContainer = container.cloneNode(false);
+  newContainer.innerHTML = container.innerHTML;
+  container.parentNode.replaceChild(newContainer, container);
+
+  newContainer.addEventListener('click', function(e) {
     var btn = e.target.closest('button');
     if (!btn) return;
     if (btn.classList.contains('report-dl-baseline-btn')) { downloadBaselineReport(); return; }
     var ym = btn.dataset.ym;
     if (!ym) return;
-    if (btn.classList.contains('report-dl-btn')) {
-      downloadReport(ym);
-    }
-    if (btn.classList.contains('report-gen-btn')) {
-      generateAndDownloadReport(ym);
-    }
+    if (btn.classList.contains('report-dl-btn'))      { downloadReport(ym); return; }
+    if (btn.classList.contains('report-preview-btn')) { generateAndDownloadReport(ym); return; }
   });
 }
+
 
 async function downloadBaselineReport() {
   if (!_clientData) return;
@@ -3457,11 +3501,11 @@ async function generateAndDownloadBinder(year) {
     var yr = year || new Date().getFullYear();
     var filePath = (result && result.file) ? result.file : (code + '/' + yr + '-binder.html');
     await openHtmlReport('evidence', filePath);
-    // Refresh evidence panel so the new binder link appears immediately
     if (window._clientData) populateEvidence(_clientData, window._roadmapData || []);
   } catch(e) {
-    console.warn('generateAndDownloadBinder edge fn unavailable, generating client-side:', e.message);
-    generateBinderClientSide(_clientData);
+    // Edge fn failed — fall back to client-side silently (same as before)
+    console.warn('generate-evidence-binder edge fn failed:', e.message);
+    await generateBinderClientSide(_clientData);
   } finally {
     if (btn) { btn.disabled = false; btn.innerHTML = orig; }
   }
