@@ -102,8 +102,13 @@ body{font-family:'Sora',sans-serif;background:#0a1628;color:#e8edf8;
 .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:#4f8ef7}
 .stat-card.teal::after{background:#38d9a9}
+.stat-card.green::after{background:#38d9a9}
 .stat-card.warn::after{background:#f5a623}
 .stat-card.err::after{background:#f05f5f}
+.stat-card.red::after{background:#f05f5f}
+.stat-card.red .stat-value{color:#f05f5f}
+.stat-card.blue::after{background:#4f8ef7}
+.stat-card.blue .stat-value{color:#4f8ef7}
 .stat-label{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   color:#8a9bbf;margin-bottom:10px}
 .stat-value{font-family:'JetBrains Mono',monospace;font-size:1.8rem;font-weight:700;color:#fff;line-height:1}
@@ -399,15 +404,30 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div class="stat-value" id="stat-score">—</div>
           <div class="stat-sub" id="stat-score-sub">/ 100</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card green">
           <div class="stat-label">Auto-Fixes Applied</div>
           <div class="stat-value" id="stat-fixes">—</div>
-          <div class="stat-sub" id="stat-fixes-sub">Loading…</div>
+          <div class="stat-sub" id="stat-fixes-sub">By widget</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Critical Issues</div>
+          <div class="stat-value" id="stat-critical">—</div>
+          <div class="stat-sub" id="stat-critical-sub">Errors found</div>
         </div>
         <div class="stat-card warn">
           <div class="stat-label">Open Warnings</div>
           <div class="stat-value" id="stat-warnings">—</div>
-          <div class="stat-sub" id="stat-warnings-sub">Loading…</div>
+          <div class="stat-sub" id="stat-warnings-sub">To review</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Needs Dev Action</div>
+          <div class="stat-value" id="stat-dev">—</div>
+          <div class="stat-sub" id="stat-dev-sub">Manual fixes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pages Scanned</div>
+          <div class="stat-value" id="stat-pages">—</div>
+          <div class="stat-sub" id="stat-pages-sub">This month</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Days to AODA Deadline</div>
@@ -3323,7 +3343,13 @@ async function downloadReport(monthKey) {
   try {
     await openHtmlReport('reports', code + '/' + monthKey + '.html');
   } catch(e) {
-    showToast('Report not available yet. Generate it first.');
+    // Report not in storage yet — auto-generate it now
+    showToast('Report not found — generating now…');
+    try {
+      await generateAndDownloadReport(monthKey);
+    } catch(e2) {
+      alert('Could not generate report: ' + (e2.message || e2));
+    }
   }
 }
 
@@ -3518,13 +3544,13 @@ function generateBinderClientSide(c) {
     + '<button class="print-btn no-print" onclick="window.print()" style="margin-top:8px;font-size:.72rem;padding:6px 14px">&#8659; Download PDF</button>'
     + '</div></div></body></html>';
 
-  var blob = new Blob([html], {type:'text/html'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'ACC-EvidenceBinder-' + yr + '-' + (c.client_code||'') + '.html';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast('Evidence Binder downloaded. Use Print button inside to save as PDF.');
+  // Open in new tab (same as other reports) — user can print/save from there
+  var win = window.open('', '_blank');
+  if (!win) { alert('Please allow popups to view the binder.'); return; }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+  showToast('Evidence Binder opened in new tab. Use the Download PDF button inside.');
 }
 
 // Generate + download an invoice for the given YYYY-MM key.
@@ -3609,7 +3635,7 @@ async function populateScanData(clientCode) {
 
     var { data: monthScans } = await _sb_client
       .from('scans')
-      .select('score,critical,warnings,fixes_applied,perceivable,operable,understandable,robust,scanned_at,page_url')
+      .select('score,critical,warnings,fixes_applied,requires_dev,perceivable,operable,understandable,robust,scanned_at,page_url')
       .eq('client_code', clientCode)
       .gte('scanned_at', monthStart)
       .lt('scanned_at', monthEnd)
@@ -3632,6 +3658,7 @@ async function populateScanData(clientCode) {
         critical:       unique.reduce(function(t,s){ return t + (s.critical||0); }, 0),
         warnings:       unique.reduce(function(t,s){ return t + (s.warnings||0); }, 0),
         fixes_applied:  unique.reduce(function(t,s){ return t + (s.fixes_applied||0); }, 0),
+        requires_dev:   unique.reduce(function(t,s){ return t + (s.requires_dev||0); }, 0),
         perceivable:    avg('perceivable'),
         operable:       avg('operable'),
         understandable: avg('understandable'),
@@ -3648,30 +3675,31 @@ async function populateScanData(clientCode) {
     }
   } catch(_) { scan = null; }
 
-  var score    = scan ? (scan.score    ?? 0) : 0;
-  var critical = scan ? (scan.critical ?? 0) : 0;
-  var warnings = scan ? (scan.warnings ?? 0) : 0;
+  var score    = scan ? (scan.score       ?? 0) : 0;
+  var critical = scan ? (scan.critical    ?? 0) : 0;
+  var warnings = scan ? (scan.warnings    ?? 0) : 0;
   var fixes    = scan ? (scan.fixes_applied ?? 0) : 0;
+  var devFixes = scan ? (scan.requires_dev  ?? 0) : 0;
+  var pages    = scan ? (scan._pageCount  ?? (scan.page_url ? 1 : 0)) : 0;
   var lastTime = scan ? fmtDate(scan.scanned_at) : 'Never';
   var scoreSub = scan && scan._monthly
-    ? '/ 100 — ' + scan._pageCount + ' page' + (scan._pageCount !== 1 ? 's' : '') + ' scanned this month'
+    ? '/ 100 — ' + scan._pageCount + ' page' + (scan._pageCount !== 1 ? 's' : '') + ' this month'
     : '/ 100 — Last scanned ' + lastTime;
 
-  // Overview stat cards
-  var scoreEl = document.getElementById('stat-score');
-  if (scoreEl) scoreEl.textContent = score;
-  var scoreSubEl = document.getElementById('stat-score-sub');
-  if (scoreSubEl) scoreSubEl.textContent = scoreSub;
-
-  var fixesEl = document.getElementById('stat-fixes');
-  if (fixesEl) fixesEl.textContent = fixes;
-  var fixesSubEl = document.getElementById('stat-fixes-sub');
-  if (fixesSubEl) fixesSubEl.textContent = critical === 0 ? 'No critical issues' : critical + ' critical';
-
-  var warnEl = document.getElementById('stat-warnings');
-  if (warnEl) warnEl.textContent = warnings;
-  var warnSubEl = document.getElementById('stat-warnings-sub');
-  if (warnSubEl) warnSubEl.textContent = warnings === 0 ? 'No warnings' : 'Open warnings';
+  // Overview stat cards — all independent, each updates its own element
+  var set = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+  set('stat-score',         score);
+  set('stat-score-sub',     scoreSub);
+  set('stat-fixes',         fixes);
+  set('stat-fixes-sub',     fixes > 0 ? fixes + ' issue' + (fixes !== 1 ? 's' : '') + ' auto-resolved' : 'None this month');
+  set('stat-critical',      critical);
+  set('stat-critical-sub',  critical === 0 ? 'No critical errors' : critical + ' need attention');
+  set('stat-warnings',      warnings);
+  set('stat-warnings-sub',  warnings === 0 ? 'No warnings' : warnings + ' to review');
+  set('stat-dev',           devFixes);
+  set('stat-dev-sub',       devFixes > 0 ? devFixes + ' item' + (devFixes !== 1 ? 's' : '') + ' need code fix' : 'None this month');
+  set('stat-pages',         pages);
+  set('stat-pages-sub',     pages > 0 ? 'Scanned this month' : 'No scans yet');
 
   // WCAG ring
   var pctEl = document.getElementById('wcag-score-pct');
@@ -3973,20 +4001,22 @@ function exportTableCSV(tableId, filename) {
 // ── Item 6: Reload feedback from DB in real-time ──
 async function reloadFeedback() {
   if (!window._clientData) return;
-  // Fetch both: feedback submitted via dashboard (has client_id)
-  // AND feedback submitted via widget (has client_code, no client_id)
-  var [byId, byCode] = await Promise.all([
-    _sb_client.from('feedback').select('*')
+  var all = [];
+  // Query by client_id (dashboard-submitted feedback)
+  try {
+    var r1 = await _sb_client.from('feedback').select('*')
       .eq('client_id', _clientData.id)
-      .order('created_at', { ascending: false }).limit(50)
-      .catch(function(){ return {data:[]}; }),
-    _sb_client.from('feedback').select('*')
+      .order('created_at', { ascending: false }).limit(50);
+    if (r1.data) all = all.concat(r1.data);
+  } catch(_) {}
+  // Query by client_code (widget-submitted feedback — no client_id)
+  try {
+    var r2 = await _sb_client.from('feedback').select('*')
       .eq('client_code', _clientData.client_code || '')
       .is('client_id', null)
-      .order('created_at', { ascending: false }).limit(50)
-      .catch(function(){ return {data:[]}; }),
-  ]);
-  var all = (byId.data || []).concat(byCode.data || []);
+      .order('created_at', { ascending: false }).limit(50);
+    if (r2.data) all = all.concat(r2.data);
+  } catch(_) {}
   // De-duplicate by id, sort newest first
   var seen = new Set();
   var rows = all.filter(function(r) {
@@ -4052,7 +4082,7 @@ function applyWidgetSettingsToPanel(cfg) {
   if (autofix)  autofix.checked  = !!cfg.enable_autofix;
   if (contrast) contrast.checked = cfg.enable_contrast !== false;
   if (reading)  reading.checked  = cfg.enable_reading  !== false;
-  if (history)  history.checked  = !cfg.hide_language;
+  if (history)  history.checked  = !cfg.hide_history;
   if (feedback) feedback.checked = !cfg.hide_feedback;
 }
 
@@ -4144,7 +4174,7 @@ async function resetWidgetSettings() {
     client_id: _clientData.id,
     position: 'Bottom Right', accent_color: '#4f8ef7', language: 'English',
     hide_profiles: false, enable_autofix: false, enable_contrast: true,
-    enable_reading: true, hide_language: false, hide_feedback: false,
+    enable_reading: true, hide_history: false, hide_feedback: false,
   };
   applyWidgetSettingsToPanel(defaults);
   updateEmbedCode(_clientData, defaults);
