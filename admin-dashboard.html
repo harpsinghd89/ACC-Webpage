@@ -796,11 +796,11 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             </label>
             <div>
               <span id="ce-widget-active-label" style="font-size:.82rem;color:#8a9bbf">Widget enabled</span>
-              <div style="font-size:.72rem;color:#5a6e8c;margin-top:2px">Cancelled clients stay live until renewal date. Uncheck to kill immediately.</div>
+              <div style="font-size:.72rem;color:#5a6e8c;margin-top:2px">Disabling writes <code>widget_active=false</code> to the DB. The widget stops loading on the client's next page visit (requires widget v2+ to honour this field).</div>
             </div>
           </div>
         </div>
-        <div class="fgroup"><label>Start Date</label><input class="finput" type="date" id="ce-start" value="2026-01-10"></div>
+        <div class="fgroup"><label>Start Date</label><input class="finput" type="date" id="ce-start" value="2026-01-10" onchange="ceAutoFillRenewal()"></div>
         <div class="fgroup"><label>Next Renewal</label><input class="finput" type="date" id="ce-renewal" value="2026-04-10"></div>
         <div class="fgroup" style="grid-column:1/-1"><label>Billing Notes</label><input class="finput" id="ce-billing-note" placeholder="e.g. invoice by email, net 30"></div>
       </div>
@@ -814,7 +814,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div id="ctab-panel-billing" style="display:none">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
         <div class="fgroup"><label>Billing Cycle</label>
-          <select class="finput" id="ce-cycle"><option selected>Monthly</option><option>Annual</option></select>
+          <select class="finput" id="ce-cycle" onchange="ceAutoFillRenewal()"><option value="monthly" selected>Monthly</option><option value="annual">Annual</option></select>
         </div>
         <div class="fgroup"><label>Payment Method</label>
           <select class="finput" id="ce-payment"><option selected>Stripe</option><option>Invoice</option><option>Cheque</option></select>
@@ -1713,6 +1713,18 @@ function updateOverviewStats(clients) {
 }
 
 // ── Add Client ───────────────────────────────────────────
+function ceAutoFillRenewal() {
+  var startEl  = document.getElementById('ce-start');
+  var cycleEl  = document.getElementById('ce-cycle');
+  var renewEl  = document.getElementById('ce-renewal');
+  if (!startEl || !startEl.value || !renewEl) return;
+  var d = new Date(startEl.value + 'T12:00:00');
+  var cycle = cycleEl ? (cycleEl.value || cycleEl.options[cycleEl.selectedIndex].text).toLowerCase() : 'monthly';
+  if (cycle === 'annual') d.setFullYear(d.getFullYear() + 1);
+  else d.setMonth(d.getMonth() + 1);
+  renewEl.value = d.toISOString().slice(0, 10);
+}
+
 function ncAutoFillRenewal() {
   var startEl  = document.getElementById('nc-start');
   var cycleEl  = document.getElementById('nc-billing-cycle');
@@ -3212,9 +3224,9 @@ function renderAdminScanResults(issues, label) {
   document.getElementById('scan-url-label').textContent = label;
 
   var nFixed  = issues.filter(function(i){ return i.type==='fixed'; }).length;
-  var nErr    = issues.filter(function(i){ return i.type==='error'; }).length;
-  var nWarn   = issues.filter(function(i){ return i.type==='warning'; }).length;
-  var nDev    = issues.filter(function(i){ return i.requiresDev; }).length;
+  var nErr    = issues.filter(function(i){ return i.type==='error'&&!i.requiresDev; }).length;
+  var nWarn   = issues.filter(function(i){ return i.type==='warning'&&!i.requiresDev; }).length;
+  var nDev    = issues.filter(function(i){ return i.requiresDev&&i.type!=='fixed'; }).length;
   var errA    = issues.filter(function(i){ return i.type==='error'&&i.level==='A'; }).length;
   var errAA   = issues.filter(function(i){ return i.type==='error'&&i.level==='AA'; }).length;
   // RAW = site today without widget (fixed issues counted as errors for baseline)
@@ -3394,8 +3406,8 @@ function esc(s){ var d=document.createElement('div');d.textContent=String(s||'')
 // ─────────────────────────────────────────────────────────────
 function copyProspectEmail() {
   if(!_adminScanIssues.length){ showToastAdmin('Run a scan first','error'); return; }
-  var nErr  = _adminScanIssues.filter(function(i){return i.type==='error';}).length;
-  var nDev  = _adminScanIssues.filter(function(i){return i.requiresDev;}).length;
+  var nErr  = _adminScanIssues.filter(function(i){return i.type==='error'&&!i.requiresDev;}).length;
+  var nDev  = _adminScanIssues.filter(function(i){return i.requiresDev&&i.type!=='fixed';}).length;
   var fixedIssues = _adminScanIssues.filter(function(i){return i.type==='fixed';});
   var nFix  = fixedIssues.length;
   var totalElFixed = fixedIssues.reduce(function(s,i){return s+(i.elements&&i.elements.length?i.elements.length:1);},0);
@@ -3452,13 +3464,20 @@ function downloadAdminScanReport() {
   var score       = parseInt(scoreEl ? scoreEl.textContent : '0')||0;
   var scoreWithout= parseInt(scoreEl ? scoreEl.getAttribute('data-raw') : '0')||score;
   var nFixed = issues.filter(function(i){return i.type==='fixed';}).length;
-  var nErr   = issues.filter(function(i){return i.type==='error';}).length;
+  var nErr   = issues.filter(function(i){return i.type==='error'&&!i.requiresDev;}).length;
   var nWarn  = issues.filter(function(i){return i.type==='warning'&&!i.requiresDev;}).length;
   var nDev   = issues.filter(function(i){return i.requiresDev&&i.type!=='fixed';}).length;
   var now    = new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
   var scoreColor = score>=80?'#065f46':score>=60?'#92400e':'#991b1b';
   var scoreBg    = score>=80?'#d1fae5':score>=60?'#fef3c7':'#fee2e2';
   var autoFixImpact = score - scoreWithout;
+  // Fallback: if formula gives 0 but fixed issues exist, estimate from count
+  if (autoFixImpact <= 0 && nFixed > 0) {
+    var _fixA  = issues.filter(function(i){return i.type==='fixed'&&i.level==='A';}).length;
+    var _fixAA = issues.filter(function(i){return i.type==='fixed'&&(i.level==='AA'||!i.level);}).length;
+    autoFixImpact = _fixA * 14 + _fixAA * 7;
+    scoreWithout  = Math.max(0, score - autoFixImpact);
+  }
 
   // Multi-page scan metadata
   var pagesScanned  = _adminScanMeta.pagesScanned || 1;
@@ -3585,7 +3604,7 @@ function downloadProspectReport() {
   var scoreWithout = parseInt(scoreEl ? scoreEl.getAttribute('data-raw') : '0')||score;
   var fixedIssues  = issues.filter(function(i){return i.type==='fixed';});
   var nFixed = fixedIssues.length;
-  var nErr   = issues.filter(function(i){return i.type==='error';}).length;
+  var nErr   = issues.filter(function(i){return i.type==='error'&&!i.requiresDev;}).length;
   var nWarn  = issues.filter(function(i){return i.type==='warning'&&!i.requiresDev;}).length;
   var nDev   = issues.filter(function(i){return i.requiresDev&&i.type!=='fixed';}).length;
   var now    = new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
@@ -3595,6 +3614,13 @@ function downloadProspectReport() {
   }, 0);
   if (totalElementsFixed < nFixed) totalElementsFixed = nFixed;
   var autoFixImpact = score - scoreWithout;
+  // Fallback: if formula gives 0 but fixed issues exist, estimate from count
+  if (autoFixImpact <= 0 && nFixed > 0) {
+    var _fixA  = issues.filter(function(i){return i.type==='fixed'&&i.level==='A';}).length;
+    var _fixAA = issues.filter(function(i){return i.type==='fixed'&&(i.level==='AA'||!i.level);}).length;
+    autoFixImpact = _fixA * 14 + _fixAA * 7;
+    scoreWithout  = Math.max(0, score - autoFixImpact);
+  }
 
   // Multi-page scan metadata
   var pagesScanned = _adminScanMeta.pagesScanned || 1;
