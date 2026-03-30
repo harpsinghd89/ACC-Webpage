@@ -3453,7 +3453,11 @@ async function downloadEvidenceBinder(year) {
 async function downloadInvoice(yearMonth) {
   if (!window._clientData) return;
   var code = _clientData.client_code;
-  await downloadSigned('invoices', code + '/' + yearMonth + '-invoice.pdf', 'ACC_Invoice_' + yearMonth + '_' + code + '.pdf');
+  try {
+    await openHtmlReport('invoices', code + '/' + yearMonth + '-invoice.pdf');
+  } catch(e) {
+    alert('Could not open invoice: ' + (e.message || e) + '\n\nPath: ' + code + '/' + yearMonth + '-invoice.pdf');
+  }
 }
 
 // ── Edge Function Callers ─────────────────────────────────
@@ -3748,7 +3752,7 @@ async function generateAndDownloadInvoice(yearMonth) {
     var code = _clientData.client_code;
     var ym = yearMonth || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
     var filePath = (result && result.file) ? result.file : (code + '/' + ym + '-invoice.pdf');
-    await downloadSigned('invoices', filePath, 'ACC_Invoice_' + ym + '_' + code + '.pdf');
+    await openHtmlReport('invoices', filePath);
   } catch(e) {
     console.error('generateAndDownloadInvoice:', e);
     alert('Could not generate invoice: ' + e.message);
@@ -3868,14 +3872,14 @@ async function populateScanData(clientCode) {
   var devFixes = scan ? (scan.requires_dev  ?? 0) : 0;
 
   // Fix 3: fallback — count type='fixed' rows in scan_issues if scans.fixes_applied=0
-  if (fixes === 0 && c && c.client_code) {
+  if (fixes === 0 && clientCode) {
     try {
       var _now2 = new Date();
       var _mStart = new Date(_now2.getFullYear(), _now2.getMonth(), 1).toISOString();
       var _mEnd   = new Date(_now2.getFullYear(), _now2.getMonth()+1, 1).toISOString();
       var _fixR = await _sb_client.from('scan_issues')
         .select('id')
-        .eq('client_code', c.client_code)
+        .eq('client_code', clientCode)
         .eq('type', 'fixed')
         .gte('scanned_at', _mStart)
         .lt('scanned_at', _mEnd);

@@ -306,9 +306,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <button class="nav-item" id="nav-admin-invoices" onclick="showPanel('admin-invoices')">
         <span class="nav-icon">&#128196;</span> Custom Invoices
       </button>
-      <button class="nav-item" id="nav-admin-widgets" onclick="showPanel('admin-widgets')">
-        <span class="nav-icon">&#9881;</span> Widget Deploy
-      </button>
+
       <button class="nav-item" id="nav-admin-scan" onclick="showPanel('admin-scan')">
         <span class="nav-icon">&#128269;</span> URL Scanner
       </button>
@@ -515,20 +513,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     </div>
 
     <!-- ══ WIDGET DEPLOY ══ -->
-    <div class="panel" id="panel-admin-widgets">
-      <div class="page-header">
-        <h1>&#9881; Widget Deployment</h1>
-        <p>Monitor widget status across all client sites.</p>
-      </div>
-      <div class="card">
-        <h2>&#128202; Deployment Status</h2>
-        <div id="widget-deploy-table-wrap"><div style="color:#8a9bbf;font-size:.85rem;padding:20px 0">Loading…</div></div>
-        <div style="margin-top:16px">
-          <p style="font-size:.8rem;color:#8a9bbf;margin-bottom:8px">CDN URL:</p>
-          <code style="font-family:ui-monospace,'SF Mono','Courier New',monospace;font-size:.78rem;color:#38d9a9;background:#060d1a;padding:8px 12px;border-radius:8px;display:block;word-break:break-all">https://cdn.jsdelivr.net/gh/ACC-Widget.js</code>
-        </div>
-      </div>
-    </div>
 
     <!-- ══ URL SCANNER ══ -->
     <div class="panel" id="panel-admin-scan">
@@ -796,7 +780,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             </label>
             <div>
               <span id="ce-widget-active-label" style="font-size:.82rem;color:#8a9bbf">Widget enabled</span>
-              <div style="font-size:.72rem;color:#5a6e8c;margin-top:2px">Disabling writes <code>widget_active=false</code> to the DB. The widget stops loading on the client's next page visit (requires widget v2+ to honour this field).</div>
+              <div style="font-size:.72rem;color:#5a6e8c;margin-top:2px">Cancelled clients stay live until renewal date. Uncheck to kill immediately.</div>
             </div>
           </div>
         </div>
@@ -995,7 +979,6 @@ function showPanel(id) {
     'admin-billing':'Billing',
     'admin-discounts':'Discount Codes',
     'admin-invoices':'Custom Invoices',
-    'admin-widgets':'Widget Deployment',
     'admin-access':'Access Control'
   };
   var t = document.getElementById('topbar-title');
@@ -3167,8 +3150,9 @@ function runAdminScan() {
       perPage:      perPageResults.map(function(r){
         return {
           url:    r.url,
-          errors: r.issues.filter(function(i){return i.type==='error';}).length,
-          warns:  r.issues.filter(function(i){return i.type==='warning';}).length,
+          errors: r.issues.filter(function(i){return i.type==='error'&&!i.requiresDev;}).length,
+          dev:    r.issues.filter(function(i){return i.requiresDev&&i.type!=='fixed';}).length,
+          warns:  r.issues.filter(function(i){return i.type==='warning'&&!i.requiresDev;}).length,
           fixed:  r.issues.filter(function(i){return i.type==='fixed';}).length
         };
       })
@@ -3253,6 +3237,7 @@ function renderAdminScanResults(issues, label) {
   document.getElementById('sr-elements-fixed').textContent= totalElFixed;
   document.getElementById('sr-dev').textContent    = nDev;
   document.getElementById('sr-warn').textContent   = nWarn;
+  // nErr = error && !requiresDev (Critical: client fixes via CMS)
   document.getElementById('sr-errors').textContent = nErr;
 
   // POUR breakdown
@@ -3550,17 +3535,19 @@ function downloadAdminScanReport() {
         +'<table style="width:100%;border-collapse:collapse;font-size:.72rem">'
         +'<thead><tr>'
         +'<th style="text-align:left;padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8">Page</th>'
-        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">Critical</th>'
-        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">Warnings</th>'
-        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">Auto-Fixed</th>'
+        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">✗ Critical</th>'
+        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">⚙ Needs Dev</th>'
+        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">△ Warnings</th>'
+        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">✓ Auto-Fixed</th>'
         +'</tr></thead><tbody>'
         +perPage.map(function(p){
           var path='';try{path=new URL(p.url).pathname||'/';}catch(e){path=p.url;}
           return '<tr>'
             +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;color:#0f172a;word-break:break-all">'+escHtml(path)+'</td>'
-            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.errors>0?'#ef4444':'#10b981')+';font-weight:700">'+p.errors+'</td>'
+            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.errors>0?'#991b1b':'#10b981')+';font-weight:700">'+p.errors+'</td>'
+            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.dev>0?'#92400e':'#10b981')+';font-weight:700">'+(p.dev||0)+'</td>'
             +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.warns>0?'#f59e0b':'#10b981')+';font-weight:700">'+p.warns+'</td>'
-            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:#10b981;font-weight:700">'+p.fixed+'</td>'
+            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:#065f46;font-weight:700">'+p.fixed+'</td>'
             +'</tr>';
         }).join('')
         +'</tbody></table></div>'
