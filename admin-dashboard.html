@@ -517,7 +517,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <!-- ══ URL SCANNER ══ -->
     <div class="panel" id="panel-admin-scan">
       <div class="page-header">
-        <h1>&#128269; URL Accessibility Scanner</h1>
+        <h1>&#128269; URL Accessibility Scanner <span style="font-size:.7rem;font-weight:600;color:#8a9bbf;background:rgba(79,142,247,.08);padding:3px 10px;border-radius:6px;margin-left:8px">WCAG 2.1 AA &amp; 2.2 AA</span></h1>
         <p>Scan any public URL for WCAG 2.1 AA issues. Generate a detailed shareable report — use this to capture prospect interest or audit existing clients.</p>
       </div>
 
@@ -591,17 +591,17 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
               <div style="font-size:1.6rem;font-weight:800;color:#38d9a9;font-family:ui-monospace,'SF Mono',monospace" id="sr-elements-fixed">—</div>
               <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Elements Fixed</div>
             </div>
-            <div style="text-align:center;padding:12px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px">
-              <div style="font-size:1.6rem;font-weight:800;color:#4f8ef7;font-family:ui-monospace,'SF Mono',monospace" id="sr-dev">—</div>
-              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Needs Dev</div>
+            <div style="text-align:center;padding:12px;background:rgba(194,65,12,.06);border:1px solid rgba(194,65,12,.2);border-radius:10px">
+              <div style="font-size:1.6rem;font-weight:800;color:#c2410c;font-family:ui-monospace,'SF Mono',monospace" id="sr-gaps">—</div>
+              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Compliance Gaps</div>
+            </div>
+            <div style="text-align:center;padding:12px;background:rgba(194,65,12,.04);border:1px solid rgba(194,65,12,.15);border-radius:10px">
+              <div style="font-size:1.6rem;font-weight:800;color:#f05f5f;font-family:ui-monospace,'SF Mono',monospace" id="sr-gaps-high">—</div>
+              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">High Severity</div>
             </div>
             <div style="text-align:center;padding:12px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);border-radius:10px">
               <div style="font-size:1.6rem;font-weight:800;color:#f5a623;font-family:ui-monospace,'SF Mono',monospace" id="sr-warn">—</div>
               <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Warnings</div>
-            </div>
-            <div style="text-align:center;padding:12px;background:rgba(240,95,95,.06);border:1px solid rgba(240,95,95,.15);border-radius:10px">
-              <div style="font-size:1.6rem;font-weight:800;color:#f05f5f;font-family:ui-monospace,'SF Mono',monospace" id="sr-errors">—</div>
-              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Critical</div>
             </div>
           </div>
 
@@ -616,7 +616,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             <div style="display:flex;gap:8px">
               <select class="finput" id="sr-filter-type" onchange="filterScanIssues()" style="font-size:.75rem;padding:5px 8px">
                 <option value="all">All types</option>
-                <option value="error">Errors only</option>
+                <option value="error">Compliance Gaps only</option>
                 <option value="warning">Warnings only</option>
                 <option value="fixed">Auto-fixed only</option>
               </select>
@@ -3150,10 +3150,10 @@ function runAdminScan() {
       perPage:      perPageResults.map(function(r){
         return {
           url:    r.url,
-          errors: r.issues.filter(function(i){return i.type==='error'&&!i.requiresDev;}).length,
-          dev:    r.issues.filter(function(i){return i.requiresDev&&i.type!=='fixed';}).length,
-          warns:  r.issues.filter(function(i){return i.type==='warning'&&!i.requiresDev;}).length,
-          fixed:  r.issues.filter(function(i){return i.type==='fixed';}).length
+          gapsHigh: r.issues.filter(function(i){return i.type==='error'&&i.level==='A';}).length,
+          gapsMed:  r.issues.filter(function(i){return i.type==='error'&&(i.level==='AA'||!i.level);}).length,
+          warns:    r.issues.filter(function(i){return i.type==='warning';}).length,
+          fixed:    r.issues.filter(function(i){return i.type==='fixed';}).length
         };
       })
     };
@@ -3208,17 +3208,19 @@ function renderAdminScanResults(issues, label) {
   document.getElementById('scan-url-label').textContent = label;
 
   var nFixed  = issues.filter(function(i){ return i.type==='fixed'; }).length;
-  var nErr    = issues.filter(function(i){ return i.type==='error'&&!i.requiresDev; }).length;
-  var nWarn   = issues.filter(function(i){ return i.type==='warning'&&!i.requiresDev; }).length;
-  var nDev    = issues.filter(function(i){ return i.requiresDev&&i.type!=='fixed'; }).length;
-  var errA    = issues.filter(function(i){ return i.type==='error'&&i.level==='A'; }).length;
-  var errAA   = issues.filter(function(i){ return i.type==='error'&&i.level==='AA'; }).length;
-  // RAW = site today without widget (fixed issues counted as errors for baseline)
+  var nWarn   = issues.filter(function(i){ return i.type==='warning'; }).length;
+  // Compliance Gaps = all non-fixed, non-warning issues, split by severity
+  var gaps    = issues.filter(function(i){ return i.type==='error'; });
+  var nGapsHigh = gaps.filter(function(i){ return i.level==='A'; }).length;
+  var nGapsMed  = gaps.filter(function(i){ return i.level==='AA'||!i.level; }).length;
+  var nGapsLow  = 0; // reserved for future low-severity compliance items
+  var nGaps     = nGapsHigh + nGapsMed + nGapsLow;
+  // RAW = score without widget (fixed issues counted back as gaps)
   var fixedA  = issues.filter(function(i){ return i.type==='fixed'&&i.level==='A'; }).length;
-  var fixedAA = issues.filter(function(i){ return i.type==='fixed'&&i.level==='AA'; }).length;
-  var rawScore = Math.max(0,Math.min(100,Math.round(100-(errA+fixedA)*14-(errAA+fixedAA)*7-nWarn*3)));
-  // WIDGET score = after widget resolves all auto-fixed categories (fixed issues no longer penalise)
-  var score    = Math.max(0,Math.min(100,Math.round(100-errA*14-errAA*7-nWarn*3)));
+  var fixedAA = issues.filter(function(i){ return i.type==='fixed'&&(i.level==='AA'||!i.level); }).length;
+  var rawScore = Math.max(0,Math.min(100,Math.round(100-(nGapsHigh+fixedA)*14-(nGapsMed+fixedAA)*7-nGapsLow*4-nWarn*3)));
+  // WIDGET score = gaps only (auto-fixes removed from deduction)
+  var score    = Math.max(0,Math.min(100,Math.round(100-nGapsHigh*14-nGapsMed*7-nGapsLow*4-nWarn*3)));
   var sColor  = score>=80?'#38d9a9':score>=60?'#f5a623':'#f05f5f';
 
   var totalElFixed = issues.filter(function(i){return i.type==='fixed';})
@@ -3235,10 +3237,9 @@ function renderAdminScanResults(issues, label) {
   document.getElementById('sr-score').setAttribute('data-raw', rawScore);
   document.getElementById('sr-fixed').textContent         = nFixed;
   document.getElementById('sr-elements-fixed').textContent= totalElFixed;
-  document.getElementById('sr-dev').textContent    = nDev;
-  document.getElementById('sr-warn').textContent   = nWarn;
-  // nErr = error && !requiresDev (Critical: client fixes via CMS)
-  document.getElementById('sr-errors').textContent = nErr;
+  document.getElementById('sr-gaps').textContent      = nGaps;
+  document.getElementById('sr-gaps-high').textContent = nGapsHigh;
+  document.getElementById('sr-warn').textContent      = nWarn;
 
   // POUR breakdown
   var pour = {
@@ -3275,8 +3276,10 @@ async function saveScanToSupabase() {
     var nFixed   = _adminScanIssues.filter(function(i){return i.type==='fixed';}).length;
     var totalEl  = _adminScanIssues.filter(function(i){return i.type==='fixed';})
       .reduce(function(s,i){return s+(i.elements&&i.elements.length?i.elements.length:1);},0);
-    var nDev     = _adminScanIssues.filter(function(i){return i.requiresDev&&i.type!=='fixed';}).length;
-    var nErr     = _adminScanIssues.filter(function(i){return i.type==='error';}).length;
+    var nGapsH   = _adminScanIssues.filter(function(i){return i.type==='error'&&i.level==='A';}).length;
+    var nGapsM   = _adminScanIssues.filter(function(i){return i.type==='error'&&(i.level==='AA'||!i.level);}).length;
+    var nDev     = nGapsH; // High severity gaps stored in requires_dev field
+    var nErr     = nGapsH + nGapsM; // total compliance gaps stored in critical field
     var nWarn    = _adminScanIssues.filter(function(i){return i.type==='warning';}).length;
 
     // Match URL hostname to a client domain — only save if it matches a known client
@@ -3332,9 +3335,10 @@ async function saveScanToSupabase() {
 }
 
 function calcPOUR(issues, criteria, prefix) {
-  var e=issues.filter(function(i){return i.type==='error'&&criteria.some(function(c){return i.criterion===c;});}).length;
-  var w=issues.filter(function(i){return i.type==='warning'&&i.criterion&&i.criterion.startsWith(prefix+'.');}).length;
-  return Math.max(0,Math.min(100,Math.round(100-e*14-w*3)));
+  var eH=issues.filter(function(i){return i.type==='error'&&i.level==='A'&&criteria.some(function(c){return i.criterion===c;});}).length;
+  var eM=issues.filter(function(i){return i.type==='error'&&(i.level==='AA'||!i.level)&&criteria.some(function(c){return i.criterion===c;});}).length;
+  var w =issues.filter(function(i){return i.type==='warning'&&i.criterion&&i.criterion.startsWith(prefix+'.');}).length;
+  return Math.max(0,Math.min(100,Math.round(100-eH*14-eM*7-w*3)));
 }
 
 function renderScanIssueList(issues) {
@@ -3350,9 +3354,11 @@ function renderScanIssueList(issues) {
   if(!filtered.length){el.innerHTML='<p style="color:#8a9bbf;font-size:.82rem;padding:12px 0">No issues match the current filters.</p>';return;}
   el.innerHTML = filtered.map(function(i,idx){
     var leftColor=i.type==='fixed'?'#38d9a9':i.type==='warning'?'#f5a623':'#f05f5f';
-    var badgeTxt =i.type==='fixed'?'Auto-Fixed':i.requiresDev?'Needs Dev':i.type==='warning'?'Warning':'Critical';
-    var badgeBg  =i.type==='fixed'?'rgba(56,217,169,.15)':i.requiresDev?'rgba(245,166,35,.15)':i.type==='warning'?'rgba(79,142,247,.12)':'rgba(240,95,95,.15)';
-    var badgeFg  =i.type==='fixed'?'#38d9a9':i.requiresDev?'#f5a623':i.type==='warning'?'#4f8ef7':'#f05f5f';
+    var _sev     = i.type==='error'?(i.level==='A'?'High':'Medium'):(i.type==='warning'?'Warning':'');
+    var _fix     = i.type==='error'?(i.requiresDev?'Dev Code':'CMS/Settings'):''
+    var badgeTxt = i.type==='fixed'?'Auto-Fixed':i.type==='warning'?'Warning':(_sev+(_fix?' · '+_fix:''));
+    var badgeBg  = i.type==='fixed'?'rgba(56,217,169,.15)':i.type==='warning'?'rgba(79,142,247,.12)':i.level==='A'?'rgba(240,95,95,.15)':'rgba(245,166,35,.15)';
+    var badgeFg  = i.type==='fixed'?'#38d9a9':i.type==='warning'?'#4f8ef7':i.level==='A'?'#f05f5f':'#f5a623';
 
     // Element-specific details
     var detailsHtml = '';
@@ -3391,8 +3397,10 @@ function esc(s){ var d=document.createElement('div');d.textContent=String(s||'')
 // ─────────────────────────────────────────────────────────────
 function copyProspectEmail() {
   if(!_adminScanIssues.length){ showToastAdmin('Run a scan first','error'); return; }
-  var nErr  = _adminScanIssues.filter(function(i){return i.type==='error'&&!i.requiresDev;}).length;
-  var nDev  = _adminScanIssues.filter(function(i){return i.requiresDev&&i.type!=='fixed';}).length;
+  var nGapsH = _adminScanIssues.filter(function(i){return i.type==='error'&&i.level==='A';}).length;
+  var nGapsM = _adminScanIssues.filter(function(i){return i.type==='error'&&(i.level==='AA'||!i.level);}).length;
+  var nErr   = nGapsH + nGapsM;  // total compliance gaps
+  var nDev   = nGapsH;           // high severity
   var fixedIssues = _adminScanIssues.filter(function(i){return i.type==='fixed';});
   var nFix  = fixedIssues.length;
   var totalElFixed = fixedIssues.reduce(function(s,i){return s+(i.elements&&i.elements.length?i.elements.length:1);},0);
@@ -3410,7 +3418,7 @@ function copyProspectEmail() {
     '',
     'Hi,',
     '',
-    'We ran a free WCAG 2.1 AA accessibility audit on ' + url + ' and found ' + (nErr+nDev) + ' issues that create AODA compliance risk.',
+    'We ran a free WCAG 2.1 AA & 2.2 AA accessibility audit on ' + url + ' and found ' + nErr + ' compliance gap' + (nErr!==1?'s':'') + ' (' + nGapsH + ' High severity, ' + nGapsM + ' Medium) that create AODA compliance risk.',
     '',
     'Current compliance score: ' + rawScore + '/100',
     'Score with ACC Widget installed: ' + score + '/100  (+' + delta + ' pts, day one)',
@@ -3419,7 +3427,7 @@ function copyProspectEmail() {
   ].concat(fixNames).concat([
     (nFix > 3 ? '  …and ' + (nFix-3) + ' more' : ''),
     '',
-    'The remaining ' + (nErr+nDev) + ' issues are addressed through ACC managed compliance plan.',
+    'The remaining ' + nErr + ' compliance gap' + (nErr!==1?'s':'') + ' are addressed through the ACC managed compliance plan.',
     '',
     'Under AODA, all Ontario organizations must meet WCAG 2.1 AA. Non-compliance risks fines up to $100,000/day.',
     '',
@@ -3448,10 +3456,12 @@ function downloadAdminScanReport() {
   var scoreEl     = document.getElementById('sr-score');
   var score       = parseInt(scoreEl ? scoreEl.textContent : '0')||0;
   var scoreWithout= parseInt(scoreEl ? scoreEl.getAttribute('data-raw') : '0')||score;
-  var nFixed = issues.filter(function(i){return i.type==='fixed';}).length;
-  var nErr   = issues.filter(function(i){return i.type==='error'&&!i.requiresDev;}).length;
-  var nWarn  = issues.filter(function(i){return i.type==='warning'&&!i.requiresDev;}).length;
-  var nDev   = issues.filter(function(i){return i.requiresDev&&i.type!=='fixed';}).length;
+  var nFixed    = issues.filter(function(i){return i.type==='fixed';}).length;
+  var nWarn     = issues.filter(function(i){return i.type==='warning';}).length;
+  var gapsAll   = issues.filter(function(i){return i.type==='error';});
+  var nGapsHigh = gapsAll.filter(function(i){return i.level==='A';}).length;
+  var nGapsMed  = gapsAll.filter(function(i){return i.level==='AA'||!i.level;}).length;
+  var nGaps     = nGapsHigh + nGapsMed;
   var now    = new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
   var scoreColor = score>=80?'#065f46':score>=60?'#92400e':'#991b1b';
   var scoreBg    = score>=80?'#d1fae5':score>=60?'#fef3c7':'#fee2e2';
@@ -3473,20 +3483,22 @@ function downloadAdminScanReport() {
     ? pagesScanned + ' pages scanned' + (sitemapUsed ? ' (sitemap)' : ' (link crawl)')
     : '1 page scanned (homepage only)';
 
-  // Group issues matching monthly report order:
-  // Auto-Fixed first → Critical → Needs Dev → Warnings
-  var byType = { fixed:[], error:[], dev:[], warning:[] };
+  // Group: Auto-Fixed → Compliance Gaps (all errors by severity) → Warnings
+  var byType = { fixed:[], gaps:[], warning:[] };
   issues.forEach(function(i){
-    if(i.type==='fixed')                           byType.fixed.push(i);
-    else if(i.type==='error'&&!i.requiresDev)      byType.error.push(i);
-    else if(i.requiresDev)                         byType.dev.push(i);
-    else if(i.type==='warning')                    byType.warning.push(i);
+    if(i.type==='fixed')   byType.fixed.push(i);
+    else if(i.type==='error') byType.gaps.push(i);
+    else if(i.type==='warning') byType.warning.push(i);
   });
+  // Sort gaps: High first, then Medium, then Low
+  byType.gaps.sort(function(a,b){return (a.level==='A'?0:1)-(b.level==='A'?0:1);});
 
   function issueRows(list) {
     return list.map(function(i){
-      var badge = i.type==='fixed'?'fixed':i.requiresDev?'dev':i.type==='warning'?'warning':'critical';
-      var badgeLabel = i.type==='fixed'?'Auto-Fixed':i.requiresDev?'Needs Dev':i.type==='warning'?'Warning':'Critical';
+      var _sev   = i.type==='error'?(i.level==='A'?'High':'Medium'):'Low';
+      var _fix   = i.requiresDev?'Dev Code':'CMS / Settings';
+      var badge  = i.type==='fixed'?'fixed':i.type==='warning'?'warning':(i.level==='A'?'gap-high':'gap-med');
+      var badgeLabel = i.type==='fixed'?'Auto-Fixed':i.type==='warning'?'Warning':(_sev+' · '+_fix);
       var elDetails = '';
       if(i.elements && i.elements.length) {
         elDetails = '<div style="margin-top:6px;background:#f8f9fc;border-radius:4px;padding:6px 8px;font-family:monospace;font-size:.72rem">'
@@ -3535,8 +3547,8 @@ function downloadAdminScanReport() {
         +'<table style="width:100%;border-collapse:collapse;font-size:.72rem">'
         +'<thead><tr>'
         +'<th style="text-align:left;padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8">Page</th>'
-        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">✗ Critical</th>'
-        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">⚙ Needs Dev</th>'
+        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">⚠ Gaps (H)</th>'
+        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">⚠ Gaps (M)</th>'
         +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">△ Warnings</th>'
         +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">✓ Auto-Fixed</th>'
         +'</tr></thead><tbody>'
@@ -3544,26 +3556,25 @@ function downloadAdminScanReport() {
           var path='';try{path=new URL(p.url).pathname||'/';}catch(e){path=p.url;}
           return '<tr>'
             +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;color:#0f172a;word-break:break-all">'+escHtml(path)+'</td>'
-            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.errors>0?'#991b1b':'#10b981')+';font-weight:700">'+p.errors+'</td>'
-            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.dev>0?'#92400e':'#10b981')+';font-weight:700">'+(p.dev||0)+'</td>'
+            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.gapsHigh>0?'#991b1b':'#10b981')+';font-weight:700">'+(p.gapsHigh||0)+'</td>'
+            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.gapsMed>0?'#92400e':'#10b981')+';font-weight:700">'+(p.gapsMed||0)+'</td>'
             +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.warns>0?'#f59e0b':'#10b981')+';font-weight:700">'+p.warns+'</td>'
             +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:#065f46;font-weight:700">'+p.fixed+'</td>'
             +'</tr>';
         }).join('')
         +'</tbody></table></div>'
-      : '')    +'<div class="pills">'    +'<span class="pill-item" style="background:#d1fae5;color:#065f46">✓ '+nFixed+' Auto-Fixed by Widget</span>'    +'<span class="pill-item" style="background:#fee2e2;color:#991b1b">✕ '+nErr+' Critical</span>'    +'<span class="pill-item" style="background:#fef3c7;color:#92400e">⚙ '+nDev+' Needs Developer Code</span>'    +'<span class="pill-item" style="background:#dbeafe;color:#1e40af">⚠ '+nWarn+' Warnings</span>'    +'</div>'    +'<div style="padding:14px 32px;background:#f8f9fc;border-bottom:1px solid #e2e8f0">'+'<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#374151;margin-bottom:10px">&#128204; What do these categories mean?</div>'+'<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">'+'<div style="padding:10px;background:#d1fae5;border-radius:8px;border-left:3px solid #065f46"><div style="font-size:.78rem;font-weight:700;color:#065f46">&#10003; Auto-Fix</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Fixed automatically by the ACC widget on every page load. Zero developer work required. +7 pts per fix type.</div></div>'+'<div style="padding:10px;background:#fee2e2;border-radius:8px;border-left:3px solid #991b1b"><div style="font-size:.78rem;font-weight:700;color:#991b1b">&#10007; Critical</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Fixed by the client via their CMS or site settings &mdash; no developer or code needed (e.g. alt text in WordPress, page title, theme colour). &minus;14 pts each.</div></div>'+'<div style="padding:10px;background:#fef3c7;border-radius:8px;border-left:3px solid #92400e"><div style="font-size:.78rem;font-weight:700;color:#92400e">&#9881; Needs Dev</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Requires a developer to change code (keyboard traps, broken landmarks, duplicate IDs). Cannot be fixed via CMS or widget. &minus;7 pts each.</div></div>'+'<div style="padding:10px;background:#dbeafe;border-radius:8px;border-left:3px solid #1e40af"><div style="font-size:.78rem;font-weight:700;color:#1e40af">&#9651; Warning</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Advisory &mdash; not a WCAG failure but best practice to fix (vague link text, multiple H1s). Fix via CMS or dev depending on type. &minus;3 pts each.</div></div>'+'</div></div>'
-    +'<div class="pour-grid">'    +['Perceivable','Operable','Understandable','Robust'].map(function(p,idx){        var criteria=[['1.1.1','1.3.1','1.4.3','1.4.5'],['2.1.1','2.4.1','2.4.2','2.4.4'],['3.1.1','3.3.1','3.3.2'],['4.1.1','4.1.2']][idx];        var defs=['Can perceive: alt text, contrast, captions, text resize','Can operate: keyboard, focus, no time traps, skip links','Can understand: readable text, predictable pages, form help','Works with: screen readers, braille displays, AT tools'][idx];        var e=issues.filter(function(i){return i.type==='error'&&criteria.indexOf(i.criterion)>=0;}).length;        var s=Math.max(0,Math.min(100,Math.round(100-e*14)));        var c=s>=80?'#065f46':s>=60?'#92400e':'#991b1b';        return '<div class="pour-item"><div class="pour-score" style="color:'+c+'">'+s+'</div><div class="pour-label">'+p+'</div><div class="pour-def">'+defs+'</div></div>';      }).join('')    +'</div>'    +'<div class="section-hdr s-fixed"><span class="section-hdr-label" style="color:#065f46">&#10003; Auto-Fixed by ACC Widget</span><span class="section-hdr-count" style="background:#d1fae5;color:#065f46">'+byType.fixed.length+' resolved at runtime</span></div>'
+      : '')    +'<div class="pills">'    +'<span class="pill-item" style="background:#d1fae5;color:#065f46">✓ '+nFixed+' Auto-Fixed by Widget</span>'    +'<span class="pill-item" style="background:#fee2e2;color:#991b1b">⚠ '+nGapsHigh+' High · '+nGapsMed+' Medium Compliance Gaps</span>'    +'<span class="pill-item" style="background:#dbeafe;color:#1e40af">△ '+nWarn+' Warnings</span>'    +'<span class="pill-item" style="background:#f8f9fc;color:#374151;font-size:.72rem">WCAG 2.1 AA &amp; 2.2 AA</span>'    +'</div>'    +'<div style="padding:14px 32px;background:#f8f9fc;border-bottom:1px solid #e2e8f0">'+'<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#374151;margin-bottom:10px">&#128204; Issue categories &amp; severity</div>'+'<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">'+'<div style="padding:10px;background:#d1fae5;border-radius:8px;border-left:3px solid #065f46"><div style="font-size:.78rem;font-weight:700;color:#065f46">&#10003; Auto-Fix</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Fixed automatically by the ACC widget on every page load. Zero developer or CMS work needed. +7 pts per fix type.</div></div>'+'<div style="padding:10px;background:#fef2e8;border-radius:8px;border-left:3px solid #c2410c"><div style="font-size:.78rem;font-weight:700;color:#c2410c">&#9888; Compliance Gaps</div><div style="font-size:.72rem;color:#374151;margin-top:2px">WCAG 2.1/2.2 AA failures that require action. Each item shows <strong>severity</strong> (High/Medium/Low) and <strong>fix type</strong> (CMS/Settings or Dev Code).</div></div>'+'<div style="padding:10px;background:#fef3c7;border-radius:8px;border-left:3px solid #92400e"><div style="font-size:.78rem;font-weight:700;color:#92400e">Severity: High / Medium / Low</div><div style="font-size:.72rem;color:#374151;margin-top:2px"><strong>High</strong> (WCAG Level A) &minus;14 pts &nbsp;|&nbsp; <strong>Medium</strong> (Level AA) &minus;7 pts &nbsp;|&nbsp; <strong>Low</strong> &minus;4 pts</div></div>'+'<div style="padding:10px;background:#dbeafe;border-radius:8px;border-left:3px solid #1e40af"><div style="font-size:.78rem;font-weight:700;color:#1e40af">&#9651; Warnings</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Advisory &mdash; best practice to fix but not a WCAG failure. Fix via CMS or dev depending on type. &minus;3 pts each.</div></div>'+'</div></div>'
+    +'<div class="pour-grid">'    +['Perceivable','Operable','Understandable','Robust'].map(function(p,idx){        var criteria=[['1.1.1','1.3.1','1.4.3','1.4.5'],['2.1.1','2.4.1','2.4.2','2.4.4'],['3.1.1','3.3.1','3.3.2'],['4.1.1','4.1.2']][idx];        var defs=['Can perceive: alt text, contrast, captions, text resize','Can operate: keyboard, focus, no time traps, skip links','Can understand: readable text, predictable pages, form help','Works with: screen readers, braille displays, AT tools'][idx];        var eH=issues.filter(function(i){return i.type==='error'&&i.level==='A'&&criteria.indexOf(i.criterion)>=0;}).length; var eM=issues.filter(function(i){return i.type==='error'&&(i.level==='AA'||!i.level)&&criteria.indexOf(i.criterion)>=0;}).length; var s=Math.max(0,Math.min(100,Math.round(100-eH*14-eM*7)));        var c=s>=80?'#065f46':s>=60?'#92400e':'#991b1b';        return '<div class="pour-item"><div class="pour-score" style="color:'+c+'">'+s+'</div><div class="pour-label">'+p+'</div><div class="pour-def">'+defs+'</div></div>';      }).join('')    +'</div>'    +'<div class="section-hdr s-fixed"><span class="section-hdr-label" style="color:#065f46">&#10003; Auto-Fixed by ACC Widget</span><span class="section-hdr-count" style="background:#d1fae5;color:#065f46">'+byType.fixed.length+' resolved at runtime</span></div>'
     +(byType.fixed.length
       ?'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:90px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup>'+'<thead><tr><th>Issue</th><th>Fix Applied</th><th>Status</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'+issueRows(byType.fixed)+'</tbody></table>'
       :'<div style="padding:12px 32px;font-size:.82rem;color:#9ca3af;border-bottom:1px solid #e2e8f0;">&#10003; None detected &mdash; this category is clear.</div>')
-    +'<div class="section-hdr s-critical"><span class="section-hdr-label" style="color:#991b1b">&#10007; Critical Issues</span><span class="section-hdr-count" style="background:#fee2e2;color:#991b1b">'+byType.error.length+' WCAG AA failures</span></div>'
-    +(byType.error.length
-      ?'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:90px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup>'+'<thead><tr><th>Issue</th><th>Details &amp; Affected Elements</th><th>Status</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'+issueRows(byType.error)+'</tbody></table>'
-      :'<div style="padding:12px 32px;font-size:.82rem;color:#9ca3af;border-bottom:1px solid #e2e8f0;">&#10003; None detected &mdash; this category is clear.</div>')
-    +'<div class="section-hdr s-dev"><span class="section-hdr-label" style="color:#92400e">&#9881; Needs Developer Code</span><span class="section-hdr-count" style="background:#fef3c7;color:#92400e">'+byType.dev.length+' require custom code</span></div>'
-    +(byType.dev.length
-      ?'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:90px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup>'+'<thead><tr><th>Issue</th><th>Details &amp; Affected Elements</th><th>Status</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'+issueRows(byType.dev)+'</tbody></table>'
-      :'<div style="padding:12px 32px;font-size:.82rem;color:#9ca3af;border-bottom:1px solid #e2e8f0;">&#10003; None detected &mdash; this category is clear.</div>')
+    +'<div class="section-hdr" style="border-top:2px solid #c2410c"><span class="section-hdr-label" style="color:#c2410c">&#9888; Compliance Gaps</span>'
+    +'<span class="section-hdr-count" style="background:#fef2e8;color:#c2410c">'+byType.gaps.length+' items &mdash; High severity first</span></div>'
+    +(byType.gaps.length
+      ?'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:110px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup>'
+       +'<thead><tr><th>Issue</th><th>Details &amp; Affected Elements</th><th>Severity &amp; Fix</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'
+       +issueRows(byType.gaps)+'</tbody></table>'
+      :'<div style="padding:12px 32px;font-size:.82rem;color:#9ca3af;border-bottom:1px solid #e2e8f0;">&#10003; No compliance gaps found.</div>')
     +'<div class="section-hdr s-warning"><span class="section-hdr-label" style="color:#1e40af">&#9651; Warnings</span><span class="section-hdr-count" style="background:#dbeafe;color:#1e40af">'+byType.warning.length+' advisory</span></div>'
     +(byType.warning.length
       ?'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:90px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup>'+'<thead><tr><th>Issue</th><th>Details &amp; Affected Elements</th><th>Status</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'+issueRows(byType.warning)+'</tbody></table>'

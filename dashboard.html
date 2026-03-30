@@ -403,7 +403,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <span style="font-size:1rem;flex-shrink:0;margin-top:1px">&#x2139;&#xfe0f;</span>
         <div>
           <strong style="color:#c7d4f0">How your score is calculated:</strong>
-          The <strong style="color:#38d9a9">Widget Scan Score</strong> is the average WCAG 2.1 AA score across all unique pages your ACC widget scanned this month — it reflects real-time accessibility health as seen by your visitors.
+          The <strong style="color:#38d9a9">Widget Scan Score</strong> reflects real-time accessibility health across all pages scanned this month. Standard: <strong style="color:#4f8ef7">WCAG 2.1 AA &amp; 2.2 AA</strong>. Score = 100 minus deductions for Compliance Gaps (High &minus;14 pts, Medium &minus;7 pts) and Warnings (&minus;3 pts), plus +7 pts per Auto-Fix type applied by the widget.
           <strong style="color:#38d9a9">Auto-Fix Types</strong> are categories of issues the widget patches automatically on every page load (e.g. missing alt text, skip links, ARIA labels) without any code change on your site.
           For your overall AODA compliance picture — including roadmap milestones, training records, and documentation — see your <strong style="color:#4f8ef7">Annual Evidence Binder</strong>.
         </div>
@@ -416,14 +416,14 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div class="stat-sub" id="stat-score-sub">/ 100</div>
         </div>
         <div class="stat-card green">
-          <div class="stat-label">Auto-Fix Types</div>
+          <div class="stat-label">Auto-Fixes</div>
           <div class="stat-value" id="stat-fixes">—</div>
           <div class="stat-sub" id="stat-fixes-sub">By widget</div>
         </div>
         <div class="stat-card red">
-          <div class="stat-label">Critical Issues</div>
+          <div class="stat-label">Compliance Gaps</div>
           <div class="stat-value" id="stat-critical">—</div>
-          <div class="stat-sub" id="stat-critical-sub">Errors found</div>
+          <div class="stat-sub" id="stat-critical-sub">High &amp; Medium</div>
         </div>
         <div class="stat-card warn">
           <div class="stat-label">Open Warnings</div>
@@ -431,9 +431,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div class="stat-sub" id="stat-warnings-sub">To review</div>
         </div>
         <div class="stat-card blue">
-          <div class="stat-label">Needs Dev Action</div>
+          <div class="stat-label">High Severity</div>
           <div class="stat-value" id="stat-dev">—</div>
-          <div class="stat-sub" id="stat-dev-sub">Manual fixes</div>
+          <div class="stat-sub" id="stat-dev-sub">Level A gaps</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Pages Scanned</div>
@@ -3209,18 +3209,19 @@ async function generateBaselineClientSide(c) {
     return rank(a) - rank(b);
   });
 
-  var nFixed = issueList.filter(function(i){ return i.type==='fixed'; }).length;
-  var nErr   = issueList.filter(function(i){ return i.type==='error'&&!i.requiresDev; }).length;
-  var nDev   = issueList.filter(function(i){ return i.requiresDev&&i.type!=='fixed'; }).length;
-  var nWarn  = issueList.filter(function(i){ return i.type==='warning'&&!i.requiresDev; }).length;
-  // Use real scan score if available, otherwise estimate from issue counts
+  var nFixed    = issueList.filter(function(i){ return i.type==='fixed'; }).length;
+  var nGapsHigh = issueList.filter(function(i){ return i.type==='error'&&i.level==='A'; }).length;
+  var nGapsMed  = issueList.filter(function(i){ return i.type==='error'&&(i.level==='AA'||!i.level); }).length;
+  var nGaps     = nGapsHigh + nGapsMed;
+  var nWarn     = issueList.filter(function(i){ return i.type==='warning'; }).length;
+  var nErr = nGaps; var nDev = nGapsHigh; // aliases for legacy hasNoScore check
   // No data at all → don't show 100/100, show — pending
-  var hasNoScore = !scanSummary && nErr === 0 && nDev === 0 && nWarn === 0 && nFixed === 0;
+  var hasNoScore = !scanSummary && nGaps === 0 && nWarn === 0 && nFixed === 0;
   var score = hasNoScore
     ? null
     : scanSummary && scanSummary.length
       ? Math.round(scanSummary.reduce(function(t,s){ return t+(s.score||0); },0)/scanSummary.length)
-      : Math.max(0, Math.min(100, Math.round(100 - nErr*14 - nDev*7 - nWarn*3)));
+      : Math.max(0, Math.min(100, Math.round(100 - nGapsHigh*14 - nGapsMed*7 - nWarn*3)));
   var today  = new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'});
   var startLabel = c.start_date ? new Date(c.start_date).toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}) : today;
   var scoreColor = score===null?'#6b7280':score>=80?'#065f46':score>=60?'#92400e':'#991b1b';
@@ -3238,19 +3239,27 @@ async function generateBaselineClientSide(c) {
     if (!list.length) {
       return hdr + '<div style="padding:12px 28px;font-size:.82rem;color:#9ca3af;border-bottom:1px solid #e5e7eb;">✓ None detected — this category is clear.</div>';
     }
+    // sort gaps: High first
+    var sorted = list.slice().sort(function(a,b){return (a.level==='A'?0:1)-(b.level==='A'?0:1);});
     return hdr
       + '<table style="width:100%;border-collapse:collapse"><thead><tr>'
       + '<th style="padding:8px 12px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;text-align:left;background:#f1f3f9;border-bottom:1px solid #e5e7eb">Issue</th>'
+      + '<th style="padding:8px 12px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;background:#f1f3f9;border-bottom:1px solid #e5e7eb">Severity &amp; Fix</th>'
       + '<th style="padding:8px 12px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;background:#f1f3f9;border-bottom:1px solid #e5e7eb">WCAG</th>'
-      + '<th style="padding:8px 12px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;background:#f1f3f9;border-bottom:1px solid #e5e7eb">Elements</th>'
       + '<th style="padding:8px 12px;font-size:.65rem;text-transform:uppercase;color:#9ca3af;background:#f1f3f9;border-bottom:1px solid #e5e7eb">Pages</th>'
       + '</tr></thead><tbody>'
-      + list.map(function(i) {
+      + sorted.map(function(i) {
+          var sev    = i.type==='error'?(i.level==='A'?'High':'Medium'):'—';
+          var sevClr = i.level==='A'?'#991b1b':'#92400e';
+          var fixLbl = i.type==='fixed'?'Auto-Fixed':i.type==='warning'?'Advisory':(i.requiresDev?'Dev Code':'CMS / Settings');
           return '<tr><td style="padding:9px 12px;border-bottom:1px solid #f0f0f0;border-left:3px solid '+color+'">'
             + '<div style="font-weight:600;font-size:.82rem">' + escH(i.title) + '</div>'
-            + (i.requiresDev&&i.type!=='fixed'?'<div style="font-size:.7rem;color:#92400e;margin-top:2px">⚙ Requires custom developer code — widget cannot fix this</div>':'')
-            + '</td><td style="padding:9px 12px;border-bottom:1px solid #f0f0f0;font-family:monospace;font-size:.8rem;color:#6b7280">' + escH(i.criterion) + '</td>'
-            + '<td style="padding:9px 12px;border-bottom:1px solid #f0f0f0;text-align:center;font-size:.82rem;font-weight:600;color:'+color+'">' + (i.totalElements||i.element_count||1) + '</td>'
+            + '</td>'
+            + '<td style="padding:9px 12px;border-bottom:1px solid #f0f0f0">'
+            + (i.type==='error'?'<span style="font-size:.7rem;font-weight:700;color:'+sevClr+';background:'+(i.level==='A'?'#fee2e2':'#fef3c7')+';padding:1px 7px;border-radius:4px">'+sev+'</span> ':'')
+            + '<span style="font-size:.7rem;color:#6b7280">'+fixLbl+'</span>'
+            + '</td>'
+            + '<td style="padding:9px 12px;border-bottom:1px solid #f0f0f0;font-family:monospace;font-size:.8rem;color:#6b7280">' + escH(i.criterion) + '</td>'
             + '<td style="padding:9px 12px;border-bottom:1px solid #f0f0f0;text-align:center;font-size:.82rem">' + i.pagesAffected + '</td></tr>';
         }).join('')
       + '</tbody></table>';
@@ -3280,12 +3289,10 @@ async function generateBaselineClientSide(c) {
     + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:1.5px solid #10b981">'
     + '<div style="font-size:2rem;font-weight:800;color:#065f46">'+nFixed+'</div>'
     + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#10b981;margin-top:4px">Auto-Fixed</div></div>'
-    + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:1.5px solid #ef4444">'
-    + '<div style="font-size:2rem;font-weight:800;color:#991b1b">'+nErr+'</div>'
-    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#ef4444;margin-top:4px">Critical</div></div>'
-    + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:1.5px solid #f59e0b">'
-    + '<div style="font-size:2rem;font-weight:800;color:#92400e">'+nDev+'</div>'
-    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#f59e0b;margin-top:4px">Needs Dev</div></div>'
+    + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:1.5px solid #c2410c">'
+    + '<div style="font-size:2rem;font-weight:800;color:#c2410c">'+nGaps+'</div>'
+    + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#c2410c;margin-top:4px">Compliance Gaps</div>'
+    + '<div style="font-size:.6rem;color:#9ca3af;margin-top:1px">'+nGapsHigh+' High · '+nGapsMed+' Med</div></div>'
     + '<div style="flex:1;min-width:100px;padding:12px;background:#fff;border-radius:8px;text-align:center;border:1.5px solid #3b82f6">'
     + '<div style="font-size:2rem;font-weight:800;color:#1e40af">'+nWarn+'</div>'
     + '<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#3b82f6;margin-top:4px">Warnings</div></div>'
@@ -3293,8 +3300,8 @@ async function generateBaselineClientSide(c) {
     + '<div style="padding:12px 28px;font-size:.75rem;color:#6b7280;background:#fffbeb;border-bottom:1px solid #fde68a;line-height:1.6">'
     + '<strong style="color:#92400e">Day 0 baseline</strong> — captured at onboarding (' + escH(startLabel) + '). '
     + 'Auto-Fixed issues are resolved by the ACC widget on every page visit. '
-    + 'Critical and Needs Dev items require developer action. '
-    + 'Monthly reports will show progress against this baseline.'
+    + 'Compliance Gaps are WCAG 2.1/2.2 AA failures ranked High or Medium severity — each shows the fix type (CMS/Settings or Dev Code). '
+    + 'Monthly reports track your progress against this baseline. Standard: WCAG 2.1 AA &amp; 2.2 AA.'
     + (scanSummary ? ' <em>Note: detailed issue breakdown unavailable — showing scan summary from widget data.</em>' : '')
     + (!hasData ? ' <strong style="color:#991b1b">No scan data found yet.</strong> Install the ACC widget on your site and visit a few pages — scan data will appear here within minutes.' : '')
     + '</div>'
@@ -3316,12 +3323,11 @@ async function generateBaselineClientSide(c) {
           + '<div style="text-align:center;background:#fff;border-radius:8px;padding:10px;border:1px solid #a7f3d0"><div style="font-size:1.4rem;font-weight:800;color:#065f46">+' + autoFixImpact + '</div><div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#6ee7b7">Score Pts</div></div>'
           + '</div></div>'
         : '')
-    + '<div style="padding:14px 32px;background:#f8f9fc;border-bottom:1px solid #e5e7eb;">' + '<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#374151;margin-bottom:10px;">📌 What do these categories mean?</div>' + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">' + '<div style="display:flex;gap:10px;padding:10px;background:#d1fae5;border-radius:8px;border-left:3px solid #065f46"><div><div style="font-size:.78rem;font-weight:700;color:#065f46">✓ Auto-Fix</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Fixed automatically by the ACC widget on every page load. Zero developer work required. +7 pts per fix type.</div></div></div>' + '<div style="display:flex;gap:10px;padding:10px;background:#fee2e2;border-radius:8px;border-left:3px solid #991b1b"><div><div style="font-size:.78rem;font-weight:700;color:#991b1b">✗ Critical</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Fixed by <strong>you</strong> via your CMS or site settings — no developer or code needed (e.g. adding alt text in WordPress, setting a page title, adjusting a colour in your theme). −14 pts each.</div></div></div>' + '<div style="display:flex;gap:10px;padding:10px;background:#fef3c7;border-radius:8px;border-left:3px solid #92400e"><div><div style="font-size:.78rem;font-weight:700;color:#92400e">⚙ Needs Dev</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Requires a developer to change code (e.g. keyboard traps, broken landmarks, duplicate IDs). Cannot be fixed via CMS or widget. −7 pts each.</div></div></div>' + '<div style="display:flex;gap:10px;padding:10px;background:#dbeafe;border-radius:8px;border-left:3px solid #1e40af"><div><div style="font-size:.78rem;font-weight:700;color:#1e40af">△ Warning</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Advisory — not a WCAG failure but best practice to fix (e.g. vague link text, multiple H1s). Fix via CMS or dev depending on type. −3 pts each.</div></div></div>' + '</div></div>'
+    + '<div style="padding:14px 32px;background:#f8f9fc;border-bottom:1px solid #e5e7eb;">' + '<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#374151;margin-bottom:10px;">📌 What do these categories mean?</div>' + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">' + '<div style="display:flex;gap:10px;padding:10px;background:#d1fae5;border-radius:8px;border-left:3px solid #065f46"><div><div style="font-size:.78rem;font-weight:700;color:#065f46">✓ Auto-Fix</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Fixed automatically by the ACC widget on every page load. Zero developer work required. +7 pts per fix type.</div></div></div>' + '<div style="display:flex;gap:10px;padding:10px;background:#fef2e8;border-radius:8px;border-left:3px solid #c2410c"><div><div style="font-size:.78rem;font-weight:700;color:#c2410c">⚠ Compliance Gaps</div><div style="font-size:.72rem;color:#374151;margin-top:2px">WCAG 2.1/2.2 AA failures that need action. Each item shows <strong>severity</strong> (High = Level A, &minus;14 pts; Medium = Level AA, &minus;7 pts) and <strong>fix type</strong> (CMS/Settings or Dev Code).</div></div></div>' + '<div style="display:flex;gap:10px;padding:10px;background:#dbeafe;border-radius:8px;border-left:3px solid #1e40af"><div><div style="font-size:.78rem;font-weight:700;color:#1e40af">△ Warning</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Advisory — not a WCAG failure but best practice to fix (e.g. vague link text, multiple H1s). Fix via CMS or dev depending on type. −3 pts each.</div></div></div>' + '</div></div>'
     + (!hasData
         ? '<div style="padding:32px;text-align:center;color:#9ca3af;font-size:.88rem">&#128269; No scan data recorded yet. Install the ACC widget and visit your site — data appears within minutes.</div>'
         : section('Auto-Fixed by ACC Widget', '#065f46', '✓', issueList.filter(function(i){ return i.type==='fixed'; }))
-          + section('Critical Issues', '#991b1b', '✗', issueList.filter(function(i){ return i.type==='error'&&!i.requiresDev; }))
-          + section('Needs Developer Code', '#92400e', '⚙', issueList.filter(function(i){ return i.requiresDev&&i.type!=='fixed'; }))
+          + section('Compliance Gaps', '#c2410c', '⚠', issueList.filter(function(i){ return i.type==='error'; }).sort(function(a,b){return (a.level==='A'?0:1)-(b.level==='A'?0:1);}))
           + section('Warnings', '#1e40af', '△', issueList.filter(function(i){ return i.type==='warning'&&!i.requiresDev; }))
       )
     + '<div style="padding:12px 28px;font-size:.65rem;color:#9ca3af;text-align:center;border-top:1px solid #e5e7eb">'
@@ -3453,10 +3459,20 @@ async function downloadEvidenceBinder(year) {
 async function downloadInvoice(yearMonth) {
   if (!window._clientData) return;
   var code = _clientData.client_code;
-  try {
-    await openHtmlReport('invoices', code + '/' + yearMonth + '-invoice.pdf');
-  } catch(e) {
-    alert('Could not open invoice: ' + (e.message || e) + '\n\nPath: ' + code + '/' + yearMonth + '-invoice.pdf');
+  // Try .html first (new format), fall back to .pdf (legacy)
+  var paths = [
+    code + '/' + yearMonth + '-invoice.html',
+    code + '/' + yearMonth + '-invoice.pdf'
+  ];
+  for (var i = 0; i < paths.length; i++) {
+    try {
+      await openHtmlReport('invoices', paths[i]);
+      return;
+    } catch(e) {
+      if (i === paths.length - 1) {
+        alert('Could not open invoice: ' + (e.message || e));
+      }
+    }
   }
 }
 
@@ -3752,6 +3768,7 @@ async function generateAndDownloadInvoice(yearMonth) {
     var code = _clientData.client_code;
     var ym = yearMonth || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
     var filePath = (result && result.file) ? result.file : (code + '/' + ym + '-invoice.pdf');
+    // openHtmlReport handles both .html and .pdf extensions
     await openHtmlReport('invoices', filePath);
   } catch(e) {
     console.error('generateAndDownloadInvoice:', e);
@@ -3865,11 +3882,28 @@ async function populateScanData(clientCode) {
   } catch(_) { scan = null; }
 
   var score    = scan ? (scan.score       ?? 0) : 0;
-  var critical = scan ? (scan.critical    ?? 0) : 0;
   var warnings = scan ? (scan.warnings    ?? 0) : 0;
   var fixes    = scan ? (scan.fixes_applied ?? 0) : 0;
   var autoFixed = scan ? (scan.auto_fixed   ?? 0) : 0;
-  var devFixes = scan ? (scan.requires_dev  ?? 0) : 0;
+  // Compliance Gaps = all errors (high+medium combined)
+  var critical = scan ? (scan.critical    ?? 0) : 0;  // total gaps
+  var devFixes = 0;  // high severity (Level A) — populated from scan_issues below
+  // Try to get High severity count from scan_issues
+  if (clientCode) {
+    try {
+      var _now3 = new Date();
+      var _ms3  = new Date(_now3.getFullYear(), _now3.getMonth(), 1).toISOString();
+      var _me3  = new Date(_now3.getFullYear(), _now3.getMonth()+1, 1).toISOString();
+      var _hR = await _sb_client.from('scan_issues')
+        .select('id')
+        .eq('client_code', clientCode)
+        .eq('type', 'error')
+        .eq('level', 'A')
+        .gte('scanned_at', _ms3)
+        .lt('scanned_at', _me3);
+      if (!_hR.error && _hR.data) devFixes = _hR.data.length;
+    } catch(_) {}
+  }
 
   // Fix 3: fallback — count type='fixed' rows in scan_issues if scans.fixes_applied=0
   if (fixes === 0 && clientCode) {
@@ -3899,11 +3933,11 @@ async function populateScanData(clientCode) {
   set('stat-fixes',         fixes);
   set('stat-fixes-sub',     fixes > 0 ? (autoFixed > 0 ? autoFixed + ' elements patched' : fixes + ' fix type' + (fixes !== 1 ? 's' : '') + ' applied') : 'None this month');
   set('stat-critical',      critical);
-  set('stat-critical-sub',  critical === 0 ? 'No critical errors' : critical + ' need attention');
+  set('stat-critical-sub',  critical === 0 ? 'No compliance gaps' : critical + ' gap' + (critical===1?'':'s') + ' found');
   set('stat-warnings',      warnings);
   set('stat-warnings-sub',  warnings === 0 ? 'No warnings' : warnings + ' to review');
   set('stat-dev',           devFixes);
-  set('stat-dev-sub',       devFixes > 0 ? devFixes + ' item' + (devFixes !== 1 ? 's' : '') + ' need code fix' : 'None this month');
+  set('stat-dev-sub',       devFixes > 0 ? devFixes + ' High severity (Level A)' : 'None this month');
   set('stat-pages',         pages);
   set('stat-pages-sub',     pages > 0 ? 'Scanned this month' : 'No scans yet');
 
