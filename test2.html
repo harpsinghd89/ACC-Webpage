@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACC Widget Test</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 0 24px;
+      color: #1a1a2e;
+    }
+    h1 { color: #0a1628; }
+    p { line-height: 1.7; color: #444; }
+    .card {
+      background: #f4f7ff;
+      border: 1px solid #d0deff;
+      border-radius: 10px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+    a { color: #4f8ef7; }
+    img { max-width: 100%; border-radius: 8px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+
+  <h1>ACC Widget Test Page</h1>
+  <p>This is a minimal test page to verify the ACC Accessibility Widget loads and functions correctly in the production environment.</p>
+
+  <div class="card">
+    <h2>Test Checklist</h2>
+    <ul>
+      <li>FAB button appears in the bottom-right corner</li>
+      <li>Clicking FAB opens the accessibility panel</li>
+      <li>Font size, contrast, and spacing controls work</li>
+      <li>Language picker (globe icon) opens and translates</li>
+      <li>Restoring English reloads and reopens the panel</li>
+      <li>Panel closes cleanly</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Sample Content for Testing</h2>
+    <p>This paragraph has <a href="#">a sample link</a> and some <strong>bold text</strong> so you can verify contrast and font scaling work correctly across typical page elements.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+    <img src="https://placehold.co/600x200/0a1628/4f8ef7?text=ACC+Widget+Test" alt="Placeholder image for visual testing" />
+  </div>
+
+  <!-- ACC Widget — CLI-40422 -->
+  <script
+    src="https://cdn.jsdelivr.net/gh/accessibilitycompliance/ACC-Widget@main/ACC-Widget.js"
+    data-client="CLI-40422"
+    data-tier="2"
+    data-domain="https://accessibilitycompliance.ca/test.html"
+    data-position="Bottom Right"
+    data-color="#4f8ef7"
+    defer
+  ></script>
+
+</body>
+</html>
