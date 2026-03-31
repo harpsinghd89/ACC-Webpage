@@ -2767,7 +2767,7 @@ async function generateInvoiceForClient() {
     var isAnnual  = (cl.billing_cycle === 'annual' || cl.billing_cycle === 'yearly');
     var tierPrices = {1:69, 2:199};
     var rawPrice  = tierPrices[parseInt(cl.tier)] || 0;
-    var amount    = isAnnual ? rawPrice * 12 : rawPrice;
+    var amount    = isAnnual ? rawPrice * 10 : rawPrice;
     var hst       = +(amount * 0.13).toFixed(2);
     var total     = +(amount + hst).toFixed(2);
     var ymParts   = ym.split('-');
@@ -2776,7 +2776,7 @@ async function generateInvoiceForClient() {
     var tierLabel = cl.tier===1||cl.tier==='1' ? 'Tier 1 — Essential' : cl.tier===2||cl.tier==='2' ? 'Tier 2 — Professional' : 'Tier 3 — Enterprise';
     var invoiceNo = 'INV-' + code + '-' + ym.replace('-','');
     var today     = new Date().toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
-    var planLabel = isAnnual ? 'Annual plan (12 months)' : 'Monthly plan';
+    var planLabel = isAnnual ? 'Annual plan (12 months, 2 months free)' : 'Monthly plan';
 
     var CSS = '*{box-sizing:border-box}body{font-family:"Segoe UI",system-ui,sans-serif;background:#f4f5f7;padding:32px;margin:0}'
       +'.inv{max-width:780px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}'
@@ -2852,7 +2852,7 @@ async function generateInvoiceForClient() {
       +'</div>'
       +'</div></body></html>';
 
-    // Trigger local download (same pattern as audit/prospect reports — no Supabase upload needed)
+    // 1. Trigger local HTML download (opens nicely in browser with print-to-PDF support)
     var blob = new Blob([html], { type:'text/html' });
     var a    = document.createElement('a');
     a.href   = URL.createObjectURL(blob);
@@ -2860,7 +2860,93 @@ async function generateInvoiceForClient() {
     document.body.appendChild(a); a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(a.href);
-    showToastAdmin('Invoice downloaded for ' + ym, 'success');
+
+    // 2. Also upload a PDF copy to Supabase so it appears in the files tab
+    // Lazy-load jsPDF from CDN if not already present
+    if (!window.jspdf) {
+      await new Promise(function(resolve, reject) {
+        var s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    var { jsPDF } = window.jspdf;
+    var pdoc = new jsPDF({ unit: 'pt', format: 'letter' });
+    var pw = pdoc.internal.pageSize.getWidth();
+    var M = 48, W = pw - M * 2, y = 0;
+
+    // Dark header band
+    pdoc.setFillColor(10, 22, 40); pdoc.rect(0, 0, pw, 110, 'F');
+    pdoc.setFillColor(56, 217, 169); pdoc.rect(M, 110, W / 2, 3, 'F');
+    pdoc.setFillColor(79, 142, 247); pdoc.rect(M + W / 2, 110, W / 2, 3, 'F');
+
+    pdoc.setTextColor(56, 217, 169); pdoc.setFontSize(7); pdoc.setFont('helvetica','bold');
+    pdoc.text('TAX INVOICE', M, 26);
+    pdoc.setTextColor(255,255,255); pdoc.setFontSize(13);
+    pdoc.text('ACC Accessibility Compliance Canada Inc.', M, 46);
+    pdoc.setFontSize(8); pdoc.setFont('helvetica','normal'); pdoc.setTextColor(148,163,184);
+    pdoc.text('2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON', M, 62);
+    pdoc.text('partner@accessibilitycompliance.ca', M, 74);
+
+    pdoc.setFontSize(7); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(148,163,184);
+    pdoc.text('INVOICE #', pw - M, 26, { align:'right' });
+    pdoc.setFontSize(12); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(255,255,255);
+    pdoc.text(invoiceNo, pw - M, 44, { align:'right' });
+    pdoc.setFontSize(8); pdoc.setFont('helvetica','normal'); pdoc.setTextColor(148,163,184);
+    pdoc.text('Date: ' + today, pw - M, 58, { align:'right' });
+
+    y = 132;
+    pdoc.setFontSize(7); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(156,163,175);
+    pdoc.text('BILL TO', M, y); pdoc.text('BILLING PERIOD', pw / 2 + 10, y); y += 14;
+
+    pdoc.setFontSize(10); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(10,22,40);
+    pdoc.text(cl.name || '', M, y); pdoc.text(billLabel, pw / 2 + 10, y); y += 13;
+
+    pdoc.setFontSize(8.5); pdoc.setFont('helvetica','normal'); pdoc.setTextColor(107,114,128);
+    if (cl.domain) pdoc.text(cl.domain, M, y);
+    pdoc.text(tierLabel, pw / 2 + 10, y); y += 12;
+    if (cl.email) pdoc.text(cl.email, M, y);
+    pdoc.text(code, pw / 2 + 10, y); y += 22;
+
+    pdoc.setDrawColor(229,231,235); pdoc.setLineWidth(0.5); pdoc.line(M, y, pw-M, y); y += 18;
+
+    // Table header
+    pdoc.setFillColor(241,243,249); pdoc.rect(M, y-12, W, 22, 'F');
+    pdoc.setFontSize(7.5); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(138,155,191);
+    pdoc.text('DESCRIPTION', M+8, y+2); pdoc.text('AMOUNT', pw-M-8, y+2, {align:'right'}); y += 22;
+
+    // Line item
+    pdoc.setFontSize(9); pdoc.setFont('helvetica','normal'); pdoc.setTextColor(31,41,55);
+    pdoc.text('ACC Managed Accessibility Compliance \u2014 ' + tierLabel, M+8, y+2);
+    pdoc.setFontSize(8); pdoc.setTextColor(107,114,128);
+    pdoc.text(planLabel, M+8, y+14);
+    pdoc.setFontSize(9); pdoc.setTextColor(31,41,55);
+    pdoc.text('$'+amount.toFixed(2), pw-M-8, y+2, {align:'right'}); y += 34;
+
+    pdoc.setDrawColor(240,240,240); pdoc.line(M, y, pw-M, y); y += 18;
+
+    // Totals
+    var c1 = pw-M-120, c2 = pw-M-8;
+    pdoc.setFontSize(9); pdoc.setFont('helvetica','normal');
+    pdoc.setTextColor(107,114,128); pdoc.text('Subtotal', c1, y);
+    pdoc.setTextColor(31,41,55); pdoc.text('$'+amount.toFixed(2), c2, y, {align:'right'}); y += 15;
+    pdoc.setTextColor(107,114,128); pdoc.text('HST (13%)', c1, y);
+    pdoc.setTextColor(31,41,55); pdoc.text('$'+hst.toFixed(2), c2, y, {align:'right'}); y += 8;
+    pdoc.setDrawColor(10,22,40); pdoc.setLineWidth(1.5); pdoc.line(c1-4, y, pw-M, y); y += 14;
+    pdoc.setFontSize(11); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(10,22,40);
+    pdoc.text('Total', c1, y); pdoc.text('$'+total.toFixed(2)+' CAD', c2, y, {align:'right'}); y += 28;
+
+    pdoc.setDrawColor(229,231,235); pdoc.setLineWidth(0.5); pdoc.line(M, y, pw-M, y); y += 14;
+    pdoc.setFontSize(7.5); pdoc.setFont('helvetica','normal'); pdoc.setTextColor(156,163,175);
+    pdoc.text('ACC \u00B7 accessibilitycompliance.ca \u00B7 ' + invoiceNo, pw/2, y, {align:'center'});
+
+    var pdfBlob = pdoc.output('blob');
+    var fname   = code + '/' + ym + '-invoice.pdf';
+    var up = await _sb.storage.from('invoices').upload(fname, pdfBlob, { contentType:'application/pdf', upsert:true });
+    if (up.error) throw up.error;
+
+    showToastAdmin('Invoice downloaded and saved for ' + ym, 'success');
     renderFileList('invoices', code);
   } catch(e) {
     showToastAdmin('Could not generate invoice: ' + (e.message||e), 'error');
