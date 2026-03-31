@@ -525,15 +525,11 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <h2>&#127760; Scan a URL</h2>
         <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px">
           <input class="finput" type="url" id="scan-url-input" placeholder="https://client-site.ca" style="flex:1;min-width:240px" />
-          <select class="finput" id="scan-report-type" style="max-width:180px">
-            <option value="prospect">Prospect Report</option>
-            <option value="audit">Full Audit Report</option>
-          </select>
           <button class="btn-sm btn-primary" id="scan-run-btn" onclick="runAdminScan()">&#128269; Scan URL</button>
         </div>
         <p style="font-size:.75rem;color:#8a9bbf">
           &#9432; Scanner fetches pages server-side (bypasses X-Frame-Options). Falls back to iframe if edge function is unavailable.
-          <strong style="color:#4f8ef7">Prospect Report</strong> = sales-ready, client-facing &nbsp;·&nbsp; <strong style="color:#4f8ef7">Full Audit</strong> = technical WCAG breakdown. Scores show <em>today → with widget</em>.
+Scores show <em>site today → with widget applied</em>.
         </p>
       </div>
 
@@ -558,7 +554,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn-sm btn-primary" onclick="downloadAdminScanReport()">&#8659; Download Report</button>
-              <button class="btn-sm btn-ghost" onclick="copyProspectEmail()">&#128203; Copy Prospect Email</button>
               <button class="btn-sm btn-ghost" id="sr-save-btn" onclick="saveScanToSupabase()" style="display:none">&#128190; Save Scan</button>
             </div>
           </div>
@@ -604,30 +599,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="sr-pour"></div>
         </div>
 
-        <!-- Issue table — specific, not general -->
-        <div class="card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-            <h2 style="margin:0">&#128203; Detailed Issue Breakdown</h2>
-            <div style="display:flex;gap:8px">
-              <select class="finput" id="sr-filter-type" onchange="filterScanIssues()" style="font-size:.75rem;padding:5px 8px">
-                <option value="all">All types</option>
-                <option value="error">Compliance Gaps only</option>
-                <option value="warning">Warnings only</option>
-                <option value="fixed">Auto-fixed only</option>
-              </select>
-              <select class="finput" id="sr-filter-section" onchange="filterScanIssues()" style="font-size:.75rem;padding:5px 8px">
-                <option value="all">All sections</option>
-                <option value="header">Header</option>
-                <option value="navigation">Navigation</option>
-                <option value="main">Main</option>
-                <option value="form">Form</option>
-                <option value="footer">Footer</option>
-                <option value="page">Page-level</option>
-              </select>
-            </div>
-          </div>
-          <div id="sr-issue-list" style="display:flex;flex-direction:column;gap:6px;max-height:520px;overflow-y:auto"></div>
-        </div>
 
       </div><!-- /scan-results -->
     </div><!-- /panel-admin-scan -->
@@ -3218,8 +3189,6 @@ function renderAdminScanResults(issues, label) {
   var score    = Math.max(0,Math.min(100,Math.round(100-nGapsHigh*14-nGapsMed*7-nGapsLow*4-nWarn*3)));
   var sColor  = score>=80?'#38d9a9':score>=60?'#f5a623':'#f05f5f';
 
-  var totalElFixed = issues.filter(function(i){return i.type==='fixed';})
-    .reduce(function(s,i){return s+(i.elements&&i.elements.length>0?i.elements.length:1);},0);
   var scoreDelta = score - rawScore;
 
   // Store rawScore for report functions to read
@@ -3230,9 +3199,8 @@ function renderAdminScanResults(issues, label) {
   document.getElementById('sr-score-delta').textContent = scoreDelta > 0 ? scoreDelta : '0';
   // Store on element for report functions
   document.getElementById('sr-score').setAttribute('data-raw', rawScore);
-  document.getElementById('sr-fixed').textContent         = nFixed;
-  document.getElementById('sr-elements-fixed').textContent= totalElFixed;
-  document.getElementById('sr-gaps').textContent      = nGaps;
+  document.getElementById('sr-fixed').textContent = nFixed;
+  document.getElementById('sr-gaps').textContent  = nGaps;
   document.getElementById('sr-gaps-high').textContent = nGapsHigh;
   var _srGapsMed = document.getElementById('sr-gaps-med');
   if (_srGapsMed) _srGapsMed.textContent = nGapsMed;
@@ -3348,6 +3316,7 @@ function renderScanIssueList(issues) {
   });
   filtered.sort(function(a,b){return ({'error':2,'warning':1,'fixed':0}[b.type]||0)-({'error':2,'warning':1,'fixed':0}[a.type]||0);});
   var el = document.getElementById('sr-issue-list');
+  if (!el) return; // issue list card removed — issues visible in downloaded report
   if(!filtered.length){el.innerHTML='<p style="color:#8a9bbf;font-size:.82rem;padding:12px 0">No issues match the current filters.</p>';return;}
   el.innerHTML = filtered.map(function(i,idx){
     var leftColor=i.type==='fixed'?'#38d9a9':i.type==='warning'?'#f5a623':'#f05f5f';
@@ -3441,13 +3410,10 @@ function copyProspectEmail() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// DOWNLOAD DETAILED REPORT (PDF-quality HTML)
-// Branches on #scan-report-type: 'prospect' vs 'audit'
+// DOWNLOAD FULL AUDIT REPORT (PDF-quality HTML)
 // ─────────────────────────────────────────────────────────────
 function downloadAdminScanReport() {
   if(!_adminScanIssues.length){ showToastAdmin('Run a scan first','error'); return; }
-  var reportType = (document.getElementById('scan-report-type')||{}).value || 'audit';
-  if (reportType === 'prospect') { downloadProspectReport(); return; }
 
   var issues      = _adminScanIssues;
   var url         = _adminScanURL;
@@ -3515,13 +3481,12 @@ function downloadAdminScanReport() {
     var TD='padding:10px 16px;font-size:.83rem;border-bottom:1px solid #f0f0f0;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word';
     return hdr
       +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:560px">'
-      +'<colgroup><col style="width:auto"><col style="width:130px"><col style="width:80px"><col style="width:60px"><col style="width:60px"></colgroup>'
+      +'<colgroup><col style="width:auto"><col style="width:130px"><col style="width:80px"><col style="width:60px"></colgroup>'
       +'<thead><tr>'
       +'<th style="'+TH+'">Issue &amp; Description</th>'
       +'<th style="'+TH+'">Severity &amp; Fix Type</th>'
       +'<th style="'+TH+'">WCAG</th>'
       +'<th style="'+TH+'">Pages</th>'
-      +'<th style="'+TH+'">Elements</th>'
       +'</tr></thead><tbody>'
       +list.map(function(i){
         var sev    = i.type==='error'?(i.level==='A'?'High':'Medium'):(i.type==='warning'?'Advisory':'—');
@@ -3550,7 +3515,6 @@ function downloadAdminScanReport() {
           +'</td>'
           +'<td style="'+TD+';font-family:monospace;font-size:.78rem;color:#6b7280">WCAG '+escHtml(i.criterion||'—')+'<br><span style="color:#9ca3af">Level '+(i.level||'AA')+'</span></td>'
           +'<td style="'+TD+';text-align:center">'+(i.pagesAffected||1)+'</td>'
-          +'<td style="'+TD+';text-align:center;font-weight:600;color:'+accent+'">'+(i.elements?i.elements.length:i.count||1)+'</td>'
           +'</tr>';
       }).join('')
       +'</tbody></table></div>';
