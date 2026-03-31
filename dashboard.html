@@ -4008,14 +4008,22 @@ async function populateScanData(clientCode) {
       var _siMs  = new Date(_siNow.getFullYear(), _siNow.getMonth(), 1).toISOString();
       var _siMe  = new Date(_siNow.getFullYear(), _siNow.getMonth()+1, 1).toISOString();
       var _siR   = await _sb_client.from('scan_issues')
-        .select('type,level')
+        .select('type,level,criterion')
         .eq('client_code', clientCode)
         .gte('scanned_at', _siMs)
         .lt('scanned_at', _siMe);
       if (!_siR.error && _siR.data && _siR.data.length) {
-        critical = _siR.data.filter(function(r){ return r.type==='error'; }).length;
-        warnings = _siR.data.filter(function(r){ return r.type==='warning'; }).length;
-        devFixes = _siR.data.filter(function(r){ return r.type==='error' && r.level==='A'; }).length;
+        // Deduplicate by criterion+type — scan_issues has one row per element
+        // (same issue on 5 pages = 5 rows; we want 1 unique issue type)
+        var _siSeen = {};
+        var _siUniq = _siR.data.filter(function(r) {
+          var k = r.type + '::' + (r.criterion || '');
+          if (_siSeen[k]) return false;
+          _siSeen[k] = true; return true;
+        });
+        critical = _siUniq.filter(function(r){ return r.type==='error'; }).length;
+        warnings = _siUniq.filter(function(r){ return r.type==='warning'; }).length;
+        devFixes = _siUniq.filter(function(r){ return r.type==='error' && r.level==='A'; }).length;
       } else {
         // scan_issues empty this month — fall back to scans table aggregate columns
         critical = scan ? ((scan.critical ?? 0) + (scan.requires_dev ?? 0)) : 0;

@@ -2734,6 +2734,8 @@ async function renderFileList(bucket, clientCode) {
 
 // Generate an invoice for the selected month and save it to the invoices bucket
 async function generateInvoiceForClient() {
+  // Local escape helper (escHtml is only defined inside downloadAdminScanReport scope)
+  var _esc = function(s){ var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML; };
   var code = window._editingClientCode;
   if (!code) { showToastAdmin('No client selected', 'error'); return; }
   var monthEl = document.getElementById('files-invoice-month');
@@ -2797,13 +2799,13 @@ async function generateInvoiceForClient() {
       + '</div></div><div style="height:3px;background:linear-gradient(90deg,#38d9a9,#4f8ef7)"></div>'
       + '<div style="padding:24px 32px;display:grid;grid-template-columns:1fr 1fr;gap:24px;border-bottom:1px solid #e5e7eb">'
       + '<div><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px">Bill To</div>'
-      + '<div style="font-size:.88rem;font-weight:700;color:#0a1628">'+escHtml(cl.name||'')+'</div>'
-      + (cl.domain?'<div style="font-size:.78rem;color:#6b7280">'+escHtml(cl.domain)+'</div>':'')
-      + '<div style="font-size:.75rem;color:#6b7280">'+escHtml(cl.email||'')+'</div></div>'
+      + '<div style="font-size:.88rem;font-weight:700;color:#0a1628">'+_esc(cl.name||'')+'</div>'
+      + (cl.domain?'<div style="font-size:.78rem;color:#6b7280">'+_esc(cl.domain)+'</div>':'')
+      + '<div style="font-size:.75rem;color:#6b7280">'+_esc(cl.email||'')+'</div></div>'
       + '<div><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px">Billing Period</div>'
       + '<div style="font-size:.88rem;font-weight:700;color:#0a1628">'+billLabel+'</div>'
       + '<div style="font-size:.75rem;color:#6b7280">'+tierLabel+'</div>'
-      + '<div style="font-size:.75rem;color:#6b7280">'+escHtml(code)+'</div></div></div>'
+      + '<div style="font-size:.75rem;color:#6b7280">'+_esc(code)+'</div></div></div>'
       + '<table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>'
       + '<tr><td>ACC Managed Accessibility Compliance — '+tierLabel+'<br><span style="font-size:.72rem;color:#6b7280">'+(isAnnual?'Annual plan (10 months billed)':'Monthly plan')+'</span></td><td>$'+amount.toFixed(2)+'</td></tr>'
       + '</tbody></table>'
@@ -2831,11 +2833,27 @@ async function generateInvoiceForClient() {
 
 async function downloadAdminFile(bucket, path) {
   try {
-    var r = await _sb.storage.from(bucket).createSignedUrl(path, 60);
+    var r = await _sb.storage.from(bucket).createSignedUrl(path, 300);
     if (r.error) throw r.error;
-    window.open(r.data.signedUrl, '_blank');
+    var signedUrl = r.data.signedUrl;
+    // HTML files: fetch and render via document.write (avoids raw text display)
+    if (path.endsWith('.html')) {
+      var res = await fetch(signedUrl);
+      if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+      var html = await res.text();
+      var win = window.open('', '_blank');
+      if (!win) { alert('Please allow popups to view this file.'); return; }
+      win.document.open(); win.document.write(html); win.document.close();
+    } else {
+      // PDF and other binary files: direct signed URL download
+      var a = document.createElement('a');
+      a.href = signedUrl;
+      a.download = path.split('/').pop();
+      a.target = '_blank';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
   } catch(e) {
-    showToastAdmin('Download failed: ' + (e.message || e), 'error');
+    showToastAdmin('Could not open file: ' + (e.message || e), 'error');
   }
 }
 
