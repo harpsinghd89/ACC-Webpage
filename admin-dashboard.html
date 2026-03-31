@@ -559,7 +559,7 @@ Scores show <em>site today → with widget applied</em>.
           </div>
 
           <!-- Score before/after widget row -->
-          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:0;background:rgba(13,31,60,.6);border:1px solid rgba(30,58,107,.6);border-radius:12px;margin-bottom:12px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:0;background:rgba(13,31,60,.6);border:1px solid rgba(30,58,107,.6);border-radius:12px 12px 0 0;overflow:hidden" id="sr-strip">
             <div style="text-align:center;padding:14px 10px">
               <div style="font-size:1.5rem;font-weight:800;font-family:ui-monospace,'SF Mono',monospace;color:#f05f5f" id="sr-raw-score">—</div>
               <div style="font-size:.62rem;color:#8a9bbf;margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Score Today</div>
@@ -575,6 +575,14 @@ Scores show <em>site today → with widget applied</em>.
               <div style="font-size:.62rem;color:#38d9a9;margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Score After Widget</div>
               <div style="font-size:.6rem;color:#8a9bbf;margin-top:2px">instant, day one</div>
             </div>
+          </div>
+          <!-- Floor note: shown only when raw score was <=0 -->
+          <div id="sr-floor-note" style="display:none;font-size:.68rem;color:#8a9bbf;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-top:none;border-radius:0 0 10px 10px;padding:7px 14px;margin-bottom:12px;line-height:1.6">
+            &#9432; <strong style="color:#f5a623">Score floored at 0:</strong>
+            Raw score calculates below zero due to the number of high-severity issues.
+            The widget still resolves its full point value &mdash; &ldquo;Score After Widget&rdquo; shows the true net gain.
+            Example: raw &minus;10 + widget +30&nbsp;pts = displayed 20 (not 30).
+            A positive widget impact means immediate measurable compliance gain even from 0.
           </div>
           <!-- Stats row: 3 cards only -->
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
@@ -893,10 +901,17 @@ Scores show <em>site today → with widget applied</em>.
       <div style="margin-bottom:24px;background:#0a1e38;border:1px solid #1e3a6b;border-radius:10px;padding:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
           <h5 style="font-size:.82rem;color:#e8edf8;font-weight:700">&#128179; Invoices</h5>
-          <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:8px 16px;font-size:.8rem;font-weight:700;white-space:nowrap;flex-shrink:0">
-            &#8593; Upload PDF
-            <input type="file" accept=".pdf" style="display:none" onchange="handleAdminUpload(this,'invoices')">
-          </label>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="month" id="files-invoice-month" class="finput" style="font-size:.75rem;padding:5px 8px;width:140px"
+              title="Select billing month to generate invoice">
+            <button class="btn-sm btn-primary" onclick="generateInvoiceForClient()" style="font-size:.75rem">
+              &#9998; Generate
+            </button>
+            <label style="cursor:pointer;background:#1e3a6b;color:#4f8ef7;border:1px solid #4f8ef7;border-radius:6px;padding:8px 16px;font-size:.8rem;font-weight:700;white-space:nowrap;flex-shrink:0">
+              &#8593; Upload PDF
+              <input type="file" accept=".pdf" style="display:none" onchange="handleAdminUpload(this,'invoices')">
+            </label>
+          </div>
         </div>
         <div id="files-invoices" style="min-height:40px">
           <div style="color:#8a9bbf;font-size:.8rem">No files yet.</div>
@@ -1773,6 +1788,20 @@ async function addClient() {
       .catch(function() {}); // silent — non-blocking
     }
 
+    // Generate first invoice for start month (non-blocking, silent)
+    if (start) {
+      (async function() {
+        try {
+          await fetch('https://wfyzvmfvlukawidowuym.supabase.co/functions/v1/generate-invoice', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + (window._sb?.supabaseKey || '') },
+            body: JSON.stringify({ client_code: r.data.client_code || code }),
+          });
+        } catch(_) {} // silent — invoice viewable client-side regardless
+      })();
+    }
+
     loadClients();
 
   } catch(e) {
@@ -2114,6 +2143,12 @@ function showClientTab(tab) {
     // Scroll modal to top so upload buttons are immediately visible
     var modalBox = document.querySelector('#client-detail-modal .modal-box');
     if (modalBox) setTimeout(function(){ modalBox.scrollTop = 0; }, 30);
+    // Default invoice month picker to current month
+    var monthPicker = document.getElementById('files-invoice-month');
+    if (monthPicker && !monthPicker.value) {
+      var n = new Date();
+      monthPicker.value = n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0');
+    }
     // Load file lists for all buckets
     var code = window._editingClientCode || _editingClientId;
     if (code) {
@@ -2697,6 +2732,103 @@ async function renderFileList(bucket, clientCode) {
   }
 }
 
+// Generate an invoice for the selected month and save it to the invoices bucket
+async function generateInvoiceForClient() {
+  var code = window._editingClientCode;
+  if (!code) { showToastAdmin('No client selected', 'error'); return; }
+  var monthEl = document.getElementById('files-invoice-month');
+  var ym = monthEl ? monthEl.value : '';
+  if (!ym) {
+    var now = new Date();
+    ym = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  }
+  var btn = document.querySelector('#ctab-panel-files button[onclick="generateInvoiceForClient()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+  try {
+    // Try edge function first
+    var r = await fetch('https://wfyzvmfvlukawidowuym.supabase.co/functions/v1/generate-invoice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + (window._sb?.supabaseKey || '') },
+      body: JSON.stringify({ client_code: code, month: ym }),
+    });
+    if (r.ok) {
+      showToastAdmin('Invoice generated for ' + ym, 'success');
+      renderFileList('invoices', code);
+      return;
+    }
+  } catch(_) {}
+  // Edge function unavailable — build invoice HTML client-side and upload to storage
+  try {
+    var { data: cl } = await _sb.from('clients').select('*').eq('client_code', code).single();
+    if (!cl) throw new Error('Client not found');
+    var isAnnual  = (cl.billing_cycle === 'annual' || cl.billing_cycle === 'yearly');
+    var tierPrices = {1:69, 2:199};
+    var rawPrice  = tierPrices[parseInt(cl.tier)] || 0;
+    var amount    = isAnnual ? rawPrice * 10 : rawPrice;
+    var hst       = +(amount * 0.13).toFixed(2);
+    var total     = +(amount + hst).toFixed(2);
+    var ymParts   = ym.split('-');
+    var billDate  = new Date(parseInt(ymParts[0]), parseInt(ymParts[1])-1, 1);
+    var billLabel = billDate.toLocaleDateString('en-CA', { year:'numeric', month:'long' });
+    var tierLabel = cl.tier===1||cl.tier==='1' ? 'Tier 1 — Essential' : cl.tier===2||cl.tier==='2' ? 'Tier 2 — Professional' : 'Tier 3 — Enterprise';
+    var invoiceNo = 'INV-' + code + '-' + ym.replace('-','');
+    var today     = new Date().toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
+    var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Invoice '+invoiceNo+'</title>'
+      + '<style>*{box-sizing:border-box}body{font-family:"Segoe UI",system-ui,sans-serif;background:#f4f5f7;padding:32px;margin:0}'
+      + '.inv{max-width:720px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}'
+      + '.hdr{background:linear-gradient(135deg,#0a1628,#0d1f3c);color:#fff;padding:28px 32px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}'
+      + '.print-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#4f8ef7;color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer}'
+      + 'table{width:100%;border-collapse:collapse}th{background:#f1f3f9;padding:10px 16px;font-size:.72rem;text-transform:uppercase;color:#8a9bbf;text-align:left;border-bottom:1px solid #e5e7eb}'
+      + 'td{padding:12px 16px;font-size:.88rem;border-bottom:1px solid #f0f0f0}'
+      + '@media print{body{background:#fff;padding:0}.inv{box-shadow:none}.no-print{display:none}}'
+      + '</style></head><body><div class="inv">'
+      + '<div class="no-print" style="display:flex;align-items:center;justify-content:space-between;padding:10px 28px;background:#f8f9fc;border-bottom:1px solid #e5e7eb">'
+      + '<span style="font-size:.82rem;font-weight:700;color:#0a1628">ACC Invoice — '+invoiceNo+'</span>'
+      + '<button class="print-btn" onclick="window.print()">&#8659; Download PDF</button></div>'
+      + '<div class="hdr"><div>'
+      + '<div style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#38d9a9;margin-bottom:6px">Tax Invoice</div>'
+      + '<h1 style="font-size:1.1rem;font-weight:800;margin:0 0 4px;color:#fff">ACC Accessibility Compliance Canada Inc.</h1>'
+      + '<div style="font-size:.75rem;color:#94a3b8">2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON<br>partner@accessibilitycompliance.ca</div>'
+      + '</div><div style="text-align:right">'
+      + '<div style="font-size:.65rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em">Invoice #</div>'
+      + '<div style="font-size:1rem;font-weight:700;color:#fff">'+invoiceNo+'</div>'
+      + '<div style="font-size:.72rem;color:#94a3b8;margin-top:6px">Date: '+today+'</div>'
+      + '</div></div><div style="height:3px;background:linear-gradient(90deg,#38d9a9,#4f8ef7)"></div>'
+      + '<div style="padding:24px 32px;display:grid;grid-template-columns:1fr 1fr;gap:24px;border-bottom:1px solid #e5e7eb">'
+      + '<div><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px">Bill To</div>'
+      + '<div style="font-size:.88rem;font-weight:700;color:#0a1628">'+escHtml(cl.name||'')+'</div>'
+      + (cl.domain?'<div style="font-size:.78rem;color:#6b7280">'+escHtml(cl.domain)+'</div>':'')
+      + '<div style="font-size:.75rem;color:#6b7280">'+escHtml(cl.email||'')+'</div></div>'
+      + '<div><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px">Billing Period</div>'
+      + '<div style="font-size:.88rem;font-weight:700;color:#0a1628">'+billLabel+'</div>'
+      + '<div style="font-size:.75rem;color:#6b7280">'+tierLabel+'</div>'
+      + '<div style="font-size:.75rem;color:#6b7280">'+escHtml(code)+'</div></div></div>'
+      + '<table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>'
+      + '<tr><td>ACC Managed Accessibility Compliance — '+tierLabel+'<br><span style="font-size:.72rem;color:#6b7280">'+(isAnnual?'Annual plan (10 months billed)':'Monthly plan')+'</span></td><td>$'+amount.toFixed(2)+'</td></tr>'
+      + '</tbody></table>'
+      + '<div style="padding:16px 32px;border-top:1px solid #e5e7eb">'
+      + '<div style="display:flex;justify-content:flex-end;gap:32px;font-size:.88rem;margin-bottom:6px"><span style="color:#6b7280">Subtotal</span><span>$'+amount.toFixed(2)+'</span></div>'
+      + '<div style="display:flex;justify-content:flex-end;gap:32px;font-size:.88rem;margin-bottom:6px"><span style="color:#6b7280">HST (13%)</span><span>$'+hst.toFixed(2)+'</span></div>'
+      + '<div style="display:flex;justify-content:flex-end;gap:32px;font-size:1rem;font-weight:800;color:#0a1628;border-top:2px solid #0a1628;padding-top:8px;margin-top:6px"><span>Total</span><span>$'+total.toFixed(2)+' CAD</span></div></div>'
+      + '<div style="padding:14px 32px;font-size:.65rem;color:#9ca3af;text-align:center;border-top:1px solid #e5e7eb;background:#f8f9fc">ACC · accessibilitycompliance.ca · '+invoiceNo+'<br>'
+      + '<button class="print-btn no-print" onclick="window.print()" style="margin-top:8px;font-size:.72rem;padding:6px 14px">&#8659; Download PDF</button></div>'
+      + '</div></body></html>';
+
+    // Upload to invoices bucket as .html
+    var enc   = new TextEncoder().encode(html);
+    var fname = code + '/' + ym + '-invoice.html';
+    var up    = await _sb.storage.from('invoices').upload(fname, enc, { contentType:'text/html', upsert:true });
+    if (up.error) throw up.error;
+    showToastAdmin('Invoice generated for ' + ym, 'success');
+    renderFileList('invoices', code);
+  } catch(e) {
+    showToastAdmin('Could not generate invoice: ' + (e.message||e), 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✎ Generate'; }
+  }
+}
+
 async function downloadAdminFile(bucket, path) {
   try {
     var r = await _sb.storage.from(bucket).createSignedUrl(path, 60);
@@ -3197,6 +3329,9 @@ function renderAdminScanResults(issues, label) {
   document.getElementById('sr-score-delta').textContent = scoreDelta > 0 ? scoreDelta : '0';
   // Store on element for report functions
   document.getElementById('sr-score').setAttribute('data-raw', rawScore);
+  // Show floor note if raw score was 0 (meaning calculated value was <= 0)
+  var floorNoteEl = document.getElementById('sr-floor-note');
+  if (floorNoteEl) floorNoteEl.style.display = (rawScore === 0 && score > 0) ? 'block' : 'none';
   document.getElementById('sr-fixed').textContent = nFixed;
   document.getElementById('sr-gaps').textContent  = nGaps;
   document.getElementById('sr-gaps-high').textContent = nGapsHigh;
@@ -3508,8 +3643,17 @@ function downloadAdminScanReport() {
     +'.print-btn:hover{background:#1e3a6b}'
     +'@media print{body{background:#fff;padding:0}.report{box-shadow:none;border-radius:0;max-width:100%}.print-bar{display:none}}';
 
+  var floorNote = (scoreWithout === 0 && autoFixImpact > 0)
+    ? '<div style="font-size:.68rem;color:#6b7280;background:#fffbeb;border:1px solid #fde68a;border-top:none;border-radius:0 0 6px 6px;padding:7px 24px;line-height:1.6;">'
+      +'&#9432; <strong style="color:#92400e">Score floored at 0:</strong> '
+      +'The raw score calculates below zero due to the number of high-severity issues. '
+      +'The widget still resolves its full point value &mdash; &ldquo;With Widget&rdquo; shows the true net gain. '
+      +'Example: raw &minus;10 + widget +30&nbsp;pts = displayed score 20 (not 30). '
+      +'A positive widget impact means immediate measurable compliance gain even when starting at 0.'
+      +'</div>'
+    : '';
   var beforeAfter = autoFixImpact > 0
-    ? '<div style="display:grid;grid-template-columns:1fr auto 1fr;background:#f0fdf4;border-bottom:1px solid #bbf7d0">'
+    ? '<div style="display:grid;grid-template-columns:1fr auto 1fr;background:#f0fdf4;border-bottom:'+(scoreWithout===0?'none':'1px solid #bbf7d0')+'">'
       +'<div style="padding:14px 24px;text-align:center"><div style="font-size:1.8rem;font-weight:800;color:#991b1b">'+scoreWithout+'<span style="font-size:.9rem;color:#9ca3af">/100</span></div>'
       +'<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#9ca3af">Without Widget</div></div>'
       +'<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px;background:#d1fae5">'
@@ -3586,6 +3730,7 @@ function downloadAdminScanReport() {
     +'<div style="height:3px;background:linear-gradient(90deg,#38d9a9,#4f8ef7)"></div>'
 
     + beforeAfter
+    + floorNote
     + widgetCallout
 
     +'<div style="display:flex;gap:10px;flex-wrap:wrap;padding:16px 32px;background:#f8f9fc;border-bottom:1px solid #e5e7eb;margin-top:'+(autoFixImpact>0?'0':'16px')+'">'
