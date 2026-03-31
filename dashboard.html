@@ -324,7 +324,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <span class="sidebar-label">Compliance</span>
         <button class="nav-item" data-access="audit_reports" onclick="showPanel('reports')">
           <span class="nav-icon" aria-hidden="true">&#128202;</span> Audit Reports
-          <span class="nav-badge">3</span>
+          <span class="nav-badge" id="badge-reports" style="display:none"></span>
         </button>
         <button class="nav-item" data-access="evidence_binder" onclick="showPanel('evidence')">
           <span class="nav-icon" aria-hidden="true">&#128218;</span> Evidence Binder
@@ -365,7 +365,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         </button>
         <button class="nav-item" onclick="showPanel('admin-clients')">
           <span class="nav-icon" aria-hidden="true">&#128101;</span> Clients
-          <span class="nav-badge">12</span>
         </button>
         <button class="nav-item" onclick="showPanel('admin-billing')">
           <span class="nav-icon" aria-hidden="true">&#128179;</span> Billing
@@ -3110,6 +3109,24 @@ async function populateReports(c) {
 
   container.innerHTML = baselineHtml + rows;
 
+  // ── Update reports nav badge — count months with scan data but no report ──
+  var needsAttention = months.filter(function(m) {
+    var ym2 = m.year + '-' + String(m.month).padStart(2,'0');
+    var isCur = m.year === isCurrentYr && m.month === isCurrentMth;
+    return !isCur && monthsWithScans.has(ym2) && !availableReports.has(ym2);
+  }).length;
+  var badgeEl = document.getElementById('badge-reports');
+  if (badgeEl) {
+    if (needsAttention > 0) {
+      badgeEl.textContent = needsAttention;
+      badgeEl.style.display = '';
+      badgeEl.className = 'nav-badge warn';
+      badgeEl.title = needsAttention + ' month' + (needsAttention===1?'':'s') + ' with scan data but no report generated';
+    } else {
+      badgeEl.style.display = 'none';
+    }
+  }
+
   // ── Event delegation for all buttons ──────────────────────────────────────
   // Remove old listener by replacing the container (clone trick)
   var newContainer = container.cloneNode(false);
@@ -3978,44 +3995,36 @@ async function populateScanData(clientCode) {
   } catch(_) { scan = null; }
 
   var score    = scan ? (scan.score       ?? 0) : 0;
-  var warnings = scan ? (scan.warnings    ?? 0) : 0;
   var fixes    = scan ? (scan.fixes_applied ?? 0) : 0;
   var autoFixed = scan ? (scan.auto_fixed   ?? 0) : 0;
-  // Compliance Gaps = scans.critical (old CMS errors) + scans.requires_dev (dev errors)
-  // The widget saves these separately; total gaps = both combined
-  var critical = scan ? ((scan.critical ?? 0) + (scan.requires_dev ?? 0)) : 0;
-  var devFixes = 0;  // high severity (Level A) — populated from scan_issues below
-  // If critical=0 but scan exists, count from scan_issues as fallback
-  var _critFallbackNeeded = (critical === 0 && scan !== null);
-  // Try to get High severity count from scan_issues
+  // Pull critical/warnings/devFixes from scan_issues — same source as generate-audit-report edge fn
+  // This guarantees scorecard tiles match what the client sees in their monthly report
+  var critical = 0;
+  var warnings = 0;
+  var devFixes = 0;
   if (clientCode) {
     try {
-      var _now3 = new Date();
-      var _ms3  = new Date(_now3.getFullYear(), _now3.getMonth(), 1).toISOString();
-      var _me3  = new Date(_now3.getFullYear(), _now3.getMonth()+1, 1).toISOString();
-      var _hR = await _sb_client.from('scan_issues')
-        .select('id')
+      var _siNow = new Date();
+      var _siMs  = new Date(_siNow.getFullYear(), _siNow.getMonth(), 1).toISOString();
+      var _siMe  = new Date(_siNow.getFullYear(), _siNow.getMonth()+1, 1).toISOString();
+      var _siR   = await _sb_client.from('scan_issues')
+        .select('type,level')
         .eq('client_code', clientCode)
-        .eq('type', 'error')
-        .eq('level', 'A')
-        .gte('scanned_at', _ms3)
-        .lt('scanned_at', _me3);
-      if (!_hR.error && _hR.data) devFixes = _hR.data.length;
-    } catch(_) {}
-    // Fallback: count all errors from scan_issues if scans.critical=0
-    if (_critFallbackNeeded) {
-      try {
-        var _now4 = new Date();
-        var _ms4  = new Date(_now4.getFullYear(), _now4.getMonth(), 1).toISOString();
-        var _me4  = new Date(_now4.getFullYear(), _now4.getMonth()+1, 1).toISOString();
-        var _gapR = await _sb_client.from('scan_issues')
-          .select('id')
-          .eq('client_code', clientCode)
-          .eq('type', 'error')
-          .gte('scanned_at', _ms4)
-          .lt('scanned_at', _me4);
-        if (!_gapR.error && _gapR.data && _gapR.data.length > 0) critical = _gapR.data.length;
-      } catch(_) {}
+        .gte('scanned_at', _siMs)
+        .lt('scanned_at', _siMe);
+      if (!_siR.error && _siR.data && _siR.data.length) {
+        critical = _siR.data.filter(function(r){ return r.type==='error'; }).length;
+        warnings = _siR.data.filter(function(r){ return r.type==='warning'; }).length;
+        devFixes = _siR.data.filter(function(r){ return r.type==='error' && r.level==='A'; }).length;
+      } else {
+        // scan_issues empty this month — fall back to scans table aggregate columns
+        critical = scan ? ((scan.critical ?? 0) + (scan.requires_dev ?? 0)) : 0;
+        warnings = scan ? (scan.warnings ?? 0) : 0;
+      }
+    } catch(_) {
+      // query failed — fall back to scans table
+      critical = scan ? ((scan.critical ?? 0) + (scan.requires_dev ?? 0)) : 0;
+      warnings = scan ? (scan.warnings ?? 0) : 0;
     }
   }
 
