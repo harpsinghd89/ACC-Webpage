@@ -403,7 +403,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <span style="font-size:1rem;flex-shrink:0;margin-top:1px">&#x2139;&#xfe0f;</span>
         <div>
           <strong style="color:#c7d4f0">How your score is calculated:</strong>
-          The <strong style="color:#38d9a9">Widget Scan Score</strong> reflects real-time accessibility health across all pages scanned this month. Standard: <strong style="color:#4f8ef7">WCAG 2.1 AA &amp; 2.2 AA</strong>. Score = 100 minus deductions for Compliance Gaps (High &minus;14 pts, Medium &minus;7 pts) and Warnings (&minus;3 pts), plus +7 pts per Auto-Fix type applied by the widget.
+          The <strong style="color:#38d9a9">Widget Scan Score</strong> reflects real-time accessibility health across all pages scanned this month. Standard: <strong style="color:#4f8ef7">WCAG 2.1 AA &amp; 2.2 AA</strong>. Score = 100 minus deductions for Compliance Gaps (High &minus;14 pts, Medium &minus;7 pts) and Warnings (&minus;3 pts), plus +7 pts per Auto-Fix type applied by the widget. <strong style="color:#f5a623">Note:</strong> A site with many high-severity issues can reach 0 before the widget&rsquo;s auto-fixes are applied — this is intentional. The &ldquo;Score After Widget&rdquo; shows the improvement the ACC widget delivers from day one; even at 0, a positive widget impact means immediate measurable compliance gain.
           <strong style="color:#38d9a9">Auto-Fix Types</strong> are categories of issues the widget patches automatically on every page load (e.g. missing alt text, skip links, ARIA labels) without any code change on your site.
           For your overall AODA compliance picture — including roadmap milestones, training records, and documentation — see your <strong style="color:#4f8ef7">Annual Evidence Binder</strong>.
         </div>
@@ -454,7 +454,7 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
             </svg>
             <div class="ring-info">
               <div class="big" id="wcag-score-pct">—%</div>
-              <div class="sub">WCAG 2.1 AA</div>
+              <div class="sub">WCAG 2.1/2.2 AA</div>
               <div class="sub" style="margin-top:4px" id="wcag-critical-sub">Loading…</div>
             </div>
           </div>
@@ -2760,6 +2760,7 @@ async function loadInvoiceHistory(c) {
   if (isAnnual) { while (cur <= now) { months.push(new Date(cur)); cur.setFullYear(cur.getFullYear()+1); } }
   else          { while (cur <= now) { months.push(new Date(cur)); cur.setMonth(cur.getMonth()+1); } }
   months.reverse();
+  // Check storage for both .html (new) and .pdf (legacy) extensions
   var existingFiles = new Set();
   try {
     var lr = await _sb_client.storage.from('invoices').list(c.client_code||'', { limit:100 });
@@ -2770,12 +2771,12 @@ async function loadInvoiceHistory(c) {
   tbody.innerHTML = months.map(function(m) {
     var ym    = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0');
     var label = m.toLocaleDateString('en-CA', { year:'numeric', month:'long' });
-    var fname = ym + '-invoice.pdf';
-    var hasPdf = existingFiles.has(fname);
-    var isPast = m < now;
-    var dlBtn = hasPdf
-      ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" data-ym="'+ym+'" onclick="downloadInvoice(this.dataset.ym)">↓ PDF</button>'
-      : (isPast ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px;opacity:.6" data-ym="'+ym+'" onclick="generateAndDownloadInvoice(this.dataset.ym)">&#128196; View</button>' : '—');
+    var hasFile = existingFiles.has(ym + '-invoice.html') || existingFiles.has(ym + '-invoice.pdf');
+    var isPast  = m < now;
+    // Always show a View button for past periods — generates on first click if not yet stored
+    var dlBtn = isPast
+      ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" data-ym="'+ym+'" onclick="generateAndDownloadInvoice(this.dataset.ym)">'+(hasFile?'↓ PDF':'&#128196; View')+'</button>'
+      : '—';
     return '<tr><td>'+label+'</td><td>'+(amount?'$'+parseFloat(amount).toFixed(2):'—')+'</td><td><span class="pill '+(isPast?'green':'blue')+'">'+(isPast?'Paid':'Scheduled')+'</span></td><td>'+dlBtn+'</td></tr>';
   }).join('') || '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No invoices yet.</td></tr>';
 }
@@ -3911,9 +3912,11 @@ async function populateScanData(clientCode) {
   var warnings = scan ? (scan.warnings    ?? 0) : 0;
   var fixes    = scan ? (scan.fixes_applied ?? 0) : 0;
   var autoFixed = scan ? (scan.auto_fixed   ?? 0) : 0;
-  // Compliance Gaps = all errors (high+medium combined)
-  var critical = scan ? (scan.critical    ?? 0) : 0;  // total gaps
+  // Compliance Gaps = scans.critical column (total errors stored by widget/admin scan)
+  var critical = scan ? (scan.critical    ?? 0) : 0;
   var devFixes = 0;  // high severity (Level A) — populated from scan_issues below
+  // If critical=0 but scan exists, count from scan_issues as fallback
+  var _critFallbackNeeded = (critical === 0 && scan !== null);
   // Try to get High severity count from scan_issues
   if (clientCode) {
     try {
@@ -3929,6 +3932,21 @@ async function populateScanData(clientCode) {
         .lt('scanned_at', _me3);
       if (!_hR.error && _hR.data) devFixes = _hR.data.length;
     } catch(_) {}
+    // Fallback: count all errors from scan_issues if scans.critical=0
+    if (_critFallbackNeeded) {
+      try {
+        var _now4 = new Date();
+        var _ms4  = new Date(_now4.getFullYear(), _now4.getMonth(), 1).toISOString();
+        var _me4  = new Date(_now4.getFullYear(), _now4.getMonth()+1, 1).toISOString();
+        var _gapR = await _sb_client.from('scan_issues')
+          .select('id')
+          .eq('client_code', clientCode)
+          .eq('type', 'error')
+          .gte('scanned_at', _ms4)
+          .lt('scanned_at', _me4);
+        if (!_gapR.error && _gapR.data && _gapR.data.length > 0) critical = _gapR.data.length;
+      } catch(_) {}
+    }
   }
 
   // Fix 3: fallback — count type='fixed' rows in scan_issues if scans.fixes_applied=0
@@ -3971,7 +3989,15 @@ async function populateScanData(clientCode) {
   var pctEl = document.getElementById('wcag-score-pct');
   if (pctEl) pctEl.textContent = score + '%';
   var critSubEl = document.getElementById('wcag-critical-sub');
-  if (critSubEl) critSubEl.textContent = critical + ' Critical issue' + (critical === 1 ? '' : 's');
+  if (critSubEl) {
+    if (critical === 0 && warnings === 0) {
+      critSubEl.textContent = '✓ No compliance gaps';
+    } else {
+      critSubEl.textContent = (critical > 0 ? critical + ' gap' + (critical===1?'':'s') : '') +
+        (critical > 0 && warnings > 0 ? ' · ' : '') +
+        (warnings > 0 ? warnings + ' warning' + (warnings===1?'':'s') : '');
+    }
+  }
   var ringCircle = document.getElementById('wcag-ring-circle');
   if (ringCircle) {
     var offset = (213.6 * (1 - score / 100)).toFixed(1);

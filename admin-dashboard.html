@@ -595,8 +595,6 @@ Scores show <em>site today → with widget applied</em>.
             </div>
           </div>
 
-          <!-- POUR breakdown -->
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="sr-pour"></div>
         </div>
 
 
@@ -3205,23 +3203,6 @@ function renderAdminScanResults(issues, label) {
   var _srGapsMed = document.getElementById('sr-gaps-med');
   if (_srGapsMed) _srGapsMed.textContent = nGapsMed;
   document.getElementById('sr-warn').textContent      = nWarn;
-
-  // POUR breakdown
-  var pour = {
-    Perceivable:    calcPOUR(issues,['1.1.1','1.3.1','1.4.3','1.4.5'],'1'),
-    Operable:       calcPOUR(issues,['2.1.1','2.4.1','2.4.2','2.4.4'],'2'),
-    Understandable: calcPOUR(issues,['3.1.1','3.3.1','3.3.2'],'3'),
-    Robust:         calcPOUR(issues,['4.1.1','4.1.2'],'4'),
-  };
-  var pourEl = document.getElementById('sr-pour');
-  pourEl.innerHTML = Object.entries(pour).map(function(kv) {
-    var k=kv[0],v=kv[1];
-    var c=v>=80?'#38d9a9':v>=60?'#f5a623':'#f05f5f';
-    return '<div style="text-align:center;padding:10px;background:rgba(17,34,68,.6);border-radius:8px;border:1px solid rgba(30,58,107,.6)">'
-      +'<div style="font-size:1.2rem;font-weight:800;color:'+c+';font-family:ui-monospace,monospace">'+v+'</div>'
-      +'<div style="font-size:.65rem;color:#8a9bbf;margin-top:2px">'+k+'</div>'
-      +'</div>';
-  }).join('');
 
   renderScanIssueList(issues);
   // Show save button now that scan data is ready
