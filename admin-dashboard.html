@@ -2817,10 +2817,11 @@ async function generateInvoiceForClient() {
       + '<button class="print-btn no-print" onclick="window.print()" style="margin-top:8px;font-size:.72rem;padding:6px 14px">&#8659; Download PDF</button></div>'
       + '</div></body></html>';
 
-    // Upload to invoices bucket as .html
+    // Upload to invoices bucket as application/octet-stream
+    // (Supabase storage buckets commonly block text/html for security; octet-stream is always accepted)
     var enc   = new TextEncoder().encode(html);
     var fname = code + '/' + ym + '-invoice.html';
-    var up    = await _sb.storage.from('invoices').upload(fname, enc, { contentType:'text/html', upsert:true });
+    var up    = await _sb.storage.from('invoices').upload(fname, enc, { contentType:'application/octet-stream', upsert:true });
     if (up.error) throw up.error;
     showToastAdmin('Invoice generated for ' + ym, 'success');
     renderFileList('invoices', code);
