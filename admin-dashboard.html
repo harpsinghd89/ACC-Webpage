@@ -581,27 +581,22 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
               <div style="font-size:.6rem;color:#8a9bbf;margin-top:2px">instant, day one</div>
             </div>
           </div>
-          <!-- Other stats row -->
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:16px">
-            <div style="text-align:center;padding:12px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px">
-              <div style="font-size:1.6rem;font-weight:800;color:#38d9a9;font-family:ui-monospace,'SF Mono',monospace" id="sr-fixed">—</div>
-              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Fix Types</div>
+          <!-- Stats row: 3 cards only -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+            <div style="text-align:center;padding:14px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.2);border-radius:10px">
+              <div style="font-size:1.8rem;font-weight:800;color:#38d9a9;font-family:ui-monospace,'SF Mono',monospace" id="sr-fixed">—</div>
+              <div style="font-size:.72rem;font-weight:700;color:#38d9a9;margin-top:4px;text-transform:uppercase;letter-spacing:.05em">✓ Auto-Fixes</div>
+              <div style="font-size:.65rem;color:#8a9bbf;margin-top:2px">Resolved by widget</div>
             </div>
-            <div style="text-align:center;padding:12px;background:rgba(56,217,169,.06);border:1px solid rgba(56,217,169,.15);border-radius:10px">
-              <div style="font-size:1.6rem;font-weight:800;color:#38d9a9;font-family:ui-monospace,'SF Mono',monospace" id="sr-elements-fixed">—</div>
-              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Elements Fixed</div>
+            <div style="text-align:center;padding:14px;background:rgba(194,65,12,.06);border:1px solid rgba(194,65,12,.2);border-radius:10px">
+              <div style="font-size:1.8rem;font-weight:800;color:#c2410c;font-family:ui-monospace,'SF Mono',monospace" id="sr-gaps">—</div>
+              <div style="font-size:.72rem;font-weight:700;color:#c2410c;margin-top:4px;text-transform:uppercase;letter-spacing:.05em">⚠ Compliance Gaps</div>
+              <div style="font-size:.65rem;color:#8a9bbf;margin-top:2px"><span id="sr-gaps-high">—</span> High · <span id="sr-gaps-med">—</span> Medium</div>
             </div>
-            <div style="text-align:center;padding:12px;background:rgba(194,65,12,.06);border:1px solid rgba(194,65,12,.2);border-radius:10px">
-              <div style="font-size:1.6rem;font-weight:800;color:#c2410c;font-family:ui-monospace,'SF Mono',monospace" id="sr-gaps">—</div>
-              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Compliance Gaps</div>
-            </div>
-            <div style="text-align:center;padding:12px;background:rgba(194,65,12,.04);border:1px solid rgba(194,65,12,.15);border-radius:10px">
-              <div style="font-size:1.6rem;font-weight:800;color:#f05f5f;font-family:ui-monospace,'SF Mono',monospace" id="sr-gaps-high">—</div>
-              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">High Severity</div>
-            </div>
-            <div style="text-align:center;padding:12px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.15);border-radius:10px">
-              <div style="font-size:1.6rem;font-weight:800;color:#f5a623;font-family:ui-monospace,'SF Mono',monospace" id="sr-warn">—</div>
-              <div style="font-size:.68rem;color:#8a9bbf;margin-top:4px">Warnings</div>
+            <div style="text-align:center;padding:14px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:10px">
+              <div style="font-size:1.8rem;font-weight:800;color:#f5a623;font-family:ui-monospace,'SF Mono',monospace" id="sr-warn">—</div>
+              <div style="font-size:.72rem;font-weight:700;color:#f5a623;margin-top:4px;text-transform:uppercase;letter-spacing:.05em">△ Warnings</div>
+              <div style="font-size:.65rem;color:#8a9bbf;margin-top:2px">Advisory items</div>
             </div>
           </div>
 
@@ -3239,12 +3234,14 @@ function renderAdminScanResults(issues, label) {
   document.getElementById('sr-elements-fixed').textContent= totalElFixed;
   document.getElementById('sr-gaps').textContent      = nGaps;
   document.getElementById('sr-gaps-high').textContent = nGapsHigh;
+  var _srGapsMed = document.getElementById('sr-gaps-med');
+  if (_srGapsMed) _srGapsMed.textContent = nGapsMed;
   document.getElementById('sr-warn').textContent      = nWarn;
 
   // POUR breakdown
   var pour = {
-    Perceivable:    calcPOUR(issues,['1.1.1','1.3.1','1.4.3','1.4.5','1.4.10','1.4.11','1.4.12','1.2.2'],'1'),
-    Operable:       calcPOUR(issues,['2.1.1','2.4.1','2.4.2','2.4.3','2.4.4','2.4.7','2.2.2'],'2'),
+    Perceivable:    calcPOUR(issues,['1.1.1','1.3.1','1.4.3','1.4.5'],'1'),
+    Operable:       calcPOUR(issues,['2.1.1','2.4.1','2.4.2','2.4.4'],'2'),
     Understandable: calcPOUR(issues,['3.1.1','3.3.1','3.3.2'],'3'),
     Robust:         calcPOUR(issues,['4.1.1','4.1.2'],'4'),
   };
@@ -3451,141 +3448,232 @@ function downloadAdminScanReport() {
   if(!_adminScanIssues.length){ showToastAdmin('Run a scan first','error'); return; }
   var reportType = (document.getElementById('scan-report-type')||{}).value || 'audit';
   if (reportType === 'prospect') { downloadProspectReport(); return; }
-  var issues = _adminScanIssues;
-  var url    = _adminScanURL;
+
+  var issues      = _adminScanIssues;
+  var url         = _adminScanURL;
   var scoreEl     = document.getElementById('sr-score');
   var score       = parseInt(scoreEl ? scoreEl.textContent : '0')||0;
   var scoreWithout= parseInt(scoreEl ? scoreEl.getAttribute('data-raw') : '0')||score;
-  var nFixed    = issues.filter(function(i){return i.type==='fixed';}).length;
-  var nWarn     = issues.filter(function(i){return i.type==='warning';}).length;
-  var gapsAll   = issues.filter(function(i){return i.type==='error';});
-  var nGapsHigh = gapsAll.filter(function(i){return i.level==='A';}).length;
-  var nGapsMed  = gapsAll.filter(function(i){return i.level==='AA'||!i.level;}).length;
-  var nGaps     = nGapsHigh + nGapsMed;
-  var now    = new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
-  var scoreColor = score>=80?'#065f46':score>=60?'#92400e':'#991b1b';
-  var scoreBg    = score>=80?'#d1fae5':score>=60?'#fef3c7':'#fee2e2';
+  var nFixed      = issues.filter(function(i){return i.type==='fixed';}).length;
+  var nWarn       = issues.filter(function(i){return i.type==='warning';}).length;
+  var gapsAll     = issues.filter(function(i){return i.type==='error';});
+  var nGapsHigh   = gapsAll.filter(function(i){return i.level==='A';}).length;
+  var nGapsMed    = gapsAll.filter(function(i){return i.level==='AA'||!i.level;}).length;
+  var nGaps       = nGapsHigh + nGapsMed;
+  var now         = new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
   var autoFixImpact = score - scoreWithout;
-  // Fallback: if formula gives 0 but fixed issues exist, estimate from count
   if (autoFixImpact <= 0 && nFixed > 0) {
-    var _fixA  = issues.filter(function(i){return i.type==='fixed'&&i.level==='A';}).length;
-    var _fixAA = issues.filter(function(i){return i.type==='fixed'&&(i.level==='AA'||!i.level);}).length;
-    autoFixImpact = _fixA * 14 + _fixAA * 7;
+    var _fA = issues.filter(function(i){return i.type==='fixed'&&i.level==='A';}).length;
+    var _fAA= issues.filter(function(i){return i.type==='fixed'&&(i.level==='AA'||!i.level);}).length;
+    autoFixImpact = _fA*14 + _fAA*7;
     scoreWithout  = Math.max(0, score - autoFixImpact);
   }
 
-  // Multi-page scan metadata
-  var pagesScanned  = _adminScanMeta.pagesScanned || 1;
-  var totalFound    = _adminScanMeta.totalFound   || 1;
-  var sitemapUsed   = !!_adminScanMeta.sitemapUrl;
-  var perPage       = _adminScanMeta.perPage || [];
-  var scanScope     = pagesScanned > 1
+  var pagesScanned = _adminScanMeta.pagesScanned || 1;
+  var totalFound   = _adminScanMeta.totalFound   || 1;
+  var sitemapUsed  = !!_adminScanMeta.sitemapUrl;
+  var perPage      = _adminScanMeta.perPage || [];
+  var scanScope    = pagesScanned > 1
     ? pagesScanned + ' pages scanned' + (sitemapUsed ? ' (sitemap)' : ' (link crawl)')
     : '1 page scanned (homepage only)';
 
-  // Group: Auto-Fixed → Compliance Gaps (all errors by severity) → Warnings
-  var byType = { fixed:[], gaps:[], warning:[] };
-  issues.forEach(function(i){
-    if(i.type==='fixed')   byType.fixed.push(i);
-    else if(i.type==='error') byType.gaps.push(i);
-    else if(i.type==='warning') byType.warning.push(i);
-  });
-  // Sort gaps: High first, then Medium, then Low
-  byType.gaps.sort(function(a,b){return (a.level==='A'?0:1)-(b.level==='A'?0:1);});
-
-  function issueRows(list) {
-    return list.map(function(i){
-      var _sev   = i.type==='error'?(i.level==='A'?'High':'Medium'):'Low';
-      var _fix   = i.requiresDev?'Dev Code':'CMS / Settings';
-      var badge  = i.type==='fixed'?'fixed':i.type==='warning'?'warning':(i.level==='A'?'gap-high':'gap-med');
-      var badgeLabel = i.type==='fixed'?'Auto-Fixed':i.type==='warning'?'Warning':(_sev+' · '+_fix);
-      var elDetails = '';
-      if(i.elements && i.elements.length) {
-        elDetails = '<div style="margin-top:6px;background:#f8f9fc;border-radius:4px;padding:6px 8px;font-family:monospace;font-size:.72rem">'
-          +'<div style="font-weight:600;color:#64748b;margin-bottom:3px">Affected elements:</div>'
-          + i.elements.slice(0,5).map(function(el){
-              return '<div style="color:#1e40af;word-break:break-all;white-space:normal">'+escHtml(el.selector)
-                +'<span style="color:#64748b"> — '+escHtml(el.snippet)+'</span></div>';
-            }).join('')
-          +(i.elements.length>5?'<div style="color:#94a3b8">…and '+(i.elements.length-5)+' more elements</div>':'')
-          +'</div>';
-      }
-      // col widths: Issue (auto/flex) | Description (auto/flex) | Status (90px) | WCAG (70px) | Level (54px) | Section (70px) | # (36px)
-      return '<tr class="issue-row ' + badge + '">'
-        +'<td class="col-issue" style="padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;min-width:0">'
-        +'<div style="font-weight:600;font-size:.82rem;color:#0f172a;margin-bottom:2px;word-break:break-word">'+(i.icon||'')+' '+escHtml(i.title)+'</div>'
-        + elDetails
-        +'</td>'
-        +'<td class="col-desc" style="padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word;min-width:0">'
-        +'<div style="font-size:.75rem;color:#475569;line-height:1.5;word-break:break-word">'+escHtml(i.desc)+'</div>'
-        +(i.requiresDev?'<div style="font-size:.7rem;color:#92400e;font-style:italic;margin-top:3px">⚠ Requires custom developer code — cannot be auto-fixed by widget</div>':'')
-        +'</td>'
-        +'<td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;vertical-align:top;white-space:nowrap;width:90px">'
-        +'<span class="badge '+badge+'">'+badgeLabel+'</span></td>'
-        +'<td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;vertical-align:top;font-family:monospace;font-size:.75rem;color:#64748b;white-space:nowrap;width:70px">'+escHtml(i.criterion||'—')+'</td>'
-        +'<td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;vertical-align:top;font-size:.75rem;color:#64748b;white-space:nowrap;width:54px">'+escHtml(i.level||'AA')+'</td>'
-        +'<td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;vertical-align:top;font-size:.75rem;color:#64748b;white-space:nowrap;width:70px">'+escHtml(i.section||'page')+'</td>'
-        +'<td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:center;vertical-align:top;font-size:.75rem;font-weight:600;color:#64748b;white-space:nowrap;width:36px">'+(i.elements?i.elements.length:i.count||1)+'</td>'
-        +'</tr>';
-    }).join('');
-  }
+  // Sort: Auto-Fixed first, then Compliance Gaps (High→Medium), then Warnings
+  var autoFixed = issues.filter(function(i){return i.type==='fixed';});
+  var gaps      = issues.filter(function(i){return i.type==='error';})
+                        .sort(function(a,b){return (a.level==='A'?0:1)-(b.level==='A'?0:1);});
+  var warnings  = issues.filter(function(i){return i.type==='warning';});
 
   function escHtml(s){var d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
 
-  var beforeColor = scoreWithout>=80?'#065f46':scoreWithout>=60?'#92400e':'#991b1b';
-  var beforeBg    = scoreWithout>=80?'#d1fae5':scoreWithout>=60?'#fef3c7':'#fee2e2';
+  // POUR scores — same criteria as UI
+  var pourCriteria = [
+    {label:'Perceivable',    crit:['1.1.1','1.3.1','1.4.3','1.4.5']},
+    {label:'Operable',       crit:['2.1.1','2.4.1','2.4.2','2.4.4']},
+    {label:'Understandable', crit:['3.1.1','3.3.1','3.3.2']},
+    {label:'Robust',         crit:['4.1.1','4.1.2']},
+  ];
+  var pourHTML = pourCriteria.map(function(pc){
+    var eH=issues.filter(function(i){return i.type==='error'&&i.level==='A'&&pc.crit.indexOf(i.criterion)>=0;}).length;
+    var eM=issues.filter(function(i){return i.type==='error'&&(i.level==='AA'||!i.level)&&pc.crit.indexOf(i.criterion)>=0;}).length;
+    var ps=Math.max(0,Math.min(100,Math.round(100-eH*14-eM*7)));
+    var pc2=ps>=80?'#065f46':ps>=60?'#92400e':'#991b1b';
+    return '<div style="padding:14px;text-align:center;border-right:1px solid #e5e7eb">'
+      +'<div style="font-size:1.4rem;font-weight:700;color:'+pc2+'">'+ps+'</div>'
+      +'<div style="font-size:.65rem;text-transform:uppercase;color:#8a9bbf;letter-spacing:.06em">'+pc.label+'</div>'
+      +'</div>';
+  }).join('');
 
-  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'    +'<title>ACC Accessibility Audit — '+escHtml(url)+'</title>'    +'<style>'    +'*{box-sizing:border-box}body{font-family:"Segoe UI",system-ui,sans-serif;background:#f8fafc;color:#0f172a;margin:0;padding:32px}'    +'.report{max-width:960px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)}'    +'.rh{background:linear-gradient(135deg,#0a1628,#0d1f3c);color:#fff;padding:28px 32px}'    +'.rh-meta{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#64748b;margin-bottom:4px}'    +'.rh-title{font-size:1.1rem;font-weight:700;margin:0 0 3px;color:#fff}'    +'.rh-sub{font-size:.75rem;color:#94a3b8}'    +'.score-row{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;padding:16px 32px;background:#f1f5f9;border-bottom:1px solid #e2e8f0}'    +'.score-card{flex:1;min-width:120px;padding:14px 16px;border-radius:10px;text-align:center}'    +'.score-card.with-widget{background:#fff;border:2px solid #10b981}'    +'.score-card.without-widget{background:#fff;border:1.5px solid #e2e8f0}'    +'.score-card.delta-card{background:linear-gradient(135deg,#d1fae5,#a7f3d0);border:none;display:flex;flex-direction:column;align-items:center;justify-content:center}'    +'.score-card.af-card{background:#fff;border:1.5px solid #10b981;flex:1.4}'    +'.score-big{font-size:2.2rem;font-weight:800;line-height:1}'    +'.score-denom{font-size:.9rem;font-weight:400;color:#94a3b8}'    +'.score-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-top:4px}'    +'.score-caption{font-size:.65rem;color:#94a3b8;margin-top:2px}'    +'.delta-num{font-size:1.8rem;font-weight:800;color:#065f46;line-height:1}'    +'.delta-label{font-size:.65rem;color:#065f46;font-weight:600;margin-top:2px}'    +'.pills{display:flex;gap:8px;flex-wrap:wrap;padding:12px 32px;background:#f8fafc;border-bottom:1px solid #e2e8f0}'    +'.pill-item{padding:5px 14px;border-radius:20px;font-size:.75rem;font-weight:600}'    +'.pour-grid{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #e2e8f0}'    +'.pour-item{padding:14px;text-align:center;border-right:1px solid #e2e8f0}'    +'.pour-item:last-child{border-right:none}'    +'.pour-score{font-size:1.4rem;font-weight:700}'    +'.pour-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-top:2px}'    +'.pour-def{font-size:.6rem;color:#94a3b8;margin-top:3px;line-height:1.4;max-width:120px;margin-left:auto;margin-right:auto}'    +'.section-hdr{padding:10px 32px 8px;display:flex;align-items:center;gap:10px;background:#f8fafc;border-bottom:1px solid #e2e8f0;border-top:2px solid transparent}'    +'.section-hdr.s-fixed{border-top-color:#10b981}.section-hdr.s-critical{border-top-color:#ef4444}.section-hdr.s-dev{border-top-color:#f59e0b}.section-hdr.s-warning{border-top-color:#3b82f6}'    +'.section-hdr-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em}'    +'.section-hdr-count{font-size:.68rem;font-weight:600;padding:2px 10px;border-radius:10px}'    +'table{width:100%;border-collapse:collapse;table-layout:fixed}'    +'th{padding:10px 12px;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;text-align:left;background:#f1f5f9;border-bottom:1px solid #e2e8f0;white-space:nowrap}'    +'.col-issue{width:26%}.col-desc{width:auto}'    +'.issue-row.critical td:first-child{border-left:3px solid #ef4444}'    +'.issue-row.dev td:first-child{border-left:3px solid #f59e0b}'    +'.issue-row.warning td:first-child{border-left:3px solid #3b82f6}'    +'.issue-row.fixed td:first-child{border-left:3px solid #10b981}'    +'.badge{padding:3px 9px;border-radius:6px;font-size:.65rem;font-weight:700;text-transform:uppercase;white-space:nowrap}'    +'.badge.critical{background:#fee2e2;color:#991b1b}'    +'.badge.dev{background:#fef3c7;color:#92400e}'    +'.badge.warning{background:#dbeafe;color:#1e40af}'    +'.badge.fixed{background:#d1fae5;color:#065f46}'    +'.score-note{padding:10px 32px;font-size:.72rem;color:#64748b;background:#f8fafc;border-bottom:1px solid #e2e8f0;line-height:1.6}'    +'.footer{padding:14px 32px;font-size:.65rem;color:#94a3b8;text-align:center;border-top:1px solid #e2e8f0;background:#f8fafc}'    +'</style></head><body><div class="report">'    +'<div class="rh">'    +'<div class="rh-meta">WCAG 2.1 AA Accessibility Audit</div>'    +'<div class="rh-title">'+escHtml(url)+'</div>'    +'<div class="rh-sub">Generated '+now+' &nbsp;·&nbsp; ACC — Accessibility Compliance Canada Inc.</div>'    +'</div>'    +'<div class="score-row">'    +'<div class="score-card with-widget">'    +'<div class="score-big" style="color:'+scoreColor+'">'+score+'<span class="score-denom">/100</span></div>'    +'<div class="score-label" style="color:'+scoreColor+'">'+(score>=80?'Compliant':score>=60?'In Progress':'Needs Attention')+'</div>'    +'<div class="score-caption">WITH ACC Widget</div>'    +'</div>'    +'<div class="score-card without-widget">'    +'<div class="score-big" style="color:'+beforeColor+'">'+scoreWithout+'<span class="score-denom">/100</span></div>'    +'<div class="score-label" style="color:'+beforeColor+'">'+(scoreWithout>=80?'Compliant':scoreWithout>=60?'In Progress':'Needs Attention')+'</div>'    +'<div class="score-caption">Without Widget</div>'    +'</div>'    +'<div class="score-card delta-card">'    +'<div class="delta-num">+'+autoFixImpact+'</div>'    +'<div class="delta-label">pts improvement</div>'    +'</div>'    +'<div class="score-card af-card">'    +'<div class="score-big" style="color:#10b981">'+nFixed+'</div>'    +'<div class="score-label" style="color:#10b981">Auto-Fixes</div>'    +'<div class="score-caption">resolved by widget every visit</div>'    +'</div>'    +'</div>'    +'<div class="score-note" style="padding:10px 32px;font-size:.72rem;color:#64748b;background:#f8fafc;border-bottom:1px solid #e2e8f0;line-height:1.6">'
-    +'<strong>Scan scope:</strong> '+escHtml(scanScope)+'.'
-    +(pagesScanned < totalFound ? ' ('+totalFound+' pages found in sitemap; first '+pagesScanned+' scanned)' : '')
-    +'&nbsp; <strong>How scores work:</strong> Each unfixed Level A violation costs −14 pts, Level AA −7 pts, warnings −3 pts. '
-    +'Score Today = raw without widget. With ACC Widget = auto-fixed violations excluded.'
+  // Issue section renderer — matches baseline format exactly
+  function issueSection(label, accent, icon, list) {
+    var hdr = '<div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:'+accent
+      +';padding:10px 32px;background:#fafafa;border-bottom:1px solid #e5e7eb;border-top:2px solid '+accent+'">'
+      +icon+' '+label+' ('+list.length+')</div>';
+    if (!list.length) {
+      return hdr+'<div style="padding:12px 32px;font-size:.82rem;color:#9ca3af;border-bottom:1px solid #e5e7eb;">✓ None detected — this category is clear.</div>';
+    }
+    var TH='background:#f1f3f9;padding:10px 16px;font-size:.72rem;text-transform:uppercase;color:#8a9bbf;text-align:left;border-bottom:1px solid #e5e7eb;white-space:nowrap';
+    var TD='padding:10px 16px;font-size:.83rem;border-bottom:1px solid #f0f0f0;vertical-align:top;word-wrap:break-word;overflow-wrap:break-word';
+    return hdr
+      +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:560px">'
+      +'<colgroup><col style="width:auto"><col style="width:130px"><col style="width:80px"><col style="width:60px"><col style="width:60px"></colgroup>'
+      +'<thead><tr>'
+      +'<th style="'+TH+'">Issue &amp; Description</th>'
+      +'<th style="'+TH+'">Severity &amp; Fix Type</th>'
+      +'<th style="'+TH+'">WCAG</th>'
+      +'<th style="'+TH+'">Pages</th>'
+      +'<th style="'+TH+'">Elements</th>'
+      +'</tr></thead><tbody>'
+      +list.map(function(i){
+        var sev    = i.type==='error'?(i.level==='A'?'High':'Medium'):(i.type==='warning'?'Advisory':'—');
+        var sevClr = i.level==='A'?'#991b1b':(i.type==='error'?'#92400e':'#1e40af');
+        var sevBg  = i.level==='A'?'#fee2e2':(i.type==='error'?'#fef3c7':'#dbeafe');
+        var fixLbl = i.type==='fixed'?'Auto-Fixed':i.type==='warning'?'Advisory':(i.requiresDev?'Dev Code':'CMS / Settings');
+        var elDetails='';
+        if(i.elements&&i.elements.length){
+          elDetails='<div style="margin-top:6px;background:#f8f9fc;border-radius:4px;padding:5px 8px;font-family:monospace;font-size:.7rem">'
+            +i.elements.slice(0,3).map(function(el){
+              return '<div style="color:#1e40af;word-break:break-all">'+escHtml(el.selector)
+                +'<span style="color:#64748b"> — '+escHtml(el.snippet)+'</span></div>';
+            }).join('')
+            +(i.elements.length>3?'<div style="color:#94a3b8">…+'+( i.elements.length-3)+' more</div>':'')
+            +'</div>';
+        }
+        return '<tr>'
+          +'<td style="'+TD+';border-left:3px solid '+accent+'">'
+          +'<div style="font-weight:600;font-size:.85rem">'+escHtml(i.title||i.criterion)+'</div>'
+          +'<div style="font-size:.75rem;color:#6b7280;margin-top:2px">'+escHtml(i.desc||'')+'</div>'
+          +elDetails
+          +'</td>'
+          +'<td style="'+TD+'">'
+          +(i.type==='error'?'<span style="font-size:.72rem;font-weight:700;color:'+sevClr+';background:'+sevBg+';padding:2px 7px;border-radius:4px;display:inline-block;margin-bottom:4px">'+sev+'</span><br>':'')
+          +'<span style="font-size:.72rem;color:#6b7280">'+fixLbl+'</span>'
+          +'</td>'
+          +'<td style="'+TD+';font-family:monospace;font-size:.78rem;color:#6b7280">WCAG '+escHtml(i.criterion||'—')+'<br><span style="color:#9ca3af">Level '+(i.level||'AA')+'</span></td>'
+          +'<td style="'+TD+';text-align:center">'+(i.pagesAffected||1)+'</td>'
+          +'<td style="'+TD+';text-align:center;font-weight:600;color:'+accent+'">'+(i.elements?i.elements.length:i.count||1)+'</td>'
+          +'</tr>';
+      }).join('')
+      +'</tbody></table></div>';
+  }
+
+  var CSS = '*{box-sizing:border-box}body{font-family:"Segoe UI",system-ui,sans-serif;background:#f4f5f7;padding:32px;margin:0}'
+    +'.report{max-width:980px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}'
+    +'.print-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 32px;background:#f8f9fc;border-bottom:1px solid #e5e7eb;gap:12px;flex-wrap:wrap}'
+    +'.print-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#0a1628;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer}'
+    +'.print-btn:hover{background:#1e3a6b}'
+    +'@media print{body{background:#fff;padding:0}.report{box-shadow:none;border-radius:0;max-width:100%}.print-bar{display:none}}';
+
+  var beforeAfter = autoFixImpact > 0
+    ? '<div style="display:grid;grid-template-columns:1fr auto 1fr;background:#f0fdf4;border-bottom:1px solid #bbf7d0">'
+      +'<div style="padding:14px 24px;text-align:center"><div style="font-size:1.8rem;font-weight:800;color:#991b1b">'+scoreWithout+'<span style="font-size:.9rem;color:#9ca3af">/100</span></div>'
+      +'<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#9ca3af">Without Widget</div></div>'
+      +'<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px;background:#d1fae5">'
+      +'<div style="font-size:.85rem;font-weight:800;color:#065f46">+'+autoFixImpact+' pts</div>'
+      +'<div style="font-size:1.2rem;color:#065f46">→</div>'
+      +'<div style="font-size:.62rem;font-weight:700;color:#065f46;text-align:center">ACC<br>Widget</div></div>'
+      +'<div style="padding:14px 24px;text-align:center;background:#ecfdf5"><div style="font-size:1.8rem;font-weight:800;color:#065f46">'+score+'<span style="font-size:.9rem;color:#9ca3af">/100</span></div>'
+      +'<div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#065f46">With Widget</div></div></div>'
+    : '';
+
+  var widgetCallout = nFixed > 0
+    ? '<div style="margin:16px 32px 0;padding:14px 18px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:10px">'
+      +'<div style="font-size:.82rem;font-weight:700;color:#065f46;margin-bottom:8px">🤖 ACC Widget auto-fixes on every page load</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'
+      +'<div style="text-align:center;background:#fff;border-radius:8px;padding:10px;border:1px solid #a7f3d0"><div style="font-size:1.4rem;font-weight:800;color:#065f46">'+nFixed+'</div><div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#6ee7b7">Fix Types</div></div>'
+      +'<div style="text-align:center;background:#fff;border-radius:8px;padding:10px;border:1px solid #a7f3d0"><div style="font-size:1.4rem;font-weight:800;color:#065f46">'+nGaps+'</div><div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#6ee7b7">Gaps Remaining</div></div>'
+      +'<div style="text-align:center;background:#fff;border-radius:8px;padding:10px;border:1px solid #a7f3d0"><div style="font-size:1.4rem;font-weight:800;color:#065f46">+'+autoFixImpact+'</div><div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#6ee7b7">Score Pts</div></div>'
+      +'</div></div>'
+    : '';
+
+  var perPageHTML = perPage.length > 1
+    ? '<div style="padding:10px 32px 16px;background:#f8f9fc;border-bottom:1px solid #e5e7eb">'
+      +'<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:8px">Per-Page Results</div>'
+      +'<table style="width:100%;border-collapse:collapse;font-size:.72rem">'
+      +'<thead><tr>'
+      +'<th style="text-align:left;padding:6px 12px;background:#f1f3f9;border-bottom:1px solid #e5e7eb;color:#9ca3af">Page</th>'
+      +'<th style="padding:6px 12px;background:#f1f3f9;border-bottom:1px solid #e5e7eb;color:#9ca3af;text-align:center">⚠ Gaps (H)</th>'
+      +'<th style="padding:6px 12px;background:#f1f3f9;border-bottom:1px solid #e5e7eb;color:#9ca3af;text-align:center">⚠ Gaps (M)</th>'
+      +'<th style="padding:6px 12px;background:#f1f3f9;border-bottom:1px solid #e5e7eb;color:#9ca3af;text-align:center">△ Warnings</th>'
+      +'<th style="padding:6px 12px;background:#f1f3f9;border-bottom:1px solid #e5e7eb;color:#9ca3af;text-align:center">✓ Auto-Fixed</th>'
+      +'</tr></thead><tbody>'
+      +perPage.map(function(p){
+        var path='';try{path=new URL(p.url).pathname||'/';}catch(e){path=p.url;}
+        return '<tr>'
+          +'<td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;word-break:break-all">'+escHtml(path)+'</td>'
+          +'<td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:center;color:'+(p.gapsHigh>0?'#991b1b':'#065f46')+';font-weight:700">'+(p.gapsHigh||0)+'</td>'
+          +'<td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:center;color:'+(p.gapsMed>0?'#92400e':'#065f46')+';font-weight:700">'+(p.gapsMed||0)+'</td>'
+          +'<td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:center;color:'+(p.warns>0?'#f5a623':'#065f46')+';font-weight:700">'+p.warns+'</td>'
+          +'<td style="padding:6px 12px;border-bottom:1px solid #f0f0f0;text-align:center;color:#065f46;font-weight:700">'+p.fixed+'</td>'
+          +'</tr>';
+      }).join('')
+      +'</tbody></table></div>'
+    : '';
+
+  var defsHTML = '<div style="padding:14px 32px;background:#f8f9fc;border-bottom:1px solid #e5e7eb">'
+    +'<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#374151;margin-bottom:10px">📌 Issue categories &amp; severity — WCAG 2.1 AA &amp; 2.2 AA</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'
+    +'<div style="padding:10px;background:#d1fae5;border-radius:8px;border-left:3px solid #065f46"><div style="font-size:.78rem;font-weight:700;color:#065f46">✓ Auto-Fix</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Fixed automatically by ACC widget on every page load. Zero developer work. +7 pts per fix type.</div></div>'
+    +'<div style="padding:10px;background:#fef2e8;border-radius:8px;border-left:3px solid #c2410c"><div style="font-size:.78rem;font-weight:700;color:#c2410c">⚠ Compliance Gaps</div><div style="font-size:.72rem;color:#374151;margin-top:2px">WCAG 2.1/2.2 AA failures. <strong>High</strong> (Level A, −14 pts) or <strong>Medium</strong> (Level AA, −7 pts). Fix type shown per item.</div></div>'
+    +'<div style="padding:10px;background:#dbeafe;border-radius:8px;border-left:3px solid #1e40af"><div style="font-size:.78rem;font-weight:700;color:#1e40af">△ Warnings</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Advisory — best practice to fix but not a WCAG failure. −3 pts each.</div></div>'
+    +'</div></div>';
+
+  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<title>ACC Accessibility Audit — '+escHtml(url)+'</title>'
+    +'<style>'+CSS+'</style></head><body><div class="report">'
+
+    +'<div class="print-bar"><div>'
+    +'<span style="font-size:.82rem;font-weight:700;color:#0a1628">ACC Accessibility Audit Report</span>'
+    +'<span style="font-size:.72rem;color:#9ca3af;margin-left:10px">'+escHtml(url)+' · '+now+'</span>'
+    +'</div><div style="display:flex;align-items:center;gap:10px">'
+    +'<span style="font-size:.72rem;color:#9ca3af">Save as PDF: Download → Save as PDF in print dialog</span>'
+    +'<button class="print-btn" onclick="window.print()">&#8659; Download PDF</button>'
+    +'</div></div>'
+
+    +'<div style="background:linear-gradient(135deg,#0a1628,#0d1f3c);color:#fff;padding:28px 32px">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">'
+    +'<div><div style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:#64748b;margin-bottom:4px">WCAG 2.1 AA &amp; 2.2 AA Accessibility Audit</div>'
+    +'<h1 style="font-size:1.1rem;font-weight:700;margin:0 0 3px;color:#fff">'+escHtml(url)+'</h1>'
+    +'<p style="font-size:.8rem;color:#94a3b8;margin:0">Generated '+now+' · '+escHtml(scanScope)+'</p></div>'
+    +'<div style="text-align:right">'
+    +'<div style="font-size:3rem;font-weight:800;color:#fff;line-height:1">'+score+'<span style="font-size:1rem;color:#94a3b8">/100</span></div>'
+    +'<div style="font-size:.7rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em">Score with Widget</div>'
+    +'</div></div></div>'
+    +'<div style="height:3px;background:linear-gradient(90deg,#38d9a9,#4f8ef7)"></div>'
+
+    + beforeAfter
+    + widgetCallout
+
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;padding:16px 32px;background:#f8f9fc;border-bottom:1px solid #e5e7eb;margin-top:'+(autoFixImpact>0?'0':'16px')+'">'
+    +'<span style="padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;background:#d1fae5;color:#065f46">✓ '+nFixed+' Auto-Fixed</span>'
+    +'<span style="padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;background:#fef2e8;color:#c2410c">⚠ '+nGapsHigh+' High · '+nGapsMed+' Medium Gaps</span>'
+    +'<span style="padding:6px 14px;border-radius:8px;font-size:.78rem;font-weight:600;background:#dbeafe;color:#1e40af">△ '+nWarn+' Warnings</span>'
+    +'<span style="padding:6px 14px;border-radius:8px;font-size:.72rem;font-weight:600;background:#f8fafc;color:#374151">WCAG 2.1 AA &amp; 2.2 AA</span>'
     +'</div>'
-    +(perPage.length > 1
-      ? '<div style="padding:10px 32px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0">'
-        +'<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:8px">Per-Page Results</div>'
-        +'<table style="width:100%;border-collapse:collapse;font-size:.72rem">'
-        +'<thead><tr>'
-        +'<th style="text-align:left;padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8">Page</th>'
-        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">⚠ Gaps (H)</th>'
-        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">⚠ Gaps (M)</th>'
-        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">△ Warnings</th>'
-        +'<th style="padding:6px 12px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;color:#94a3b8;text-align:center">✓ Auto-Fixed</th>'
-        +'</tr></thead><tbody>'
-        +perPage.map(function(p){
-          var path='';try{path=new URL(p.url).pathname||'/';}catch(e){path=p.url;}
-          return '<tr>'
-            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;color:#0f172a;word-break:break-all">'+escHtml(path)+'</td>'
-            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.gapsHigh>0?'#991b1b':'#10b981')+';font-weight:700">'+(p.gapsHigh||0)+'</td>'
-            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.gapsMed>0?'#92400e':'#10b981')+';font-weight:700">'+(p.gapsMed||0)+'</td>'
-            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:'+(p.warns>0?'#f59e0b':'#10b981')+';font-weight:700">'+p.warns+'</td>'
-            +'<td style="padding:6px 12px;border-bottom:1px solid #f1f5f9;text-align:center;color:#065f46;font-weight:700">'+p.fixed+'</td>'
-            +'</tr>';
-        }).join('')
-        +'</tbody></table></div>'
-      : '')    +'<div class="pills">'    +'<span class="pill-item" style="background:#d1fae5;color:#065f46">✓ '+nFixed+' Auto-Fixed by Widget</span>'    +'<span class="pill-item" style="background:#fee2e2;color:#991b1b">⚠ '+nGapsHigh+' High · '+nGapsMed+' Medium Compliance Gaps</span>'    +'<span class="pill-item" style="background:#dbeafe;color:#1e40af">△ '+nWarn+' Warnings</span>'    +'<span class="pill-item" style="background:#f8f9fc;color:#374151;font-size:.72rem">WCAG 2.1 AA &amp; 2.2 AA</span>'    +'</div>'    +'<div style="padding:14px 32px;background:#f8f9fc;border-bottom:1px solid #e2e8f0">'+'<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#374151;margin-bottom:10px">&#128204; Issue categories &amp; severity</div>'+'<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">'+'<div style="padding:10px;background:#d1fae5;border-radius:8px;border-left:3px solid #065f46"><div style="font-size:.78rem;font-weight:700;color:#065f46">&#10003; Auto-Fix</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Fixed automatically by the ACC widget on every page load. Zero developer or CMS work needed. +7 pts per fix type.</div></div>'+'<div style="padding:10px;background:#fef2e8;border-radius:8px;border-left:3px solid #c2410c"><div style="font-size:.78rem;font-weight:700;color:#c2410c">&#9888; Compliance Gaps</div><div style="font-size:.72rem;color:#374151;margin-top:2px">WCAG 2.1/2.2 AA failures that require action. Each item shows <strong>severity</strong> (High/Medium/Low) and <strong>fix type</strong> (CMS/Settings or Dev Code).</div></div>'+'<div style="padding:10px;background:#fef3c7;border-radius:8px;border-left:3px solid #92400e"><div style="font-size:.78rem;font-weight:700;color:#92400e">Severity: High / Medium / Low</div><div style="font-size:.72rem;color:#374151;margin-top:2px"><strong>High</strong> (WCAG Level A) &minus;14 pts &nbsp;|&nbsp; <strong>Medium</strong> (Level AA) &minus;7 pts &nbsp;|&nbsp; <strong>Low</strong> &minus;4 pts</div></div>'+'<div style="padding:10px;background:#dbeafe;border-radius:8px;border-left:3px solid #1e40af"><div style="font-size:.78rem;font-weight:700;color:#1e40af">&#9651; Warnings</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Advisory &mdash; best practice to fix but not a WCAG failure. Fix via CMS or dev depending on type. &minus;3 pts each.</div></div>'+'</div></div>'
-    +'<div class="pour-grid">'    +['Perceivable','Operable','Understandable','Robust'].map(function(p,idx){        var criteria=[['1.1.1','1.3.1','1.4.3','1.4.5'],['2.1.1','2.4.1','2.4.2','2.4.4'],['3.1.1','3.3.1','3.3.2'],['4.1.1','4.1.2']][idx];        var defs=['Can perceive: alt text, contrast, captions, text resize','Can operate: keyboard, focus, no time traps, skip links','Can understand: readable text, predictable pages, form help','Works with: screen readers, braille displays, AT tools'][idx];        var eH=issues.filter(function(i){return i.type==='error'&&i.level==='A'&&criteria.indexOf(i.criterion)>=0;}).length; var eM=issues.filter(function(i){return i.type==='error'&&(i.level==='AA'||!i.level)&&criteria.indexOf(i.criterion)>=0;}).length; var s=Math.max(0,Math.min(100,Math.round(100-eH*14-eM*7)));        var c=s>=80?'#065f46':s>=60?'#92400e':'#991b1b';        return '<div class="pour-item"><div class="pour-score" style="color:'+c+'">'+s+'</div><div class="pour-label">'+p+'</div><div class="pour-def">'+defs+'</div></div>';      }).join('')    +'</div>'    +'<div class="section-hdr s-fixed"><span class="section-hdr-label" style="color:#065f46">&#10003; Auto-Fixed by ACC Widget</span><span class="section-hdr-count" style="background:#d1fae5;color:#065f46">'+byType.fixed.length+' resolved at runtime</span></div>'
-    +(byType.fixed.length
-      ?'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:90px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup>'+'<thead><tr><th>Issue</th><th>Fix Applied</th><th>Status</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'+issueRows(byType.fixed)+'</tbody></table>'
-      :'<div style="padding:12px 32px;font-size:.82rem;color:#9ca3af;border-bottom:1px solid #e2e8f0;">&#10003; None detected &mdash; this category is clear.</div>')
-    +'<div class="section-hdr" style="border-top:2px solid #c2410c"><span class="section-hdr-label" style="color:#c2410c">&#9888; Compliance Gaps</span>'
-    +'<span class="section-hdr-count" style="background:#fef2e8;color:#c2410c">'+byType.gaps.length+' items &mdash; High severity first</span></div>'
-    +(byType.gaps.length
-      ?'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:110px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup>'
-       +'<thead><tr><th>Issue</th><th>Details &amp; Affected Elements</th><th>Severity &amp; Fix</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'
-       +issueRows(byType.gaps)+'</tbody></table>'
-      :'<div style="padding:12px 32px;font-size:.82rem;color:#9ca3af;border-bottom:1px solid #e2e8f0;">&#10003; No compliance gaps found.</div>')
-    +'<div class="section-hdr s-warning"><span class="section-hdr-label" style="color:#1e40af">&#9651; Warnings</span><span class="section-hdr-count" style="background:#dbeafe;color:#1e40af">'+byType.warning.length+' advisory</span></div>'
-    +(byType.warning.length
-      ?'<table><colgroup><col style="width:26%"><col style="width:auto"><col style="width:90px"><col style="width:70px"><col style="width:54px"><col style="width:70px"><col style="width:36px"></colgroup>'+'<thead><tr><th>Issue</th><th>Details &amp; Affected Elements</th><th>Status</th><th>WCAG</th><th>Level</th><th>Section</th><th>#</th></tr></thead><tbody>'+issueRows(byType.warning)+'</tbody></table>'
-      :'<div style="padding:12px 32px;font-size:.82rem;color:#9ca3af;border-bottom:1px solid #e2e8f0;">&#10003; None detected &mdash; this category is clear.</div>')
-    +'<div class="footer">ACC — Accessibility Compliance Canada Inc. &nbsp;|&nbsp; accessibilitycompliance.ca &nbsp;|&nbsp; '+now    +'<br>Auto-Fixed: resolved by ACC widget at runtime on every page visit. Needs Dev: requires custom code changes. WCAG 2.1 Level AA standard.</div>'    +'</div></body></html>';
+
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid #e5e7eb">'+pourHTML+'</div>'
+    +'<div style="font-size:.68rem;color:#9ca3af;padding:6px 32px;border-bottom:1px solid #e5e7eb">WCAG 2.1 AA &amp; 2.2 AA · POUR scores based on issues found on scanned pages</div>'
+
+    + perPageHTML
+    + defsHTML
+
+    +'<div style="padding-bottom:20px">'
+    + issueSection('✓ Auto-Fixed by ACC Widget', '#065f46', '✓', autoFixed)
+    + issueSection('⚠ Compliance Gaps', '#c2410c', '⚠', gaps)
+    + issueSection('△ Warnings', '#f59e0b', '△', warnings)
+    +'</div>'
+
+    +'<div style="padding:14px 32px;font-size:.7rem;color:#9ca3af;text-align:center;border-top:1px solid #e5e7eb;background:#f8f9fc">'
+    +'ACC Accessibility Compliance Canada Inc. · accessibilitycompliance.ca · '+now+'<br>'
+    +'Auto-Fixed: resolved at runtime by widget. Compliance Gaps: High (Level A −14pts) or Medium (Level AA −7pts), fix type shown. Standard: WCAG 2.1 AA &amp; 2.2 AA.<br>'
+    +'<button class="print-btn" onclick="window.print()" style="margin-top:10px;font-size:.72rem;padding:6px 14px">&#8659; Download PDF</button>'
+    +'</div>'
+    +'</div></body></html>';
 
   var blob = new Blob([html],{type:'text/html'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   var slug = url.replace(/^https?:\/\//,'').replace(/[^a-zA-Z0-9]/g,'-').substring(0,40);
-  a.download = 'ACC-Full-Audit-'+slug+'-'+new Date().toISOString().slice(0,10)+'.html';
+  a.download = 'ACC-Audit-'+slug+'-'+new Date().toISOString().slice(0,10)+'.html';
   a.click();
   URL.revokeObjectURL(a.href);
   showToastAdmin('Full audit report downloaded','success');

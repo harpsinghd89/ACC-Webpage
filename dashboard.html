@@ -430,11 +430,6 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <div class="stat-value" id="stat-warnings">—</div>
           <div class="stat-sub" id="stat-warnings-sub">To review</div>
         </div>
-        <div class="stat-card blue">
-          <div class="stat-label">High Severity</div>
-          <div class="stat-value" id="stat-dev">—</div>
-          <div class="stat-sub" id="stat-dev-sub">Level A gaps</div>
-        </div>
         <div class="stat-card">
           <div class="stat-label">Pages Scanned</div>
           <div class="stat-value" id="stat-pages">—</div>
@@ -2780,7 +2775,7 @@ async function loadInvoiceHistory(c) {
     var isPast = m < now;
     var dlBtn = hasPdf
       ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" data-ym="'+ym+'" onclick="downloadInvoice(this.dataset.ym)">↓ PDF</button>'
-      : (isPast ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px;opacity:.6" data-ym="'+ym+'" onclick="generateAndDownloadInvoice(this.dataset.ym)">▶ Gen</button>' : '—');
+      : (isPast ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px;opacity:.6" data-ym="'+ym+'" onclick="generateAndDownloadInvoice(this.dataset.ym)">&#128196; View</button>' : '—');
     return '<tr><td>'+label+'</td><td>'+(amount?'$'+parseFloat(amount).toFixed(2):'—')+'</td><td><span class="pill '+(isPast?'green':'blue')+'">'+(isPast?'Paid':'Scheduled')+'</span></td><td>'+dlBtn+'</td></tr>';
   }).join('') || '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No invoices yet.</td></tr>';
 }
@@ -3323,6 +3318,20 @@ async function generateBaselineClientSide(c) {
           + '<div style="text-align:center;background:#fff;border-radius:8px;padding:10px;border:1px solid #a7f3d0"><div style="font-size:1.4rem;font-weight:800;color:#065f46">+' + autoFixImpact + '</div><div style="font-size:.62rem;font-weight:700;text-transform:uppercase;color:#6ee7b7">Score Pts</div></div>'
           + '</div></div>'
         : '')
+    + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid #e5e7eb">'
+    + [['Perceivable',['1.1.1','1.3.1','1.4.3','1.4.5']],['Operable',['2.1.1','2.4.1','2.4.2','2.4.4']],['Understandable',['3.1.1','3.3.1','3.3.2']],['Robust',['4.1.1','4.1.2']]].map(function(pc) {
+        var lbl = pc[0], crit = pc[1];
+        var eH = issueList.filter(function(i){return i.type==='error'&&i.level==='A'&&crit.indexOf(i.criterion)>=0;}).length;
+        var eM = issueList.filter(function(i){return i.type==='error'&&(i.level==='AA'||!i.level)&&crit.indexOf(i.criterion)>=0;}).length;
+        var ps = Math.max(0,Math.min(100,Math.round(100-eH*14-eM*7)));
+        var pc2 = ps>=80?'#065f46':ps>=60?'#92400e':'#991b1b';
+        return '<div style="padding:14px;text-align:center;border-right:1px solid #e5e7eb">'
+          + '<div style="font-size:1.4rem;font-weight:700;color:'+pc2+'">'+ps+'</div>'
+          + '<div style="font-size:.65rem;text-transform:uppercase;color:#8a9bbf;letter-spacing:.06em">'+lbl+'</div>'
+          + '</div>';
+      }).join('')
+    + '</div>'
+    + '<div style="font-size:.68rem;color:#9ca3af;padding:6px 28px;border-bottom:1px solid #e5e7eb">WCAG 2.1 AA &amp; 2.2 AA · POUR scores based on issues detected on scanned pages</div>'
     + '<div style="padding:14px 32px;background:#f8f9fc;border-bottom:1px solid #e5e7eb;">' + '<div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#374151;margin-bottom:10px;">📌 What do these categories mean?</div>' + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">' + '<div style="display:flex;gap:10px;padding:10px;background:#d1fae5;border-radius:8px;border-left:3px solid #065f46"><div><div style="font-size:.78rem;font-weight:700;color:#065f46">✓ Auto-Fix</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Fixed automatically by the ACC widget on every page load. Zero developer work required. +7 pts per fix type.</div></div></div>' + '<div style="display:flex;gap:10px;padding:10px;background:#fef2e8;border-radius:8px;border-left:3px solid #c2410c"><div><div style="font-size:.78rem;font-weight:700;color:#c2410c">⚠ Compliance Gaps</div><div style="font-size:.72rem;color:#374151;margin-top:2px">WCAG 2.1/2.2 AA failures that need action. Each item shows <strong>severity</strong> (High = Level A, &minus;14 pts; Medium = Level AA, &minus;7 pts) and <strong>fix type</strong> (CMS/Settings or Dev Code).</div></div></div>' + '<div style="display:flex;gap:10px;padding:10px;background:#dbeafe;border-radius:8px;border-left:3px solid #1e40af"><div><div style="font-size:.78rem;font-weight:700;color:#1e40af">△ Warning</div><div style="font-size:.72rem;color:#374151;margin-top:2px">Advisory — not a WCAG failure but best practice to fix (e.g. vague link text, multiple H1s). Fix via CMS or dev depending on type. −3 pts each.</div></div></div>' + '</div></div>'
     + (!hasData
         ? '<div style="padding:32px;text-align:center;color:#9ca3af;font-size:.88rem">&#128269; No scan data recorded yet. Install the ACC widget and visit your site — data appears within minutes.</div>'
@@ -3762,20 +3771,37 @@ async function generateAndDownloadInvoice(yearMonth) {
   if (!window._clientData) { alert('Please log in first.'); return; }
   var btn = (window.event && window.event.target) || null;
   var orig = btn ? btn.innerHTML : null;
-  if (btn) { btn.disabled = true; btn.innerHTML = 'Generating&hellip;'; }
-  try {
-    var result = await callEdgeFunction('generate-invoice', { client_id: _clientData.id });
-    var code = _clientData.client_code;
-    var ym = yearMonth || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
-    var filePath = (result && result.file) ? result.file : (code + '/' + ym + '-invoice.pdf');
-    // openHtmlReport handles both .html and .pdf extensions
-    await openHtmlReport('invoices', filePath);
-  } catch(e) {
-    console.error('generateAndDownloadInvoice:', e);
-    alert('Could not generate invoice: ' + e.message);
-  } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+  if (btn) { btn.disabled = true; btn.innerHTML = 'Opening&hellip;'; }
+  var code = _clientData.client_code;
+  var ym = yearMonth || (new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0'));
+  // Try storage paths first (invoices are auto-generated monthly — no edge fn call needed to view)
+  var paths = [
+    'invoices::' + code + '/' + ym + '-invoice.html',
+    'invoices::' + code + '/' + ym + '-invoice.pdf',
+    'reports::'  + code + '/' + ym + '-invoice.html',
+  ];
+  var opened = false;
+  for (var p of paths) {
+    var parts = p.split('::');
+    try {
+      await openHtmlReport(parts[0], parts[1]);
+      opened = true;
+      break;
+    } catch(_) {}
   }
+  if (!opened) {
+    // Not in storage yet — call edge function to generate it
+    try {
+      var result = await callEdgeFunction('generate-invoice', { client_id: _clientData.id });
+      var filePath = (result && result.file) ? result.file : (code + '/' + ym + '-invoice.html');
+      var bucket = filePath.includes('-invoice') ? 'invoices' : 'reports';
+      await openHtmlReport(bucket, filePath);
+    } catch(e) {
+      console.error('generateAndDownloadInvoice:', e);
+      showToast('Invoice not yet generated for this period. It will be auto-generated on your billing date.', 'warn');
+    }
+  }
+  if (btn) { btn.disabled = false; btn.innerHTML = orig; }
 }
 
 // Generate the AODA Compliance Readiness Letter and download it.
