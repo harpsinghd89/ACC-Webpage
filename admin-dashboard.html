@@ -2760,14 +2760,14 @@ async function generateInvoiceForClient() {
       return;
     }
   } catch(_) {}
-  // Edge function unavailable — build invoice PDF client-side using jsPDF and upload to storage
+  // Edge function unavailable — build invoice HTML client-side and trigger local download
   try {
     var { data: cl } = await _sb.from('clients').select('*').eq('client_code', code).single();
     if (!cl) throw new Error('Client not found');
     var isAnnual  = (cl.billing_cycle === 'annual' || cl.billing_cycle === 'yearly');
     var tierPrices = {1:69, 2:199};
     var rawPrice  = tierPrices[parseInt(cl.tier)] || 0;
-    var amount    = isAnnual ? rawPrice * 10 : rawPrice;
+    var amount    = isAnnual ? rawPrice * 12 : rawPrice;
     var hst       = +(amount * 0.13).toFixed(2);
     var total     = +(amount + hst).toFixed(2);
     var ymParts   = ym.split('-');
@@ -2776,135 +2776,91 @@ async function generateInvoiceForClient() {
     var tierLabel = cl.tier===1||cl.tier==='1' ? 'Tier 1 — Essential' : cl.tier===2||cl.tier==='2' ? 'Tier 2 — Professional' : 'Tier 3 — Enterprise';
     var invoiceNo = 'INV-' + code + '-' + ym.replace('-','');
     var today     = new Date().toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
+    var planLabel = isAnnual ? 'Annual plan (12 months)' : 'Monthly plan';
 
-    // Lazy-load jsPDF from CDN if not already present
-    if (!window.jspdf) {
-      await new Promise(function(resolve, reject) {
-        var s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-        s.onload = resolve; s.onerror = reject;
-        document.head.appendChild(s);
-      });
-    }
-    var { jsPDF } = window.jspdf;
-    var doc = new jsPDF({ unit: 'pt', format: 'letter' });
-    var pw = doc.internal.pageSize.getWidth();   // 612
-    var M  = 48; // margin
-    var W  = pw - M * 2;
-    var y  = 0;
+    var CSS = '*{box-sizing:border-box}body{font-family:"Segoe UI",system-ui,sans-serif;background:#f4f5f7;padding:32px;margin:0}'
+      +'.inv{max-width:780px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}'
+      +'.print-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 32px;background:#f8f9fc;border-bottom:1px solid #e5e7eb;gap:12px;flex-wrap:wrap}'
+      +'.print-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#0a1628;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer}'
+      +'.print-btn:hover{background:#1e3a6b}'
+      +'table{width:100%;border-collapse:collapse}'
+      +'th{background:#f1f3f9;padding:10px 16px;font-size:.72rem;text-transform:uppercase;color:#8a9bbf;text-align:left;border-bottom:1px solid #e5e7eb}'
+      +'td{padding:12px 16px;font-size:.88rem;border-bottom:1px solid #f0f0f0}'
+      +'@media print{body{background:#fff;padding:0}.inv{box-shadow:none;border-radius:0;max-width:100%}.print-bar{display:none}}';
 
-    // ── Dark header band ──────────────────────────────────────
-    doc.setFillColor(10, 22, 40);
-    doc.rect(0, 0, pw, 110, 'F');
+    var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+      +'<title>Invoice '+invoiceNo+'</title><style>'+CSS+'</style></head><body><div class="inv">'
 
-    // Accent gradient bar (simulate with two rects)
-    doc.setFillColor(56, 217, 169);
-    doc.rect(0, 110, W / 2, 3, 'F');
-    doc.setFillColor(79, 142, 247);
-    doc.rect(W / 2 + M, 110, W / 2 + M, 3, 'F');
+      // ── Top print bar (hidden on print)
+      +'<div class="print-bar">'
+      +'<div><span style="font-size:.82rem;font-weight:700;color:#0a1628">ACC Invoice — '+invoiceNo+'</span>'
+      +'<span style="font-size:.72rem;color:#9ca3af;margin-left:10px">'+_esc(cl.name||'')+' · '+billLabel+'</span></div>'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +'<span style="font-size:.72rem;color:#9ca3af">Save as PDF: Download → Save as PDF in print dialog</span>'
+      +'<button class="print-btn" onclick="window.print()">&#8659; Download PDF</button>'
+      +'</div></div>'
 
-    // Company name
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(7); doc.setFont('helvetica','bold');
-    doc.text('TAX INVOICE', M, 28);
-    doc.setFontSize(13); doc.setFont('helvetica','bold');
-    doc.text('ACC Accessibility Compliance Canada Inc.', M, 48);
-    doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.setTextColor(148, 163, 184);
-    doc.text('2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON', M, 63);
-    doc.text('partner@accessibilitycompliance.ca', M, 75);
+      // ── Dark header
+      +'<div style="background:linear-gradient(135deg,#0a1628,#0d1f3c);color:#fff;padding:28px 32px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">'
+      +'<div>'
+      +'<div style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#38d9a9;margin-bottom:6px">Tax Invoice</div>'
+      +'<h1 style="font-size:1.1rem;font-weight:800;margin:0 0 6px;color:#fff">ACC Accessibility Compliance Canada Inc.</h1>'
+      +'<div style="font-size:.75rem;color:#94a3b8;line-height:1.6">2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON<br>partner@accessibilitycompliance.ca</div>'
+      +'</div>'
+      +'<div style="text-align:right">'
+      +'<div style="font-size:.65rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em">Invoice #</div>'
+      +'<div style="font-size:1.1rem;font-weight:800;color:#fff;margin:3px 0">'+invoiceNo+'</div>'
+      +'<div style="font-size:.72rem;color:#94a3b8">Date: '+today+'</div>'
+      +'</div></div>'
 
-    // Invoice # (top-right)
-    doc.setFontSize(7); doc.setFont('helvetica','bold');
-    doc.setTextColor(148, 163, 184);
-    doc.text('INVOICE #', pw - M, 28, { align:'right' });
-    doc.setFontSize(12); doc.setFont('helvetica','bold');
-    doc.setTextColor(255, 255, 255);
-    doc.text(invoiceNo, pw - M, 46, { align:'right' });
-    doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.setTextColor(148, 163, 184);
-    doc.text('Date: ' + today, pw - M, 60, { align:'right' });
+      // ── Accent bar
+      +'<div style="height:3px;background:linear-gradient(90deg,#38d9a9,#4f8ef7)"></div>'
 
-    y = 130;
+      // ── Bill To / Billing Period
+      +'<div style="padding:24px 32px;display:grid;grid-template-columns:1fr 1fr;gap:24px;border-bottom:1px solid #e5e7eb">'
+      +'<div>'
+      +'<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px">Bill To</div>'
+      +'<div style="font-size:.92rem;font-weight:700;color:#0a1628;margin-bottom:3px">'+_esc(cl.name||'')+'</div>'
+      +(cl.domain?'<div style="font-size:.8rem;color:#6b7280">'+_esc(cl.domain)+'</div>':'')
+      +'<div style="font-size:.78rem;color:#6b7280">'+_esc(cl.email||'')+'</div>'
+      +'</div>'
+      +'<div>'
+      +'<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px">Billing Period</div>'
+      +'<div style="font-size:.92rem;font-weight:700;color:#0a1628;margin-bottom:3px">'+billLabel+'</div>'
+      +'<div style="font-size:.78rem;color:#6b7280">'+tierLabel+'</div>'
+      +'<div style="font-size:.75rem;color:#9ca3af;margin-top:2px">'+_esc(code)+'</div>'
+      +'</div></div>'
 
-    // ── Bill To / Billing Period ──────────────────────────────
-    doc.setFontSize(7); doc.setFont('helvetica','bold');
-    doc.setTextColor(156, 163, 175);
-    doc.text('BILL TO', M, y);
-    doc.text('BILLING PERIOD', pw / 2 + 10, y);
-    y += 14;
+      // ── Line items table
+      +'<table><thead><tr><th>Description</th><th style="text-align:right">Amount</th></tr></thead><tbody>'
+      +'<tr><td>ACC Managed Accessibility Compliance — '+tierLabel
+      +'<br><span style="font-size:.72rem;color:#6b7280">'+planLabel+'</span></td>'
+      +'<td style="text-align:right;font-weight:700">$'+amount.toFixed(2)+'</td></tr>'
+      +'</tbody></table>'
 
-    doc.setFontSize(10); doc.setFont('helvetica','bold');
-    doc.setTextColor(10, 22, 40);
-    doc.text(cl.name || '', M, y);
-    doc.text(billLabel, pw / 2 + 10, y);
-    y += 14;
+      // ── Totals
+      +'<div style="padding:16px 32px;border-top:1px solid #e5e7eb">'
+      +'<div style="display:flex;justify-content:flex-end;gap:48px;font-size:.88rem;margin-bottom:6px"><span style="color:#6b7280">Subtotal</span><span style="min-width:80px;text-align:right">$'+amount.toFixed(2)+'</span></div>'
+      +'<div style="display:flex;justify-content:flex-end;gap:48px;font-size:.88rem;margin-bottom:10px"><span style="color:#6b7280">HST (13%)</span><span style="min-width:80px;text-align:right">$'+hst.toFixed(2)+'</span></div>'
+      +'<div style="display:flex;justify-content:flex-end;gap:48px;font-size:1.05rem;font-weight:800;color:#0a1628;border-top:2px solid #0a1628;padding-top:10px"><span>Total</span><span style="min-width:80px;text-align:right">$'+total.toFixed(2)+' CAD</span></div>'
+      +'</div>'
 
-    doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.setTextColor(107, 114, 128);
-    if (cl.domain) { doc.text(cl.domain, M, y); }
-    doc.text(tierLabel, pw / 2 + 10, y);
-    y += 13;
-    if (cl.email) { doc.text(cl.email, M, y); }
-    doc.text(code, pw / 2 + 10, y);
-    y += 24;
+      // ── Footer
+      +'<div style="padding:14px 32px;font-size:.68rem;color:#9ca3af;text-align:center;border-top:1px solid #e5e7eb;background:#f8f9fc">'
+      +'ACC · accessibilitycompliance.ca · '+invoiceNo+'<br>'
+      +'<button class="print-btn" onclick="window.print()" style="margin-top:10px;font-size:.72rem;padding:6px 14px">&#8659; Download PDF</button>'
+      +'</div>'
+      +'</div></body></html>';
 
-    // Divider
-    doc.setDrawColor(229, 231, 235); doc.setLineWidth(0.5);
-    doc.line(M, y, pw - M, y); y += 18;
-
-    // ── Table header ──────────────────────────────────────────
-    doc.setFillColor(241, 243, 249);
-    doc.rect(M, y - 12, W, 22, 'F');
-    doc.setFontSize(7.5); doc.setFont('helvetica','bold');
-    doc.setTextColor(138, 155, 191);
-    doc.text('DESCRIPTION', M + 8, y + 2);
-    doc.text('AMOUNT', pw - M - 8, y + 2, { align:'right' });
-    y += 22;
-
-    // ── Table row ─────────────────────────────────────────────
-    doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.setTextColor(31, 41, 55);
-    var desc = 'ACC Managed Accessibility Compliance \u2014 ' + tierLabel;
-    var subDesc = isAnnual ? 'Annual plan (10 months billed)' : 'Monthly plan';
-    doc.text(desc, M + 8, y + 2);
-    doc.setFontSize(8); doc.setTextColor(107, 114, 128);
-    doc.text(subDesc, M + 8, y + 14);
-    doc.setFontSize(9); doc.setTextColor(31, 41, 55);
-    doc.text('$' + amount.toFixed(2), pw - M - 8, y + 2, { align:'right' });
-    y += 34;
-
-    doc.setDrawColor(240, 240, 240); doc.line(M, y, pw - M, y); y += 18;
-
-    // ── Totals ────────────────────────────────────────────────
-    var col1 = pw - M - 120, col2 = pw - M - 8;
-    doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.setTextColor(107, 114, 128);
-    doc.text('Subtotal', col1, y); doc.setTextColor(31,41,55); doc.text('$' + amount.toFixed(2), col2, y, { align:'right' }); y += 16;
-    doc.setTextColor(107, 114, 128);
-    doc.text('HST (13%)', col1, y); doc.setTextColor(31,41,55); doc.text('$' + hst.toFixed(2), col2, y, { align:'right' }); y += 6;
-
-    doc.setDrawColor(10, 22, 40); doc.setLineWidth(1.5);
-    doc.line(col1 - 4, y, pw - M, y); y += 14;
-
-    doc.setFontSize(11); doc.setFont('helvetica','bold');
-    doc.setTextColor(10, 22, 40);
-    doc.text('Total', col1, y);
-    doc.text('$' + total.toFixed(2) + ' CAD', col2, y, { align:'right' }); y += 30;
-
-    // ── Footer ────────────────────────────────────────────────
-    doc.setDrawColor(229, 231, 235); doc.setLineWidth(0.5);
-    doc.line(M, y, pw - M, y); y += 14;
-    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
-    doc.setTextColor(156, 163, 175);
-    doc.text('ACC \u00B7 accessibilitycompliance.ca \u00B7 ' + invoiceNo, pw / 2, y, { align:'center' });
-
-    // ── Upload as application/pdf ─────────────────────────────
-    var pdfBlob = doc.output('blob');
-    var fname   = code + '/' + ym + '-invoice.pdf';
-    var up      = await _sb.storage.from('invoices').upload(fname, pdfBlob, { contentType:'application/pdf', upsert:true });
-    if (up.error) throw up.error;
-    showToastAdmin('Invoice generated for ' + ym, 'success');
+    // Trigger local download (same pattern as audit/prospect reports — no Supabase upload needed)
+    var blob = new Blob([html], { type:'text/html' });
+    var a    = document.createElement('a');
+    a.href   = URL.createObjectURL(blob);
+    a.download = invoiceNo + '.html';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+    showToastAdmin('Invoice downloaded for ' + ym, 'success');
     renderFileList('invoices', code);
   } catch(e) {
     showToastAdmin('Could not generate invoice: ' + (e.message||e), 'error');
