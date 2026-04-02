@@ -568,43 +568,113 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON L6H 5V1
   </div>
   <nav class="footer-links" aria-label="Footer policy links">
-    <button onclick="openModal('a11y-modal')" aria-haspopup="dialog">Accessibility</button>
+    <button onclick="openModal('terms-modal')" aria-haspopup="dialog">Terms of Service</button>
     <span class="footer-sep" aria-hidden="true">|</span>
     <button onclick="openModal('privacy-modal')" aria-haspopup="dialog">Privacy Policy</button>
     <span class="footer-sep" aria-hidden="true">|</span>
-    <button onclick="openModal('terms-modal')" aria-haspopup="dialog">Terms of Service</button>
+    <button onclick="openModal('a11y-modal')" aria-haspopup="dialog">Accessibility Statement</button>
+    <span class="footer-sep" aria-hidden="true">|</span>
+    <button onclick="openModal('contact-modal')" aria-haspopup="dialog">Contact Us</button>
   </nav>
 </footer>
 
 <!-- PRIVACY MODAL -->
 <div id="privacy-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="priv-title">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('privacy-modal')" aria-label="Close privacy policy">&#x2715;</button>
+    <button class="modal-close" onclick="closeModal('privacy-modal')" aria-label="Close">&#x2715;</button>
     <h2 id="priv-title">Privacy Policy</h2>
-    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Effective: January 1, 2026</p>
-    <span class="mlabel">Overview</span>
-    <p>We are committed to protecting personal information in compliance with CASL and Canadian privacy law.</p>
-    <h3>1. Information We Collect</h3>
+    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Last Revised: March 2026 &mdash; Effective Date: March 2026</p>
+    <span class="mlabel">Summary</span>
+    <p>We collect information you give us to provide AODA compliance services. We do not sell your data. We are subject to Canada&rsquo;s federal privacy law (PIPEDA) and comply with CASL for electronic communications. You can request access to or deletion of your information at any time.</p>
+    <h3>1. About This Policy</h3>
+    <p>This Privacy Policy explains how Accessibility Compliance Canada Inc. collects, uses, discloses, and safeguards personal information in connection with our AODA compliance SaaS platform and our website at accessibilitycompliance.ca.</p>
+    <p>We are subject to the <em>Personal Information Protection and Electronic Documents Act</em> (PIPEDA) and Canada&rsquo;s <em>Anti-Spam Legislation</em> (CASL). By using our Service, you consent to the practices described in this Policy.</p>
+    <p>Contact our Privacy Officer at: <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
+    <h3>2. Information We Collect</h3>
+    <p><strong>Account and Contact:</strong></p>
     <ul>
-      <li><strong>Registration:</strong> Name, company, email, website, billing address, phone.</li>
-      <li><strong>Payment:</strong> Card details processed via PCI-DSS Level 1 processor. We do not store raw card data.</li>
-      <li><strong>Technical:</strong> IP address, browser type, pages visited. No advertising trackers.</li>
+      <li>Business name, contact name, email address, phone number, mailing address</li>
+      <li>Login credentials (email and hashed password managed by Supabase Auth)</li>
+      <li>Billing address and payment method details (processed by Stripe; we do not store raw card numbers)</li>
     </ul>
-    <h3>2. How We Use It</h3>
+    <p><strong>Compliance and Business Data:</strong></p>
     <ul>
-      <li>To provision your account and deliver compliance services.</li>
-      <li>To process recurring billing and issue receipts.</li>
-      <li>To send compliance status emails and AODA updates (with consent).</li>
+      <li>AODA audit scope details and compliance questionnaire responses you submit</li>
+      <li>Documents you upload including evidence, accessibility policies, and training records</li>
+      <li>Audit reports, evidence binders, invoices, and compliance letters we generate on your behalf</li>
     </ul>
-    <h3>3. CASL &amp; Consent Records</h3>
-    <p>We only send commercial emails with express consent. Consent records include: email, date/time, method, and IP, stored with CASL compliance mode enabled. Withdraw consent anytime via unsubscribe link or by emailing <a href="/cdn-cgi/l/email-protection#b2c2d3c0c6dcd7c0f2d3d1d1d7c1c1dbd0dbdedbc6cbd1dddfc2dedbd3dcd1d79cd1d3" style="color:var(--accent)"><span class="__cf_email__" data-cfemail="51213023253f3423113032323422223833383d382528323e3c213d38303f32347f3230">[email&#160;protected]</span></a>.</p>
-    <h3>4. Security</h3>
-    <p>AES-256 encryption at rest, TLS 1.3 in transit. PCI-DSS Level 1 compliant payment processing. We do not sell personal data.</p>
-    <h3>5. Your Rights (PIPEDA)</h3>
-    <p>You may access, correct, or request deletion of your data at any time from your dashboard or by contacting us.</p>
-    <h3>6. Contact</h3>
-    <p>2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON L6H 5V1<br>
-    <a href="/cdn-cgi/l/email-protection#fe8e9f8c8a909b8cbe9f9d9d9b8d8d979c9792978a879d91938e92979f909d9bd09d9f" style="color:var(--accent)"><span class="__cf_email__" data-cfemail="70001102041e1502301113131503031912191c190409131f1d001c19111e13155e1311">[email&#160;protected]</span></a></p>
+    <p><strong>Usage and Technical Data:</strong></p>
+    <ul>
+      <li>Log data: IP address, browser type, pages visited, timestamps</li>
+      <li>Authentication session tokens</li>
+      <li>Correspondence you send us via email or in-platform messaging</li>
+    </ul>
+    <h3>3. How We Use Your Information</h3>
+    <ul>
+      <li>Deliver and manage your AODA compliance services &mdash; Performance of contract</li>
+      <li>Generate audit reports, invoices, and compliance documents &mdash; Performance of contract</li>
+      <li>Process payments through Stripe &mdash; Performance of contract</li>
+      <li>Send transactional emails (invoices, reports, alerts) &mdash; Performance of contract / CASL s.6(6)</li>
+      <li>Send service updates, newsletters, or promotional offers &mdash; Express or implied consent (CASL)</li>
+      <li>Improve our platform and features &mdash; Legitimate business interest</li>
+      <li>Comply with legal obligations (e.g., tax records) &mdash; Legal obligation</li>
+      <li>Detect and prevent fraud or security incidents &mdash; Legitimate business interest</li>
+    </ul>
+    <h3>4. Data Retention</h3>
+    <ul>
+      <li><strong>Invoices and financial records:</strong> 7 years from date of issue (Ontario / CRA requirements)</li>
+      <li><strong>Audit reports and compliance documents:</strong> Duration of subscription + 90 days after cancellation</li>
+      <li><strong>Evidence binders uploaded by client:</strong> Duration of subscription + 90 days after cancellation</li>
+      <li><strong>Account and contact information:</strong> Duration of subscription + 90 days after cancellation</li>
+      <li><strong>Authentication logs:</strong> 12 months</li>
+      <li><strong>Backups:</strong> Up to 30 days beyond primary deletion</li>
+    </ul>
+    <p>Upon subscription cancellation, you will receive a <strong>data export notice</strong> by email with instructions to download all your compliance documents before the 90-day deletion window closes.</p>
+    <h3>5. Sharing and Disclosure</h3>
+    <p>We do <strong>not sell</strong> your personal information. We share data only in the following circumstances:</p>
+    <ul>
+      <li><strong>Service Providers:</strong> Supabase (database and storage hosting, Canada/US), Stripe (payment processing, US), Resend (transactional email, US). Each is bound by a data processing agreement.</li>
+      <li><strong>Legal Requirements:</strong> If required by law, court order, or government authority, we will disclose the minimum information required.</li>
+      <li><strong>Business Transfer:</strong> In the event of a merger, acquisition, or sale of assets, your data may transfer to the successor entity, which will be bound by this Policy.</li>
+      <li><strong>With Your Consent:</strong> We will share data for any other purpose only with your explicit consent.</li>
+    </ul>
+    <h3>6. Cross-Border Data Transfers</h3>
+    <p>Our service providers (Supabase, Stripe, Resend) are based in or operate infrastructure in the United States. By using our Service, you acknowledge that your data may be processed outside Canada. We ensure appropriate contractual safeguards are in place with all third-party processors.</p>
+    <h3>7. Your Rights Under PIPEDA</h3>
+    <ul>
+      <li><strong>Access:</strong> Request a copy of the personal information we hold about you</li>
+      <li><strong>Correction:</strong> Ask us to correct inaccurate or incomplete information</li>
+      <li><strong>Withdrawal of Consent:</strong> Withdraw consent at any time (subject to legal or contractual restrictions)</li>
+      <li><strong>Data Export:</strong> Receive your compliance documents in a portable format</li>
+      <li><strong>Complaint:</strong> File a complaint with the Office of the Privacy Commissioner of Canada</li>
+    </ul>
+    <p>To exercise any of these rights, email <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a>. We will respond within <strong>30 days</strong>.</p>
+    <h3>8. Electronic Communications (CASL)</h3>
+    <ul>
+      <li><strong>Transactional messages</strong> (invoices, audit reports, account notices, security alerts) &mdash; sent in connection with your existing commercial relationship; do not require separate opt-in.</li>
+      <li><strong>Commercial messages</strong> (newsletters, promotional offers, product updates) &mdash; sent only with your express or implied consent and include a clear <strong>Unsubscribe</strong> link. We process unsubscribe requests within 10 business days.</li>
+    </ul>
+    <h3>9. Security</h3>
+    <ul>
+      <li>Encryption in transit (HTTPS/TLS) and at rest</li>
+      <li>Row-Level Security (RLS) on our database ensuring each client can only access their own data</li>
+      <li>Access controls limiting staff access to personal data on a need-to-know basis</li>
+      <li>Secure, signed URLs for document downloads (files are not publicly accessible)</li>
+      <li>Stripe handles all payment card data; we do not store raw card numbers</li>
+    </ul>
+    <p>In the event of a data breach that poses a real risk of significant harm, we will notify the Office of the Privacy Commissioner and affected individuals as required by PIPEDA.</p>
+    <h3>10. Cookies</h3>
+    <p>Our website uses essential cookies for authentication sessions. We do not use advertising or tracking cookies. You may disable cookies in your browser settings; however, doing so will prevent you from logging into the Service.</p>
+    <h3>11. Children&rsquo;s Privacy</h3>
+    <p>Our Service is designed for businesses and is not directed to individuals under 18 years of age. We do not knowingly collect personal information from minors.</p>
+    <h3>12. Changes to This Policy</h3>
+    <p>We may update this Policy periodically. We will notify you by email and post the revised Policy on this page with an updated &ldquo;Last Revised&rdquo; date. Continued use of the Service after the effective date constitutes acceptance of the revised Policy.</p>
+    <h3>13. Contact Us</h3>
+    <p><strong>Privacy Officer</strong><br>
+    Accessibility Compliance Canada Inc.<br>
+    Oakville, Ontario, Canada<br>
+    <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a><br>
+    <a href="https://accessibilitycompliance.ca" style="color:#4f8ef7">accessibilitycompliance.ca</a></p>
   </div>
 </div>
 
@@ -627,37 +697,90 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <h3>ACCWidget</h3>
     <p>This page includes the ACC Accessibility Widget for adjusting font size, contrast, spacing, dyslexia fonts, and reading guides.</p>
     <h3>Feedback</h3>
-    <p><a href="/cdn-cgi/l/email-protection#25554457514b4057654446464056564c474c494c515c464a4855494c444b46400b4644" style="color:var(--teal)"><span class="__cf_email__" data-cfemail="4f3f2e3d3b212a3d0f2e2c2c2a3c3c262d2623263b362c20223f23262e212c2a612c2e">[email&#160;protected]</span></a> &middot; (416) 526-9645</p>
+    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a> &middot; (416) 526-9645</p>
   </div>
 </div>
 
 <!-- TERMS OF SERVICE MODAL -->
 <div id="terms-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="terms-title">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('terms-modal')" aria-label="Close terms of service">&#x2715;</button>
+    <button class="modal-close" onclick="closeModal('terms-modal')" aria-label="Close">&#x2715;</button>
     <h2 id="terms-title">Terms of Service</h2>
-    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Effective: January 1, 2026</p>
+    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Last Revised: March 2026 &mdash; Effective Date: March 2026</p>
     <span class="mlabel">Agreement</span>
-    <p>By completing registration you agree to the following terms governing your use of ACC services.</p>
-    <h3>1. Service Description</h3>
-    <p>ACC provides accessibility compliance tooling including the ACC Widget, dashboard, audit reports, training portal, and evidence binder. Services support AODA and WCAG 2.1 AA compliance but do not constitute legal advice.</p>
-    <h3>2. Billing &amp; Cancellation</h3>
+    <p>Please read these Terms carefully before using our Service. By creating an account or using any part of the Service, you agree to be bound by these Terms. If you do not agree, do not use the Service.</p>
+    <h3>1. Definitions</h3>
     <ul>
-      <li>Monthly subscriptions are billed on the same date each month in CAD + applicable HST.</li>
-      <li>Annual subscriptions are billed upfront and are non-refundable after 30 days.</li>
-      <li>Cancel anytime from your dashboard. Cancellation takes effect at the end of the billing period.</li>
-      <li>No partial refunds for unused months.</li>
+      <li><strong>"ACC," "we," "us," "our"</strong> means Accessibility Compliance Canada Inc., a corporation based in Oakville, Ontario, Canada.</li>
+      <li><strong>"Service"</strong> means the AODA compliance SaaS platform, client portal, admin dashboard, generated documents, and all related software and services provided by ACC.</li>
+      <li><strong>"Client," "you," "your"</strong> means the organization or individual that has registered for and uses the Service.</li>
+      <li><strong>"Client Data"</strong> means all data, documents, and content you upload, submit, or generate through the Service.</li>
+      <li><strong>"Subscription"</strong> means your paid plan for access to the Service (Tier 1, Tier 2, or Tier 3).</li>
     </ul>
-    <h3>3. Acceptable Use</h3>
-    <p>The ACC Widget may only be installed on domains registered to your account. Redistribution or resale of the widget without written consent is prohibited.</p>
-    <h3>4. Limitation of Liability</h3>
-    <p>ACC is not liable for regulatory fines, penalties, or third-party claims arising from use or non-use of the service. Compliance outcomes depend on correct implementation.</p>
-    <h3>5. Data &amp; Privacy</h3>
-    <p>Governed by our Privacy Policy and applicable Canadian law including PIPEDA and CASL.</p>
-    <h3>6. Governing Law</h3>
-    <p>These terms are governed by the laws of Ontario, Canada. Disputes shall be resolved in Ontario courts.</p>
-    <h3>7. Contact</h3>
-    <p><a href="/cdn-cgi/l/email-protection#10607162647e7562507173737563637972797c796469737f7d607c79717e73753e7371" style="color:var(--accent)"><span class="__cf_email__" data-cfemail="41312033352f2433012022222432322823282d283538222e2c312d28202f22246f2220">[email&#160;protected]</span></a></p>
+    <h3>2. Services and Subscription Tiers</h3>
+    <p>ACC provides AODA compliance management tools including audit reports, evidence binders, compliance letters, training certificates, and invoicing. Access to features depends on your Subscription tier:</p>
+    <ul>
+      <li><strong>Tier 1 &mdash; $69/month + HST:</strong> Core compliance tools for small organizations.</li>
+      <li><strong>Tier 2 &mdash; $199/month + HST:</strong> Extended compliance suite for mid-size organizations.</li>
+      <li><strong>Tier 3 &mdash; Custom pricing:</strong> Enterprise package with custom deliverables and a Data Processing Agreement.</li>
+    </ul>
+    <p>All fees are in Canadian dollars and subject to 13% HST (Ontario). ACC reserves the right to adjust pricing on 30 days&rsquo; written notice.</p>
+    <h3>3. Account Registration</h3>
+    <p>You must provide accurate, current, and complete information when registering. You are responsible for maintaining the confidentiality of your login credentials and for all activity under your account. Notify us immediately at <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a> if you suspect unauthorized access.</p>
+    <h3>4. Payment Terms</h3>
+    <ul>
+      <li>Subscriptions are billed monthly in advance via the payment method on file (processed by Stripe).</li>
+      <li>All fees are non-refundable except where required by law or expressly stated in these Terms.</li>
+      <li>If a payment fails, we will notify you and attempt to collect for up to 7 days before suspending your account.</li>
+      <li>HST (13%) is applied to all invoices issued to Ontario-based clients.</li>
+      <li>Invoices are issued on the first business day of each month and available in your client portal for a minimum of 7 years.</li>
+    </ul>
+    <h3>5. Acceptable Use</h3>
+    <p>You agree to use the Service only for lawful purposes in connection with your organization&rsquo;s genuine AODA compliance efforts. You must not:</p>
+    <ul>
+      <li>Upload or transmit malicious code, spam, or unlawful content</li>
+      <li>Attempt to reverse engineer, copy, resell, or sublicense the Service</li>
+      <li>Use the Service to make false or misleading compliance claims to regulators</li>
+      <li>Share your account credentials with unauthorized third parties</li>
+      <li>Interfere with or disrupt the integrity or performance of the Service or its infrastructure</li>
+    </ul>
+    <h3>6. Intellectual Property</h3>
+    <p><strong>ACC&rsquo;s IP:</strong> The Service, its software, user interface, branding, and templates remain the exclusive intellectual property of ACC. These Terms do not grant you any ownership rights in the Service.</p>
+    <p><strong>Your IP:</strong> You retain full ownership of Client Data you upload or submit. By uploading Client Data, you grant ACC a limited, non-exclusive licence to process and store that data solely to provide the Service.</p>
+    <p><strong>Generated Documents:</strong> Audit reports and other documents generated by the Service are provided for your use. ACC retains a licence to use anonymized, aggregated, non-identifiable data for product improvement.</p>
+    <h3>7. Compliance Disclaimer</h3>
+    <p><strong>Important:</strong> The Service is a compliance management tool and does not constitute legal advice. ACC does not guarantee that your organization will achieve or maintain full AODA compliance. You are responsible for making independent compliance decisions and, where appropriate, consulting qualified legal counsel.</p>
+    <h3>8. Data and Privacy</h3>
+    <p>Our handling of your personal information is governed by our Privacy Policy, incorporated by reference into these Terms. For Tier 3 (Enterprise) clients, a separate Data Processing Agreement (DPA) will be provided.</p>
+    <p><strong>Data Ownership:</strong> Your Client Data belongs to you. We do not sell, share, or use Client Data for any purpose other than providing the Service.</p>
+    <h3>9. Cancellation and Termination</h3>
+    <p><strong>By You:</strong> You may cancel your Subscription at any time from your account settings. Cancellation takes effect at the end of the current billing period. No pro-rated refunds are issued for partial months.</p>
+    <p><strong>By ACC:</strong> We may suspend or terminate your account if you breach these Terms, fail to pay fees, or engage in conduct that poses a risk to other users or the platform. Where practicable, we will give 14 days&rsquo; notice before termination.</p>
+    <p><strong>Data Export Notice:</strong> Upon cancellation or termination, You will have 90 days to download your compliance documents before they are deleted.</p>
+    <h3>10. Limitation of Liability</h3>
+    <p>To the maximum extent permitted by applicable Canadian law, ACC&rsquo;s total liability shall not exceed the fees you paid to ACC in the <strong>three (3) months</strong> immediately preceding the event giving rise to the claim.</p>
+    <p>ACC shall not be liable for indirect, incidental, consequential, punitive, or special damages, including loss of profits, loss of data, or business interruption.</p>
+    <h3>11. Indemnification</h3>
+    <p>You agree to indemnify and hold harmless ACC and its officers, employees, and contractors from any claims, losses, damages, or expenses arising from: (a) your breach of these Terms; (b) your use of the Service in violation of applicable law; or (c) Client Data you upload that infringes any third-party rights.</p>
+    <h3>12. Service Availability</h3>
+    <p>ACC will use commercially reasonable efforts to make the Service available 24/7 but does not guarantee 100% uptime. ACC is not liable for downtime caused by events outside our reasonable control, including third-party infrastructure failures (Supabase, Stripe, Resend, etc.).</p>
+    <h3>13. Modifications to the Service</h3>
+    <p>ACC may modify, add, or remove features from the Service at any time. For material changes that negatively affect your use, we will provide at least 30 days&rsquo; written notice.</p>
+    <h3>14. Governing Law and Dispute Resolution</h3>
+    <p>These Terms are governed by the laws of the Province of Ontario and the federal laws of Canada. Disputes shall first be subject to good-faith negotiations, then submitted to binding arbitration in Ontario under the rules of the ADR Institute of Canada.</p>
+    <h3>15. General</h3>
+    <ul>
+      <li><strong>Entire Agreement:</strong> These Terms, together with the Privacy Policy and (where applicable) the DPA, constitute the entire agreement between you and ACC.</li>
+      <li><strong>Severability:</strong> If any provision is found unenforceable, the remaining provisions remain in effect.</li>
+      <li><strong>No Waiver:</strong> ACC&rsquo;s failure to enforce any provision is not a waiver of its right to do so in the future.</li>
+      <li><strong>Assignment:</strong> You may not assign your rights without ACC&rsquo;s prior written consent.</li>
+      <li><strong>Notices:</strong> Notices to ACC should be sent to <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a>.</li>
+    </ul>
+    <h3>16. Contact</h3>
+    <p><strong>Accessibility Compliance Canada Inc.</strong><br>
+    Oakville, Ontario, Canada<br>
+    <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a><br>
+    <a href="https://accessibilitycompliance.ca" style="color:#4f8ef7">accessibilitycompliance.ca</a></p>
   </div>
 </div>
 <script>
@@ -688,13 +811,13 @@ var TIERS={
     amount:'$69',annual:'or $690 / year (save 2 months)',
     monthly:69,yearly:690,tax_rate:0.13,
     features:['AI Accessibility Widget & Scans','Accessibility Policy Template','Monthly Health Reports']},
-  t2:{label:'Tier 2 — Managed',name:'Managed',emp:'20–50 Employees',
+  t2:{label:'Tier 2 — Managed',name:'Managed',emp:'20–49 Employees',
     amount:'$199',annual:'or $1,990 / year (save 2 months)',
     monthly:199,yearly:1990,tax_rate:0.13,
     features:['AI Widget + Daily Health Scans','Automated AODA Staff Training Portal',
       'Hosted Accessible Feedback Page','3-Year Compliance Roadmap',
       'Filing Template Kit','Annual Evidence Binder']},
-  t3:{label:'Tier 3 — Enterprise',name:'Enterprise',emp:'50+ Employees',
+  t3:{label:'Tier 3 — Enterprise',name:'Enterprise',emp:'50 or more Employees',
     amount:'Custom',annual:'Contact us for a tailored quote',
     monthly:null,yearly:null,tax_rate:0.13,
     features:['AI + Human Remediation','Custom Staff Workshops',
@@ -1181,5 +1304,22 @@ function showSuccessScreen(firstName, email){
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
+<div id="contact-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="contact-title">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('contact-modal')" aria-label="Close">&#x2715;</button>
+    <h2 id="contact-title">Contact Us</h2>
+    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Oakville, Ontario, Canada</p>
+    <span class="mlabel">Get in Touch</span>
+    <p>Get in touch to discuss your accessibility needs. Our team will assess your compliance posture and recommend the right tier for your organization.</p>
+    <h3>Address</h3>
+    <p>2150 Winston Park Dr, Unit 203, PMB#3018<br>Oakville, ON L6H 5V1</p>
+    <h3>Email</h3>
+    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
+    <h3>Phone</h3>
+    <p>(416) 526-9645<br>(647) 896-9132</p>
+    <h3>Website</h3>
+    <p><a href="https://accessibilitycompliance.ca" style="color:#4f8ef7">accessibilitycompliance.ca</a></p>
+  </div>
+</div>
 </body>
 </html>

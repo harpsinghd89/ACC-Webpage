@@ -103,15 +103,13 @@ body{font-family:'Sora',sans-serif;background:#060d1a;color:var(--text);min-heig
       2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON L6H 5V1
     </div>
     <nav class="footer-links" aria-label="Footer policy links">
-      <button onclick="openModal('a11y-modal')" aria-haspopup="dialog">Accessibility</button>
+      <button onclick="openModal('terms-modal')" aria-haspopup="dialog">Terms of Service</button>
       <span class="footer-sep" aria-hidden="true">|</span>
       <button onclick="openModal('privacy-modal')" aria-haspopup="dialog">Privacy Policy</button>
-    <span class="footer-sep" aria-hidden="true">|</span>
-    <button onclick="openModal('terms-modal')" aria-haspopup="dialog">Terms of Service</button>
       <span class="footer-sep" aria-hidden="true">|</span>
-      <a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--muted)">Contact Us</a>
+      <button onclick="openModal('a11y-modal')" aria-haspopup="dialog">Accessibility Statement</button>
       <span class="footer-sep" aria-hidden="true">|</span>
-      <a href="mailto:partner@accessibilitycompliance.ca" style="color:var(--accent)">partner@accessibilitycompliance.ca</a>
+      <button onclick="openModal('contact-modal')" aria-haspopup="dialog">Contact Us</button>
     </nav>
     <div class="footer-badge">
       <svg width="15" height="15" viewBox="0 0 28 28" fill="none" aria-hidden="true">
@@ -150,35 +148,58 @@ body{font-family:'Sora',sans-serif;background:#060d1a;color:var(--text);min-heig
   </div>
 </div>
 
-<div id="privacy-modal" class="modal-overlay" role="dialog" aria-modal="true" style="display:none">
+<div id="privacy-modal" class="modal-overlay" role="dialog" aria-modal="true" style="display:none" aria-labelledby="priv-title">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('privacy-modal')" aria-label="Close">&#x2715;</button>
     <h2 id="priv-title">Privacy Policy</h2>
-    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Effective: January 1, 2026</p>
-    <span class="mlabel">Overview</span>
-    <p>We are committed to protecting personal information in compliance with CASL and Canadian privacy law.</p>
-    <h3>1. Information We Collect</h3>
+    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Last Revised: March 2026 &mdash; Effective Date: March 2026</p>
+    <span class="mlabel">Summary</span>
+    <p>We collect information you give us to provide AODA compliance services. We do not sell your data. We comply with PIPEDA and CASL. You can request access to or deletion of your information at any time.</p>
+    <h3>1. About This Policy</h3>
+    <p>This Privacy Policy explains how ACC collects, uses, discloses, and safeguards personal information in connection with our AODA compliance SaaS platform and website at accessibilitycompliance.ca.</p>
+    <p>Contact our Privacy Officer at: <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
+    <h3>2. Information We Collect</h3>
     <ul>
-      <li><strong>Contact form:</strong> Name, company, size, email, and message.</li>
-      <li><strong>Newsletter:</strong> Email address and express consent timestamp.</li>
-      <li><strong>Technical:</strong> IP address, browser type, pages visited. No advertising trackers.</li>
+      <li>Business name, contact name, email, phone, mailing address</li>
+      <li>Login credentials (managed by Supabase Auth)</li>
+      <li>Billing details (processed by Stripe; we do not store raw card numbers)</li>
+      <li>AODA audit scope, questionnaire responses, uploaded documents, generated reports</li>
+      <li>Log data: IP address, browser type, pages visited, session tokens</li>
     </ul>
-    <h3>2. How We Use It</h3>
+    <h3>3. How We Use Your Information</h3>
     <ul>
-      <li>To respond to inquiries and provide services.</li>
-      <li>To send our newsletter only with express consent.</li>
-      <li>To improve our website and meet legal obligations.</li>
+      <li>Deliver and manage your AODA compliance services</li>
+      <li>Process payments and issue invoices</li>
+      <li>Send transactional emails (invoices, reports, alerts)</li>
+      <li>Send commercial messages only with your express or implied consent (CASL)</li>
+      <li>Improve our platform and comply with legal obligations</li>
     </ul>
-    <h3>3. CASL &amp; Consent Records</h3>
-    <p>We only send commercial emails with express consent. We record: email, date/time, method, and IP per subscriber, stored in <strong>Zoho CRM</strong> with CASL compliance mode enabled. Withdraw consent anytime via unsubscribe link or by emailing <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a>.</p>
-    <h3>4. Security</h3>
-    <p>Submissions processed by Formspree, stored in Zoho CRM with AES-256 encryption at rest and TLS in transit. We do not sell personal data.</p>
-    <h3>5. Your Rights (PIPEDA)</h3>
-    <p>You may access, correct, or request deletion of your data. Contact <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a>.</p>
-    <h3>6. Retention</h3>
-    <p>Contact data: up to 3 years. Consent records: subscription duration + 3 years (CASL).</p>
-    <h3>7. Contact</h3>
-    <p>2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON L6H 5V1<br>
+    <h3>4. Data Retention</h3>
+    <ul>
+      <li><strong>Invoices and financial records:</strong> 7 years (CRA requirements)</li>
+      <li><strong>Audit reports, compliance documents, account data:</strong> Duration of subscription + 90 days after cancellation</li>
+      <li><strong>Authentication logs:</strong> 12 months</li>
+      <li><strong>Backups:</strong> Up to 30 days beyond primary deletion</li>
+    </ul>
+    <h3>5. Sharing and Disclosure</h3>
+    <p>We do <strong>not sell</strong> your personal information. We share data only with service providers (Supabase, Stripe, Resend) bound by data processing agreements, when required by law, or with your explicit consent.</p>
+    <h3>6. Your Rights Under PIPEDA</h3>
+    <ul>
+      <li><strong>Access:</strong> Request a copy of the personal information we hold about you</li>
+      <li><strong>Correction:</strong> Ask us to correct inaccurate information</li>
+      <li><strong>Withdrawal of Consent:</strong> Withdraw consent at any time</li>
+      <li><strong>Data Export:</strong> Receive your compliance documents in a portable format</li>
+      <li><strong>Complaint:</strong> File a complaint with the Office of the Privacy Commissioner of Canada</li>
+    </ul>
+    <p>Email <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a> to exercise any of these rights. We respond within <strong>30 days</strong>.</p>
+    <h3>7. Security</h3>
+    <ul>
+      <li>Encryption in transit (HTTPS/TLS) and at rest</li>
+      <li>Row-Level Security on our database</li>
+      <li>Stripe handles all payment card data; we do not store raw card numbers</li>
+    </ul>
+    <h3>8. Contact</h3>
+    <p><strong>Privacy Officer — Accessibility Compliance Canada Inc.</strong><br>Oakville, Ontario, Canada<br>
     <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
   </div>
 </div>
@@ -194,7 +215,8 @@ var _attempts = 0;
     var s = await _sb.auth.getSession();
     if (s.data && s.data.session) {
       var ar = await _sb.from('admins').select('id').eq('email', s.data.session.user.email).single();
-      if (ar.data) window.location.href = 'admin-dashboard.html';
+      if (ar.data) sessionStorage.setItem('acc_admin_auth','true');
+      window.location.href = 'admin-dashboard.html';
     }
   } catch(e) {}
 })();
@@ -225,7 +247,8 @@ async function doAdminLogin() {
       await _sb.auth.signOut();
       throw new Error('Access denied. Not an admin account.');
     }
-    window.location.href = 'admin-dashboard.html';
+    sessionStorage.setItem('acc_admin_auth','true');
+      window.location.href = 'admin-dashboard.html';
   } catch(e) {
     _attempts++;
     err.textContent = 'Incorrect credentials. Access denied. (Attempt ' + _attempts + ' of 5)';
@@ -269,28 +292,71 @@ document.addEventListener('click', function(e) {
 </script>
 
 <!-- TERMS OF SERVICE MODAL -->
-<div id="terms-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+<div id="terms-modal" class="modal-overlay" role="dialog" aria-modal="true" style="display:none" aria-labelledby="terms-title">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeModal('terms-modal')" aria-label="Close terms">&times;</button>
+    <button class="modal-close" onclick="closeModal('terms-modal')" aria-label="Close">&#x2715;</button>
     <h2 id="terms-title">Terms of Service</h2>
-    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Effective: January 1, 2026</p>
+    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Last Revised: March 2026 &mdash; Effective Date: March 2026</p>
     <span class="mlabel">Agreement</span>
-    <p>By subscribing to ACC services you agree to these terms. Services are provided on a month-to-month basis unless otherwise agreed in writing.</p>
-    <h3>1. Services</h3>
-    <p>ACC provides AODA accessibility compliance tools, training, auditing, and advisory services. Scope is defined by your selected tier.</p>
-    <h3>2. Payment</h3>
-    <p>Fees are billed monthly in advance. Overdue accounts are suspended after 14 days. No refunds for partial months.</p>
-    <h3>3. Your Responsibilities</h3>
-    <p>You are responsible for implementing recommendations and maintaining your website in compliance with AODA. ACC tools and reports support but do not guarantee compliance.</p>
-    <h3>4. Limitation of Liability</h3>
-    <p>ACC's liability is limited to fees paid in the prior 30 days. We are not liable for regulatory penalties arising from your non-compliance.</p>
-    <h3>5. Termination</h3>
-    <p>Either party may terminate with 30 days written notice. ACC may terminate immediately for non-payment or misuse.</p>
-    <h3>6. Governing Law</h3>
-    <p>These terms are governed by the laws of Ontario, Canada.</p>
-    <h3>7. Contact</h3>
-    <p>2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON L6H 5V1<br>
+    <p>Please read these Terms carefully before using our Service. By creating an account or using any part of the Service, you agree to be bound by these Terms. If you do not agree, do not use the Service.</p>
+    <h3>1. Definitions</h3>
+    <ul>
+      <li><strong>"ACC," "we," "us," "our"</strong> means Accessibility Compliance Canada Inc., a corporation based in Oakville, Ontario, Canada.</li>
+      <li><strong>"Service"</strong> means the AODA compliance SaaS platform, client portal, admin dashboard, generated documents, and all related software and services provided by ACC.</li>
+      <li><strong>"Client," "you," "your"</strong> means the organization or individual that has registered for and uses the Service.</li>
+      <li><strong>"Client Data"</strong> means all data, documents, and content you upload, submit, or generate through the Service.</li>
+      <li><strong>"Subscription"</strong> means your paid plan for access to the Service (Tier 1, Tier 2, or Tier 3).</li>
+    </ul>
+    <h3>2. Services and Subscription Tiers</h3>
+    <p>ACC provides AODA compliance management tools including audit reports, evidence binders, compliance letters, training certificates, and invoicing.</p>
+    <ul>
+      <li><strong>Tier 1 &mdash; $69/month + HST:</strong> Core compliance tools for small organizations.</li>
+      <li><strong>Tier 2 &mdash; $199/month + HST:</strong> Extended compliance suite for mid-size organizations.</li>
+      <li><strong>Tier 3 &mdash; Custom pricing:</strong> Enterprise package with custom deliverables and a Data Processing Agreement.</li>
+    </ul>
+    <p>All fees are in Canadian dollars and subject to 13% HST (Ontario). ACC reserves the right to adjust pricing on 30 days&rsquo; written notice.</p>
+    <h3>3. Account Registration</h3>
+    <p>You must provide accurate, current, and complete information when registering. Notify us immediately at <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a> if you suspect unauthorized access.</p>
+    <h3>4. Payment Terms</h3>
+    <ul>
+      <li>Subscriptions are billed monthly in advance via the payment method on file (processed by Stripe).</li>
+      <li>All fees are non-refundable except where required by law or expressly stated in these Terms.</li>
+      <li>If a payment fails, we will notify you and attempt to collect for up to 7 days before suspending your account.</li>
+      <li>HST (13%) is applied to all invoices issued to Ontario-based clients.</li>
+      <li>Invoices are issued on the first business day of each month and available in your client portal for a minimum of 7 years.</li>
+    </ul>
+    <h3>5. Acceptable Use</h3>
+    <p>You agree to use the Service only for lawful purposes. You must not upload malicious code, reverse engineer or resell the Service, make false compliance claims, share credentials with unauthorized parties, or interfere with the Service.</p>
+    <h3>6. Compliance Disclaimer</h3>
+    <p><strong>Important:</strong> The Service is a compliance management tool and does not constitute legal advice. ACC does not guarantee full AODA compliance. You are responsible for making independent compliance decisions.</p>
+    <h3>7. Cancellation and Termination</h3>
+    <p><strong>By You:</strong> Cancel anytime from your account settings. Cancellation takes effect at the end of the current billing period. No pro-rated refunds.</p>
+    <p><strong>By ACC:</strong> We may suspend or terminate your account if you breach these Terms or fail to pay fees.</p>
+    <p><strong>Data Export Notice:</strong> Upon cancellation or termination, You will have 90 days to download your compliance documents before they are deleted.</p>
+    <h3>8. Limitation of Liability</h3>
+    <p>ACC&rsquo;s total liability shall not exceed fees paid in the <strong>three (3) months</strong> immediately preceding the claim. ACC is not liable for indirect, incidental, or consequential damages.</p>
+    <h3>9. Governing Law</h3>
+    <p>These Terms are governed by the laws of Ontario, Canada. Disputes shall be submitted to binding arbitration under the ADR Institute of Canada.</p>
+    <h3>10. Contact</h3>
+    <p><strong>Accessibility Compliance Canada Inc.</strong><br>Oakville, Ontario, Canada<br>
     <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
+  </div>
+</div>
+<div id="contact-modal" class="modal-overlay" role="dialog" aria-modal="true" style="display:none" aria-labelledby="contact-title">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('contact-modal')" aria-label="Close">&#x2715;</button>
+    <h2 id="contact-title">Contact Us</h2>
+    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Oakville, Ontario, Canada</p>
+    <span class="mlabel">Get in Touch</span>
+    <p>Get in touch to discuss your accessibility needs. Our team will assess your compliance posture and recommend the right tier for your organization.</p>
+    <h3>Address</h3>
+    <p>2150 Winston Park Dr, Unit 203, PMB#3018<br>Oakville, ON L6H 5V1</p>
+    <h3>Email</h3>
+    <p><a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
+    <h3>Phone</h3>
+    <p>(416) 526-9645<br>(647) 896-9132</p>
+    <h3>Website</h3>
+    <p><a href="https://accessibilitycompliance.ca" style="color:#4f8ef7">accessibilitycompliance.ca</a></p>
   </div>
 </div>
 </body>
