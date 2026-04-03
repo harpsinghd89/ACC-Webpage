@@ -6,582 +6,787 @@
 <meta name="color-scheme" content="dark"/>
 <title>ACC Training Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<!-- Wistia Player SDK -->
+<script src="https://fast.wistia.com/player.js" async></script>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;min-width:0}
 html,body{background:#0a1628;color:#e8edf8;font-family:'Sora',sans-serif;min-height:100vh}
-.nav{position:sticky;top:0;z-index:100;background:rgba(10,22,40,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(30,58,107,.5);padding:0 24px;height:60px;display:flex;align-items:center;gap:16px}
-.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.nav-logo img{width:36px;height:36px;object-fit:contain}
+.nav{position:sticky;top:0;z-index:100;background:rgba(10,22,40,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(30,58,107,.5);padding:0 20px;height:60px;display:flex;align-items:center;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.nav-logo-wrap{width:36px;height:36px;border-radius:6px;overflow:hidden;flex-shrink:0;background-repeat:no-repeat;background-size:45.6px 45.6px;background-position:-5.9px -2.5px}
 .nav-logo-text{font-size:.82rem;font-weight:700;color:#e8edf8}
 .nav-logo-text span{color:#4f8ef7}
 .nav-spacer{flex:1}
 .nav-back{font-size:.78rem;color:#8a9bbf;text-decoration:none;border:1px solid rgba(30,58,107,.6);border-radius:7px;padding:5px 12px;transition:all .2s}
 .nav-back:hover{color:#e8edf8;border-color:#4f8ef7}
+/* GATE */
 .gate{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;padding:24px}
-.gate-card{background:#0d1f3c;border:1px solid rgba(30,58,107,.6);border-radius:16px;padding:40px 36px;max-width:440px;width:100%;text-align:center}
-.gate-icon{font-size:2.5rem;margin-bottom:16px}
+.gate-card{background:#0d1f3c;border:1px solid rgba(30,58,107,.6);border-radius:16px;padding:40px 36px;max-width:520px;width:100%;text-align:center}
 .gate-card h1{font-size:1.3rem;font-weight:700;margin-bottom:8px}
-.gate-card p{font-size:.85rem;color:#8a9bbf;margin-bottom:28px;line-height:1.6}
-.gate-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.2);border-radius:8px;padding:8px 16px;margin-bottom:24px;font-size:.8rem;color:#4f8ef7;font-weight:700}
+.gate-org-line{font-size:.82rem;color:#8a9bbf;margin-bottom:28px}
+.gate-org-line strong{color:#4f8ef7}
+.picker-label{font-size:.72rem;font-weight:700;color:#8a9bbf;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;text-align:left;display:block}
+.picker-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
+.picker-card{background:#0a1e38;border:1.5px solid rgba(30,58,107,.8);border-radius:11px;padding:14px 16px;cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:14px;text-align:left}
+.picker-card:hover{border-color:#4f8ef7;background:rgba(79,142,247,.07);transform:translateY(-1px)}
+.picker-card.selected{border-color:#4f8ef7;background:rgba(79,142,247,.12)}
+.picker-num{font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;color:#4f8ef7;background:rgba(79,142,247,.14);border-radius:6px;padding:5px 9px;white-space:nowrap;flex-shrink:0;line-height:1.3;text-align:center;min-width:44px}
+.picker-info{flex:1;min-width:0}
+.picker-title{font-size:.84rem;font-weight:700;color:#e8edf8;margin-bottom:2px}
+.picker-dur{font-size:.72rem;color:#8a9bbf}
+.picker-arrow{font-size:1rem;color:#4a5a7a;flex-shrink:0}
+.name-section{display:none;text-align:left}
+.name-back{font-size:.78rem;color:#8a9bbf;cursor:pointer;margin-bottom:16px;display:inline-flex;align-items:center;gap:6px;border:none;background:none;font-family:'Sora',sans-serif;transition:color .2s;padding:0}
+.name-back:hover{color:#4f8ef7}
+.name-badge{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.25);border-radius:8px;padding:10px 14px;margin-bottom:20px;font-size:.8rem;color:#4f8ef7;font-weight:700}
 .gate-input{width:100%;background:#0a1e38;border:1.5px solid rgba(30,58,107,.8);border-radius:10px;padding:12px 16px;color:#e8edf8;font-family:'Sora',sans-serif;font-size:.9rem;margin-bottom:12px;transition:border-color .2s;outline:none}
 .gate-input:focus{border-color:#4f8ef7}
 .gate-input::placeholder{color:#4a5a7a}
-.btn-start{background:linear-gradient(135deg,#4f8ef7,#38d9a9);border:none;border-radius:10px;padding:12px 28px;color:#0a1628;font-family:'Sora',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:opacity .2s;width:100%}
+.btn-start{background:linear-gradient(135deg,#4f8ef7,#38d9a9);border:none;border-radius:10px;padding:13px 28px;color:#0a1628;font-family:'Sora',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:opacity .2s;width:100%}
 .btn-start:hover{opacity:.88}
-.gate-disclaimer{font-size:.72rem;color:#4a5a7a;margin-top:14px;line-height:1.5}
+.gate-fine{font-size:.72rem;color:#4a5a7a;margin-top:14px;line-height:1.5}
+/* PLAYER */
 .player-wrap{display:none;max-width:900px;margin:0 auto;padding:24px 20px 60px}
-.mod-eyebrow{font-size:.72rem;font-weight:700;color:#4f8ef7;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.player-topbar{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.btn-all-top{background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.25);border-radius:7px;padding:5px 12px;color:#4f8ef7;font-family:'Sora',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-all-top:hover{background:rgba(79,142,247,.2)}
+.mod-eyebrow{font-size:.72rem;font-weight:700;color:#4f8ef7;text-transform:uppercase;letter-spacing:.08em}
 .mod-title{font-size:1.4rem;font-weight:800;margin-bottom:6px;line-height:1.3}
-.mod-meta{font-size:.8rem;color:#8a9bbf;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.mod-meta{font-size:.8rem;color:#8a9bbf;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
 .prog-wrap{background:rgba(30,58,107,.4);border-radius:99px;height:6px;margin-bottom:4px;overflow:hidden}
-.prog-fill{height:100%;background:linear-gradient(90deg,#4f8ef7,#38d9a9);border-radius:99px;transition:width .5s ease;width:0%}
+.prog-fill{height:100%;background:linear-gradient(90deg,#4f8ef7,#38d9a9);border-radius:99px;transition:width .6s ease;width:0%}
 .prog-label{font-size:.72rem;color:#8a9bbf;text-align:right;margin-bottom:20px}
-.vid-frame{position:relative;background:#060d1a;border:1px solid rgba(30,58,107,.6);border-radius:14px;overflow:hidden;margin-bottom:20px;aspect-ratio:16/9}
-.vid-splash{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;background:linear-gradient(135deg,#060d1a,#0d1f3c);position:relative}
-.play-btn{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#4f8ef7,#38d9a9);display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;border:none;box-shadow:0 0 40px rgba(79,142,247,.4);color:#0a1628;position:absolute;transition:transform .2s}
+/* VIDEO */
+.vid-frame{border-radius:14px;overflow:hidden;margin-bottom:20px;background:#060d1a;border:1px solid rgba(30,58,107,.6)}
+.vid-splash{aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;background:linear-gradient(135deg,#060d1a,#0d1f3c)}
+.play-btn{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#4f8ef7,#38d9a9);display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;border:none;box-shadow:0 0 40px rgba(79,142,247,.4);color:#0a1628;transition:transform .2s}
 .play-btn:hover{transform:scale(1.08)}
-.sim-player{display:none;width:100%;height:100%;flex-direction:column;background:#000}
-.sim-player.active{display:flex}
-.sim-area{flex:1;background:#080808;display:flex;align-items:center;justify-content:center;position:relative}
-.sim-content{text-align:center;padding:20px}
-.sim-ch{font-size:.75rem;color:#8a9bbf;margin-bottom:8px}
-.sim-topic{font-size:.9rem;color:#4f8ef7;max-width:300px;line-height:1.5;margin:0 auto}
-.sim-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;cursor:pointer}
-.sim-overlay:hover{opacity:1;background:rgba(0,0,0,.2)}
-.sim-overlay-btn{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border:none;color:#fff;font-size:1.1rem;cursor:pointer}
-.sim-controls{background:#111;padding:10px 14px;display:flex;align-items:center;gap:10px}
-.sim-prog{flex:1;height:4px;background:#333;border-radius:2px;cursor:pointer}
-.sim-prog-fill{height:100%;background:linear-gradient(90deg,#4f8ef7,#38d9a9);border-radius:2px;width:0%}
-.sim-time{font-size:.7rem;font-family:'JetBrains Mono',monospace;color:#888;white-space:nowrap}
-.ctrl-btn{background:none;border:none;color:#bbb;cursor:pointer;font-size:.85rem;padding:4px 6px;border-radius:4px;transition:color .2s}
-.ctrl-btn:hover{color:#fff}
-.chapters{background:#0d1f3c;border:1px solid rgba(30,58,107,.6);border-radius:12px;padding:18px;margin-bottom:18px}
-.chapters h3{font-size:.78rem;font-weight:700;color:#8a9bbf;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
-.ch-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;cursor:pointer;transition:background .15s;margin-bottom:3px}
-.ch-item:hover,.ch-item.active{background:rgba(79,142,247,.1)}
-.ch-item.active{border:1px solid rgba(79,142,247,.2)}
-.ch-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:#8a9bbf;width:32px;flex-shrink:0}
-.ch-info{flex:1}
-.ch-title{font-size:.8rem;font-weight:600;margin-bottom:1px}
-.ch-dur{font-size:.68rem;color:#8a9bbf}
-.ch-check{font-size:.85rem;color:#38d9a9;opacity:.2;transition:opacity .3s}
-.ch-check.done{opacity:1}
-.quiz-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.quiz-hdr h3{font-size:.92rem;font-weight:700}
-.quiz-ctr{font-size:.73rem;color:#8a9bbf;font-family:'JetBrains Mono',monospace}
-.quiz-q{font-size:.88rem;font-weight:600;margin-bottom:14px;line-height:1.5}
-.quiz-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
-.quiz-opt{background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);border-radius:8px;padding:11px 15px;cursor:pointer;font-family:'Sora',sans-serif;font-size:.82rem;color:#e8edf8;transition:all .2s;text-align:left}
-.quiz-opt:hover:not(:disabled){border-color:#4f8ef7;background:rgba(79,142,247,.08)}
-.quiz-opt.correct{border-color:#38d9a9!important;background:rgba(56,217,169,.1)!important;color:#38d9a9!important}
-.quiz-opt.wrong{border-color:#f05f5f!important;background:rgba(240,95,95,.08)!important;color:#f05f5f!important}
-.quiz-fb{font-size:.8rem;padding:10px 14px;border-radius:8px;margin-bottom:14px;display:none;line-height:1.5}
-.quiz-fb.show{display:block}
-.quiz-fb.ok{background:rgba(56,217,169,.1);color:#38d9a9;border:1px solid rgba(56,217,169,.2)}
-.quiz-fb.bad{background:rgba(240,95,95,.08);color:#f05f5f;border:1px solid rgba(240,95,95,.2)}
-.btn-sm{background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.3);border-radius:8px;padding:8px 18px;color:#4f8ef7;font-family:'Sora',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s}
-.btn-sm:hover{background:rgba(79,142,247,.25)}
-.btn-sm:disabled{opacity:.4;cursor:not-allowed}
+.wistia-wrap{position:relative;width:100%;padding-top:56.25%}
+.wistia-wrap wistia-player{position:absolute;inset:0;width:100%;height:100%}
+/* DONE CARD */
 .done-card{display:none;background:linear-gradient(135deg,rgba(56,217,169,.08),rgba(79,142,247,.06));border:1px solid rgba(56,217,169,.2);border-radius:16px;padding:34px;text-align:center;margin-bottom:20px}
 .done-card.show{display:block;animation:fadeIn .4s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .done-icon{font-size:3rem;margin-bottom:14px}
 .done-card h2{font-size:1.2rem;font-weight:800;margin-bottom:8px;color:#38d9a9}
-.done-card p{font-size:.85rem;color:#8a9bbf;margin-bottom:18px;line-height:1.6}
-.cert-box{background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);border-radius:10px;padding:14px;margin:0 auto 18px;max-width:380px;font-size:.8rem;text-align:left;line-height:1.8;color:#8a9bbf}
+.done-card>p{font-size:.85rem;color:#8a9bbf;margin-bottom:18px;line-height:1.6}
+.cert-box{background:rgba(10,22,40,.8);border:1px solid rgba(30,58,107,.6);border-radius:10px;padding:14px;margin:0 auto 18px;max-width:400px;font-size:.8rem;text-align:left;line-height:1.9;color:#8a9bbf;white-space:pre-line}
 .cert-box strong{color:#e8edf8;display:block;margin-bottom:4px;font-size:.88rem}
 .btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .btn-cert{background:linear-gradient(135deg,#4f8ef7,#38d9a9);border:none;border-radius:10px;padding:11px 22px;color:#0a1628;font-family:'Sora',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:opacity .2s}
 .btn-cert:hover{opacity:.88}
-.btn-next{background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.3);border-radius:10px;padding:11px 22px;color:#4f8ef7;font-family:'Sora',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
-.btn-next:hover{background:rgba(79,142,247,.25)}
-.mod-nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px}
+.btn-cert:disabled{opacity:.5;cursor:not-allowed}
+.btn-view-mods{background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.3);border-radius:10px;padding:11px 22px;color:#4f8ef7;font-family:'Sora',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-view-mods:hover{background:rgba(79,142,247,.25)}
+/* MOD SWITCHER */
+.mod-switcher{margin-top:16px}
+.mod-switcher-lbl{font-size:.72rem;font-weight:700;color:#8a9bbf;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.mod-nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:8px}
 .mod-card{background:#0d1f3c;border:1px solid rgba(30,58,107,.6);border-radius:10px;padding:14px;cursor:pointer;transition:all .2s}
-.mod-card:hover{border-color:#4f8ef7}
-.mod-card.done{border-color:rgba(56,217,169,.3)}
-.mod-card.cur{border-color:#4f8ef7;background:rgba(79,142,247,.06)}
+.mod-card:hover{border-color:#4f8ef7;transform:translateY(-1px)}
+.mod-card.cur{border-color:#4f8ef7;background:rgba(79,142,247,.07)}
 .mod-num{font-size:.68rem;font-weight:700;color:#4f8ef7;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
 .mod-name{font-size:.8rem;font-weight:600;line-height:1.3;margin-bottom:3px}
 .mod-status{font-size:.7rem;color:#8a9bbf}
+/* TOAST */
+.save-toast{display:none;position:fixed;bottom:24px;right:24px;background:#0d1f3c;border:1px solid rgba(56,217,169,.35);border-radius:10px;padding:11px 18px;font-size:.78rem;color:#38d9a9;z-index:999;gap:8px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.save-toast.show{display:flex;animation:fadeIn .3s ease}
+@keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:600px){
-  .mod-nav{grid-template-columns:1fr}
   .gate-card{padding:28px 18px}
   .player-wrap{padding:14px 12px 48px}
   .mod-title{font-size:1.1rem}
+  .mod-nav{grid-template-columns:1fr}
 }
 </style>
 </head>
 <body>
 
 <nav class="nav">
-  <a class="nav-logo" href="index.html">
-    <img src="data:image/png;base64,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" alt="ACC logo"/>
+  <a class="nav-logo" href="#" aria-label="Accessibility Compliance Canada Inc." style="cursor:default">
+    <div class="nav-logo-img" aria-hidden="true" style="width:36px;height:36px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(79,142,247,.25);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+      <img src="data:image/png;base64,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" alt="Accessibility Compliance Canada Inc." width="30" height="30" style="width:30px;height:30px;object-fit:contain;display:block"/>
+    </div>
     <span class="nav-logo-text">ACC <span>Training</span></span>
   </a>
   <div class="nav-spacer"></div>
-  <a class="nav-back" href="dashboard.html">&#8592; Dashboard</a>
 </nav>
 
+<!-- GATE -->
 <div class="gate" id="gate">
   <div class="gate-card">
-    <div class="gate-icon">&#127891;</div>
-    <div class="gate-badge" id="gate-badge">&#9654; Module 1 &#8212; AODA Overview</div>
-    <h1>Enter your name to begin</h1>
-    <p>Your completion will be automatically logged to your organization&#8217;s training registry and added to the annual Evidence Binder.</p>
-    <input class="gate-input" type="text" id="gate-name" placeholder="Your full name" autocomplete="name" maxlength="80"/>
-    <input class="gate-input" type="email" id="gate-email" placeholder="Work email (optional)" autocomplete="email" maxlength="120"/>
-    <button class="btn-start" onclick="startTraining()">Start Training &#8594;</button>
-    <p class="gate-disclaimer">Linked to <strong id="gate-org">Acme Corp Inc.</strong> Your name and completion time will be recorded for AODA compliance.</p>
+    <div style="font-size:2.5rem;margin-bottom:16px">&#127891;</div>
+    <h1 id="gate-heading">Choose a training module</h1>
+    <p class="gate-org-line">Linked to <strong id="gate-org">Your Organization</strong></p>
+
+    <!-- Step 1: Picker -->
+    <div id="module-picker">
+      <span class="picker-label">Select a module to begin</span>
+      <div class="picker-grid" id="picker-grid"></div>
+    </div>
+
+    <!-- Step 2: Name -->
+    <div class="name-section" id="name-section">
+      <button class="name-back" onclick="backToPicker()">&#8592; Back to modules</button>
+      <div class="name-badge" id="name-badge">&#9654; Module 1 — AODA Overview</div>
+      <input class="gate-input" type="text" id="gate-name" placeholder="Your full name" autocomplete="name" maxlength="80"/>
+      <input class="gate-input" type="email" id="gate-email" placeholder="Work email (optional)" autocomplete="email" maxlength="120"/>
+      <button class="btn-start" onclick="startTraining()">Start Training &#8594;</button>
+      <p class="gate-fine">Your name and completion time will be recorded for AODA compliance.</p>
+    </div>
   </div>
 </div>
 
+<!-- PLAYER -->
 <div class="player-wrap" id="player">
-  <div style="margin-bottom:20px">
+  <div class="player-topbar">
+    <button class="btn-all-top" onclick="goBackToModules()">&#8592; All Modules</button>
     <div class="mod-eyebrow" id="mod-eyebrow">Module 1 of 3</div>
-    <h1 class="mod-title" id="mod-title">AODA Overview &amp; Legal Requirements</h1>
-    <div class="mod-meta">
-      <span>&#9201; <span id="mod-dur">22 min</span></span>
-      <span>&#128203; Quiz after video</span>
-      <span id="mod-learner" style="color:#38d9a9;font-weight:600"></span>
+  </div>
+  <h1 class="mod-title" id="mod-title">AODA Overview &amp; Legal Requirements</h1>
+  <div class="mod-meta">
+    <span>&#9201; <span id="mod-dur">22 min</span></span>
+    <span id="mod-learner" style="color:#38d9a9;font-weight:600"></span>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
+  <div class="prog-label" id="prog-label">0% complete</div>
+
+  <div class="vid-frame" id="vid-frame">
+    <div class="vid-splash" id="vid-splash">
+      <div style="font-size:3rem;opacity:.6">&#127916;</div>
+      <button class="play-btn" aria-label="Play" onclick="startVideo()">&#9654;</button>
     </div>
-    <div class="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
-    <div class="prog-label" id="prog-label">0% complete</div>
+    <div id="wistia-container" style="display:none;width:100%"></div>
+  </div>
+  <!-- Watching hint — shown while video is active, hidden on completion -->
+  <div id="watch-hint" style="display:none;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:10px;padding:12px 16px;font-size:.78rem;color:#8a9bbf;margin-bottom:20px;line-height:1.6">
+    &#9432;&nbsp; <strong style="color:#e8edf8">Watch at least 90% of this video</strong> to mark the module as complete and unlock your certificate. Your progress is tracked automatically — you can freely pause and resume from where you left off.
   </div>
 
-  <div class="vid-frame">
-    <div class="vid-splash" id="vid-splash" onclick="startVideo()">
-      <div style="font-size:3rem;opacity:.7">&#127916;</div>
-      <button class="play-btn" aria-label="Play">&#9654;</button>
+  <!-- Cert unlock bar — visible while watching; disappears when done-card shows -->
+  <div id="cert-unlock-bar" style="display:none;background:rgba(10,22,40,.6);border:1px solid rgba(30,58,107,.6);border-radius:10px;padding:14px 18px;margin-bottom:16px;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div style="font-size:.78rem;color:#8a9bbf;line-height:1.5">
+      <span id="cert-unlock-pct" style="font-size:.85rem;font-weight:700;color:#4f8ef7">0%</span> watched &mdash; reach <strong style="color:#e8edf8">90%</strong> to unlock your certificate
     </div>
-    <div class="sim-player" id="sim-player">
-      <div class="sim-area">
-        <div class="sim-content">
-          <div class="sim-ch" id="sim-ch">Chapter 1</div>
-          <div class="sim-topic" id="sim-topic"></div>
-        </div>
-        <div class="sim-overlay" onclick="togglePause()">
-          <button class="sim-overlay-btn" id="overlay-btn">&#9646;&#9646;</button>
-        </div>
-      </div>
-      <div class="sim-controls">
-        <button class="ctrl-btn" onclick="togglePause()" id="ctrl-btn">&#9646;&#9646;</button>
-        <div class="sim-prog" onclick="seekVid(event)"><div class="sim-prog-fill" id="sim-prog-fill"></div></div>
-        <span class="sim-time" id="sim-time">0:00 / 22:00</span>
-        <button class="ctrl-btn" onclick="skipEnd()" title="Skip to end">&#9193;</button>
-      </div>
-    </div>
+    <button id="cert-preview-btn" class="btn-cert" disabled onclick="dlCert()" style="opacity:.45;cursor:not-allowed;font-size:.78rem;padding:9px 18px;white-space:nowrap">&#127919; Certificate Locked</button>
   </div>
 
-  <div class="chapters"><h3>Chapters</h3><div id="ch-list"></div></div>
-
-  
+  <!-- Status indicator shown above video while watching -->
+  <div id="cert-status-bar" style="display:none;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:.82rem;font-weight:600;display:none;align-items:center;gap:10px"></div>
 
   <div class="done-card" id="done-card">
     <div class="done-icon">&#127941;</div>
     <h2>Module Complete!</h2>
-    <p id="done-msg"></p>
+    <p id="done-msg">Training complete. Your certificate of completion is ready.</p>
     <div class="cert-box"><strong id="cert-name"></strong><div id="cert-detail"></div></div>
+      <div id="cert-status" style="font-size:.78rem;color:#8a9bbf;margin-bottom:12px;min-height:20px;text-align:center"></div>
     <div class="btn-row">
-      <button class="btn-cert" onclick="dlCert()">&#8659; Download Certificate</button>
-      <button class="btn-next" id="next-btn" onclick="nextMod()">Next Module &#8594;</button>
+      <button class="btn-cert" id="cert-btn" onclick="dlCert()">&#8659; Download Certificate</button>
+      <button class="btn-view-mods" onclick="goBackToModules()">&#9776; View All Modules</button>
     </div>
   </div>
 
-  <div>
-    <h3 style="font-size:.78rem;font-weight:700;color:#8a9bbf;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">All Modules</h3>
+  <div class="mod-switcher">
+    <div class="mod-switcher-lbl">All Modules — click any to switch</div>
     <div class="mod-nav" id="mod-nav"></div>
   </div>
 </div>
 
+<div class="save-toast" id="save-toast">&#10003; Training record saved to registry</div>
+
 <script>
+var SUPABASE_URL  = 'https://wfyzvmfvlukawidowuym.supabase.co';
+var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
+var _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// 80% watched = completion trigger
+var COMPLETION_PCT = 90;
+
+// ── MODULES ──
+// title & dur are placeholders — overwritten automatically from Wistia metadata on boot.
+// Add wistiaId for modules 2 & 3 when uploaded.
 var MODS = [
-  {id:1,title:"AODA Overview & Legal Requirements",dur:"22 min",sec:1320,
-   chs:[{t:"What is AODA?",d:"4 min",s:0},{t:"Ontario Human Rights Code",d:"5 min",s:240},{t:"Employer Obligations",d:"7 min",s:540},{t:"Filing Deadlines & Penalties",d:"6 min",s:960}],
-   quiz:[
-     {q:"What does AODA stand for?",opts:["Accessibility for Ontarians with Disabilities Act","Annual Ontario Digital Assessment","Accessible Operations and Design Act","Ontario Accessibility Deployment Agreement"],ans:0,ex:"AODA stands for the Accessibility for Ontarians with Disabilities Act, enacted in 2005."},
-     {q:"Who must file an AODA compliance report by December 31, 2026?",opts:["Only companies with 50+ employees","All private-sector and non-profit organizations in Ontario","Only government organizations","Only companies with a physical storefront"],ans:1,ex:"All private-sector and non-profit organizations in Ontario must file, regardless of size."},
-     {q:"What is the maximum daily fine for AODA non-compliance?",opts:["$5,000","$50,000","$100,000","$500"],ans:2,ex:"Corporations can face fines of up to $100,000 per day for non-compliance."}
-   ]},
-  {id:2,title:"WCAG 2.1 AA -- What It Means for Your Team",dur:"35 min",sec:2100,
-   chs:[{t:"The 4 WCAG Principles (POUR)",d:"8 min",s:0},{t:"Common Accessibility Failures",d:"9 min",s:480},{t:"How the ACC Widget Helps",d:"8 min",s:1020},{t:"What Staff Must Avoid",d:"10 min",s:1500}],
-   quiz:[
-     {q:"What does POUR stand for in WCAG?",opts:["Perceivable, Operable, Understandable, Robust","Public, Open, Usable, Responsive","Perceivable, Operable, Useful, Reliable","Practical, Organized, Usable, Reasonable"],ans:0,ex:"POUR: Perceivable, Operable, Understandable, Robust -- the four core WCAG principles."},
-     {q:"Which is a Level AA WCAG failure?",opts:["A video with auto-captions","Text with a contrast ratio of 2.5:1","An image with a descriptive alt tag","A form with visible labels"],ans:1,ex:"WCAG 2.1 AA requires a minimum contrast ratio of 4.5:1 for normal text."},
-     {q:"Which staff action would most likely cause a WCAG compliance failure?",opts:["Using a company logo in the header","Uploading an image-only PDF with no text layer","Adding a new product to the store","Updating a banner image with alt text"],ans:1,ex:"Image-only PDFs are completely inaccessible to screen readers. Always use text-based or tagged PDFs."}
-   ]},
-  {id:3,title:"Creating Accessible Content & Documents",dur:"28 min",sec:1680,
-   chs:[{t:"Accessible Word Documents",d:"7 min",s:0},{t:"PDFs: Tagged vs. Untagged",d:"7 min",s:420},{t:"Emails & Social Media",d:"7 min",s:840},{t:"Images, Alt Text & Captions",d:"7 min",s:1260}],
-   quiz:[
-     {q:"When writing alt text for an image, what is correct?",opts:["Always write 'Image of...' at the start","Describe the purpose and content concisely","Leave blank if the image has a caption","Use the file name as alt text"],ans:1,ex:"Alt text should describe the purpose and content concisely. Never start with 'Image of' as screen readers already say it is an image."},
-     {q:"Which email practice helps visually impaired recipients?",opts:["Using ALL CAPS for emphasis","Using 'Click here' as link text","Writing descriptive hyperlink text","Using red text for warnings"],ans:2,ex:"Descriptive link text helps screen reader users navigate meaningfully. 'Click here' provides no context."},
-     {q:"When posting a video to company social media, what accessibility step is required?",opts:["Add subtitles or captions","Upload in HD quality","Add 5+ hashtags","Include a link to the website"],ans:0,ex:"Captions are required under WCAG 2.1 AA Success Criterion 1.2.2 for all pre-recorded video content."}
-   ]}
+  { id:1, title:'Module 1',  dur:'—', wistiaId:'z5bag5l7j1' },
+  { id:2, title:'Module 2',  dur:'—', wistiaId:'ku0mhynrz2' },
+  { id:3, title:'Module 3',  dur:'—', wistiaId:'ctvzdf2cwe' }
 ];
 
-var S = {mod:1,name:'',email:'',org:'Acme Corp Inc.',playing:false,elapsed:0,timer:null,chIdx:0,qIdx:0,qScore:0,answered:false,done:[],vidDone:false};
+// maxPct tracks the furthest % the user has watched (so skipping forward doesn't count)
+var S = { mod:1, name:'', email:'', org:'', clientId:null, clientCode:null, savedToDb:false, wPlayer:null, maxPct:0 };
 
-(function(){
+// ── BOOT ──
+(async function() {
   var p = new URLSearchParams(window.location.search);
-  if (p.get('module')) S.mod = parseInt(p.get('module'))||1;
-  if (p.get('org')) S.org = decodeURIComponent(p.get('org'));
-  document.getElementById('gate-org').textContent = S.org;
-  var m = MODS[S.mod-1]||MODS[0];
-  document.getElementById('gate-badge').textContent = 'Module '+S.mod+' -- '+m.title;
-  document.title = 'ACC Training -- Module '+S.mod;
-  try{var sv=sessionStorage.getItem('acc_done');if(sv)S.done=JSON.parse(sv);}catch(e){}
+  if (p.get('org'))   S.org        = decodeURIComponent(p.get('org'));
+  if (p.get('token')) S.clientCode = decodeURIComponent(p.get('token'));
+  document.getElementById('gate-org').textContent = S.org || 'your organization';
+  document.title = 'ACC Training \u2014 ' + (S.org || 'ACC');
+
+  // Resolve client from Supabase — org name is the authoritative source
+  if (S.clientCode) {
+    try {
+      var { data } = await _sb.from('clients').select('id,name,client_code').eq('client_code', S.clientCode).single();
+      if (data) {
+        S.clientId   = data.id;
+        S.clientCode = data.client_code;
+        // Always use the company name stored in Supabase for the certificate
+        if (data.name) {
+          S.org = data.name;
+          document.getElementById('gate-org').textContent = S.org;
+        }
+      }
+    } catch(e) {}
+  }
+
+  // Fetch Wistia metadata (title + duration) for each module that has a wistiaId
+  await Promise.all(MODS.map(async function(m) {
+    if (!m.wistiaId) return;
+    try {
+      var r = await fetch('https://fast.wistia.com/oembed?url=https://home.wistia.com/medias/' + m.wistiaId);
+      if (!r.ok) return;
+      var meta = await r.json();
+      if (meta.title)    m.title = meta.title;
+      if (meta.duration) { m.dur = formatDur(meta.duration); m._durSecs = meta.duration; }
+    } catch(e) {}
+  }));
+
+  buildPicker();
 })();
 
-function startTraining(){
-  var n=document.getElementById('gate-name').value.trim();
-  if(!n){document.getElementById('gate-name').style.borderColor='#f05f5f';document.getElementById('gate-name').focus();return;}
-  S.name=n; S.email=document.getElementById('gate-email').value.trim();
-  document.getElementById('gate').style.display='none';
-  document.getElementById('player').style.display='block';
+function formatDur(secs) {
+  var m = Math.floor(secs / 60), s = Math.round(secs % 60);
+  return m + (s > 0 ? ':' + (s < 10 ? '0' : '') + s : '') + ' min';
+}
+
+// ── GATE ──
+function buildPicker() {
+  var g = document.getElementById('picker-grid');
+  g.innerHTML = '';
+  MODS.forEach(function(m) {
+    var c = document.createElement('div');
+    c.className = 'picker-card';
+    c.setAttribute('data-mod', m.id);
+    var _pt = m.title.replace(/^Module\s+\d+[:\s\-\u2014]*\s*/i,'').trim()||m.title;
+    c.innerHTML = '<span class="picker-num">MOD<br>' + m.id + '</span><div class="picker-info"><div class="picker-title">' + _pt + '</div><div class="picker-dur">&#9201; ' + m.dur + '</div></div><span class="picker-arrow">&#8250;</span>';
+    c.onclick = function() { pickMod(m.id); };
+    g.appendChild(c);
+  });
+  document.getElementById('module-picker').style.display = 'block';
+  document.getElementById('name-section').style.display  = 'none';
+  document.getElementById('gate-heading').textContent    = 'Choose a training module';
+}
+
+function pickMod(n) {
+  S.mod = n;
+  document.querySelectorAll('.picker-card').forEach(function(c) { c.classList.toggle('selected', +c.dataset.mod === n); });
+  setTimeout(function() {
+    var m = MODS[n-1];
+    var _badgeTitle = m.title.replace(/^Module\s+\d+[:\s\-\u2014]*\s*/i, '').trim();
+    document.getElementById('name-badge').textContent      = '\u25b6 Module ' + n + ' \u2014 ' + (_badgeTitle || m.title);
+    document.getElementById('module-picker').style.display = 'none';
+    document.getElementById('name-section').style.display  = 'block';
+    document.getElementById('gate-heading').textContent    = 'Enter your name to begin';
+    document.getElementById('gate-name').focus();
+  }, 180);
+}
+
+function backToPicker() { buildPicker(); }
+
+function startTraining() {
+  var n = document.getElementById('gate-name').value.trim();
+  if (!n) { document.getElementById('gate-name').style.borderColor = '#f05f5f'; document.getElementById('gate-name').focus(); return; }
+  S.name  = n;
+  S.email = document.getElementById('gate-email').value.trim();
+  document.getElementById('gate').style.display   = 'none';
+  document.getElementById('player').style.display = 'block';
   loadMod(S.mod);
 }
-document.getElementById('gate-name').addEventListener('keydown',function(e){if(e.key==='Enter')startTraining();});
+document.getElementById('gate-name').addEventListener('keydown', function(e) { if (e.key === 'Enter') startTraining(); });
 
-function fmt(s){var m=Math.floor(s/60),sec=s%60;return m+':'+(sec<10?'0':'')+sec;}
-
-function loadMod(n){
-  S.mod=n;S.elapsed=0;S.chIdx=0;S.vidDone=false;S.qIdx=0;S.qScore=0;
-  clearInterval(S.timer);
-  var m=MODS[n-1];
-  document.getElementById('mod-eyebrow').textContent='Module '+n+' of '+MODS.length;
-  document.getElementById('mod-title').textContent=m.title;
-  document.getElementById('mod-dur').textContent=m.dur;
-  document.getElementById('mod-learner').textContent=S.name;
-  var sp=document.getElementById('vid-splash');
-  sp.style.display='flex';
-  sp.innerHTML='<div style="font-size:3rem;opacity:.7">&#127916;</div><button class="play-btn" aria-label="Play">&#9654;</button>';
-  sp.onclick=startVideo;
-  document.getElementById('sim-player').classList.remove('active');
-  document.getElementById('sim-prog-fill').style.width='0%';
-  document.getElementById('sim-time').textContent='0:00 / '+fmt(m.sec);
-  renderChs(m);
-  document.getElementById('quiz-wrap').classList.remove('visible');
+function goBackToModules() {
+  destroyWistia();
   document.getElementById('done-card').classList.remove('show');
+  document.getElementById('player').style.display = 'none';
+  buildPicker();
+  // Pre-fill name for convenience
+  document.getElementById('gate-name').value  = S.name;
+  document.getElementById('gate-email').value = S.email;
+  document.getElementById('gate').style.display = 'flex';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+// ── LOAD MODULE ──
+function loadMod(n) {
+  S.mod = n; S.savedToDb = false; S.maxPct = 0;
+  destroyWistia();
+  var m = MODS[n-1];
+  document.getElementById('mod-eyebrow').textContent = 'Module ' + n + ' of ' + MODS.length;
+  var _cleanTitle = m.title.replace(/^Module\s+\d+[:\s\-\u2014]*\s*/i, '').trim();
+  document.getElementById('mod-title').textContent   = _cleanTitle || m.title;
+  document.getElementById('mod-dur').textContent     = m.dur;
+  document.getElementById('mod-learner').textContent = S.name;
+  document.getElementById('vid-splash').style.cssText = '';
+  document.getElementById('vid-splash').style.display       = 'flex';
+  document.getElementById('wistia-container').style.display = 'none';
+  document.getElementById('wistia-container').innerHTML     = '';
+  document.getElementById('watch-hint').style.display       = 'none';
+  document.getElementById('done-card').classList.remove('show');
+  var cub = document.getElementById('cert-unlock-bar');
+  if (cub) { cub.style.display = 'none'; }
+  var pctEl = document.getElementById('cert-unlock-pct');
+  if (pctEl) pctEl.textContent = '0%';
+  var cpb = document.getElementById('cert-preview-btn');
+  if (cpb) { cpb.disabled = true; cpb.style.opacity = '.45'; cpb.style.cursor = 'not-allowed'; cpb.innerHTML = '&#127919; Certificate Locked'; }
   setP(0);
   renderModNav(n);
-  window.scrollTo({top:0,behavior:'smooth'});
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 
-function setP(p){
-  document.getElementById('prog-fill').style.width=p+'%';
-  document.getElementById('prog-label').textContent=p+'% complete';
+// ── WISTIA ──
+function startVideo() {
+  var m = MODS[S.mod-1];
+  document.getElementById('vid-splash').style.display = 'none';
+  document.getElementById('watch-hint').style.display = 'block';
+  var cub = document.getElementById('cert-unlock-bar');
+  if (cub) { cub.style.display = 'flex'; }
+  var cpb = document.getElementById('cert-preview-btn');
+  if (cpb) { cpb.disabled = true; cpb.style.opacity = '.45'; cpb.style.cursor = 'not-allowed'; cpb.innerHTML = '&#127919; Certificate Locked'; }
+  var wc = document.getElementById('wistia-container');
+  wc.style.display = 'block';
+
+  if (!m.wistiaId) {
+    wc.innerHTML = '<div style="aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(10,22,40,.8)">'
+      + '<div style="font-size:2rem">&#127909;</div>'
+      + '<div style="font-size:.88rem;color:#4f8ef7;font-weight:600">Video coming soon for Module ' + m.id + '</div>'
+      + '<div style="font-size:.78rem;color:#8a9bbf;max-width:320px;text-align:center;line-height:1.6">Upload the video to Wistia and add its media ID to the MODS array.</div>'
+      + '</div>';
+    return;
+  }
+
+  // Load the per-video Wistia embed script (idempotent)
+  var sid = 'wistia-embed-' + m.wistiaId;
+  if (!document.getElementById(sid)) {
+    var s = document.createElement('script');
+    s.id = sid; s.async = true;
+    s.setAttribute('type', 'module');
+    s.src = 'https://fast.wistia.com/embed/' + m.wistiaId + '.js';
+    document.head.appendChild(s);
+  }
+
+  // Swatch blur placeholder style
+  var styleId = 'wistia-swatch-' + m.wistiaId;
+  if (!document.getElementById(styleId)) {
+    var st = document.createElement('style');
+    st.id = styleId;
+    st.textContent = "wistia-player[media-id='" + m.wistiaId + "']:not(:defined){background:center/contain no-repeat url('https://fast.wistia.com/embed/medias/" + m.wistiaId + "/swatch');display:block;filter:blur(5px);padding-top:56.25%}";
+    document.head.appendChild(st);
+  }
+
+  wc.innerHTML = '<div class="wistia-wrap"><wistia-player id="wp-el" media-id="' + m.wistiaId + '" aspect="1.7777777777777777"></wistia-player></div>';
+
+  attachWistiaEvents(m.wistiaId);
 }
 
-function renderChs(m){
-  var h='';
-  m.chs.forEach(function(ch,i){
-    var nxt=m.chs[i+1]?m.chs[i+1].s:m.sec;
-    var done=S.elapsed>=nxt;
-    h+='<div class="ch-item'+(i===S.chIdx?' active':'')+'" onclick="jumpCh('+i+')">';
-    h+='<span class="ch-num">0'+(i+1)+'</span>';
-    h+='<div class="ch-info"><div class="ch-title">'+ch.t+'</div><div class="ch-dur">'+ch.d+'</div></div>';
-    h+='<span class="ch-check'+(done?' done':'')+'">&#10003;</span></div>';
-  });
-  document.getElementById('ch-list').innerHTML=h;
-}
+// ── WISTIA PROGRESS TRACKING ──
+// DOM event approach — confirmed via debug: wistia-player fires DOM CustomEvents.
+// Event: 'timechange' with e.detail.timePosition (seconds, float)
+// We compute % from timePosition / video duration.
+// Duration is read from the <wistia-player> element's duration attribute or
+// fetched once from the oEmbed API (already in MODS[].dur as formatted string,
+// so we store raw seconds separately).
 
-function jumpCh(i){var m=MODS[S.mod-1];S.elapsed=m.chs[i].s;S.chIdx=i;updateVid();}
+var _wqDone = false;
 
-function startVideo(){
-  document.getElementById('vid-splash').style.display='none';
-  document.getElementById('sim-player').classList.add('active');
-  S.playing=true;
-  runTimer();
-}
+function attachWistiaEvents(mediaId) {
+  _wqDone = false;
+  S.maxPct = 0;
 
-function togglePause(){
-  S.playing=!S.playing;
-  var icon=S.playing?'&#9646;&#9646;':'&#9654;';
-  document.getElementById('ctrl-btn').innerHTML=icon;
-  document.getElementById('overlay-btn').innerHTML=icon;
-  if(S.playing)runTimer();else clearInterval(S.timer);
-}
+  // Duration in seconds — populated once the element is ready
+  var _duration = 0;
+  var done = false;
 
-function runTimer(){
-  clearInterval(S.timer);
-  var m=MODS[S.mod-1];
-  S.timer=setInterval(function(){
-    if(!S.playing)return;
-    S.elapsed=Math.min(S.elapsed+1,m.sec);
-    updateVid();
-    if(S.elapsed>=m.sec){clearInterval(S.timer);S.playing=false;S.vidDone=true;onVidEnd();}
-  },150);
-}
+  function tryAttach(attempts) {
+    if (attempts > 80) return;
+    var el = document.getElementById('wp-el');
+    if (!el) { setTimeout(function(){ tryAttach(attempts + 1); }, 150); return; }
 
-function skipEnd(){var m=MODS[S.mod-1];S.elapsed=m.sec;clearInterval(S.timer);S.playing=false;S.vidDone=true;updateVid();onVidEnd();}
+    if (_wqDone) return; // already attached
+    _wqDone = true;
+    S.wPlayer = el;
 
-function seekVid(e){var b=e.currentTarget,r=b.getBoundingClientRect(),p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));S.elapsed=Math.floor(p*MODS[S.mod-1].sec);updateVid();}
+    // Read duration: wistia-player exposes a .duration property once loaded
+    function getDur() {
+      // Try the element property first (set by the web component)
+      if (el.duration && el.duration > 0) return el.duration;
+      // Fallback: look at the MODS entry raw seconds we stored at boot
+      var m = MODS[S.mod - 1];
+      return m._durSecs || 0;
+    }
 
-function updateVid(){
-  var m=MODS[S.mod-1],p=m.sec>0?S.elapsed/m.sec:0;
-  document.getElementById('sim-prog-fill').style.width=(p*100).toFixed(1)+'%';
-  document.getElementById('sim-time').textContent=fmt(S.elapsed)+' / '+fmt(m.sec);
-  var c=0;m.chs.forEach(function(ch,i){if(S.elapsed>=ch.s)c=i;});
-  S.chIdx=c;
-  document.getElementById('sim-ch').textContent='Chapter '+(c+1);
-  document.getElementById('sim-topic').textContent=m.chs[c].t;
-  setP(Math.round(p*60));
-  renderChs(m);
-}
+    // timechange — fires continuously with {timePosition: <seconds>}
+    // Anti-cheat: track a "naturalPct" watermark that only advances during
+    // genuine playback (small forward steps). Scrubbing jumps > 3s are ignored
+    // for watermark purposes — the display bar may jump but S.maxPct won't.
+    var _lastPos  = null; // null = not yet seeded
+    var _naturalPct = 0;  // 0-1, only moves during real playback
+    var MAX_STEP  = 3;    // seconds; larger delta = seek/scrub
 
-function onVidEnd(){
-  var sp=document.getElementById('vid-splash');
-  sp.style.display='flex';
-  sp.innerHTML='<div style="text-align:center;padding:20px"><div style="font-size:2rem;margin-bottom:8px">&#9989;</div><div style="font-size:.85rem;color:#38d9a9;font-weight:600">Video complete</div><div style="font-size:.75rem;color:#8a9bbf;margin-top:4px">Generating your certificate...</div></div>';
-  sp.onclick=null;
-  document.getElementById('sim-player').classList.remove('active');
-  setTimeout(function(){ onQuizEnd(); }, 1200);
-  renderQ();
-  document.getElementById('quiz-wrap').scrollIntoView({behavior:'smooth',block:'nearest'});
-}
+    el.addEventListener('timechange', function(e) {
+      var pos = e.detail && e.detail.timePosition !== undefined ? e.detail.timePosition : null;
+      if (pos === null) return;
 
-function renderQ(){
-  var m=MODS[S.mod-1],q=m.quiz[S.qIdx];
-  document.getElementById('quiz-ctr').textContent='Question '+(S.qIdx+1)+' of '+m.quiz.length;
-  document.getElementById('quiz-q').textContent=q.q;
-  var h='';
-  q.opts.forEach(function(o,i){h+='<button class="quiz-opt" onclick="ansQ('+i+')">'+o+'</button>';});
-  document.getElementById('quiz-opts').innerHTML=h;
-  document.getElementById('quiz-fb').className='quiz-fb';
-  S.answered=false;
-  var nb=document.getElementById('quiz-next');
-  nb.disabled=true;
-  nb.textContent=(S.qIdx===m.quiz.length-1)?'Finish Quiz':'Next Question';
-}
+      if (!_duration) _duration = getDur();
+      if (!_duration) { _lastPos = pos; return; } // seed position, wait for duration
 
-function ansQ(i){
-  if(S.answered)return;
-  S.answered=true;
-  var m=MODS[S.mod-1],q=m.quiz[S.qIdx];
-  document.querySelectorAll('.quiz-opt').forEach(function(b){b.disabled=true;});
-  var fb=document.getElementById('quiz-fb');
-  if(i===q.ans){S.qScore++;document.querySelectorAll('.quiz-opt')[i].classList.add('correct');fb.textContent='Correct! '+q.ex;fb.className='quiz-fb show ok';}
-  else{document.querySelectorAll('.quiz-opt')[i].classList.add('wrong');document.querySelectorAll('.quiz-opt')[q.ans].classList.add('correct');fb.textContent=q.ex;fb.className='quiz-fb show bad';}
-  document.getElementById('quiz-next').disabled=false;
-  setP(60+Math.round(((S.qIdx+1)/m.quiz.length)*40));
-}
+      if (_lastPos === null) {
+        // First reading — seed without counting as progress
+        _lastPos = pos;
+        return;
+      }
 
-function nextQ(){S.qIdx++;if(S.qIdx>=MODS[S.mod-1].quiz.length)onQuizEnd();else renderQ();}
+      var step = pos - _lastPos;
+      _lastPos = pos;
 
-function onQuizEnd(){
-  var m=MODS[S.mod-1];
-  var qw=document.getElementById('quiz-wrap');
-  if(qw) qw.classList.remove('visible');
-  document.getElementById('done-card').classList.add('show');
-  setP(100);
-  var now=new Date(),ds=now.toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('cert-name').textContent=S.name;
-  var det='Module '+S.mod+': '+m.title+'\nCompleted: '+ds;
-  document.getElementById('cert-detail').textContent=det;
-  S.done.push(S.mod);
-  document.getElementById('done-msg').textContent='Training complete. Your certificate of completion is ready.';
-}
+      // Natural playback: small positive step
+      if (step > 0 && step <= MAX_STEP) {
+        var pct = pos / _duration;
+        if (pct > _naturalPct) _naturalPct = pct;
+      }
+      // Rewinding (step < 0) or big jump: do NOT advance _naturalPct
 
-function dlCert(){
-  var m=MODS[S.mod-1];
-  var now=new Date();
-  var ds=now.toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
-  var certId='ACC-2026-CLI00142-M'+S.mod+'-'+String(Math.floor(Math.random()*9000)+1000);
-  
-  try {
-    var doc=new window.jspdf.jsPDF({orientation:'portrait',unit:'pt',format:'letter'});
-    var W=612,H=792;
-    
-    // Dark background
-    doc.setFillColor(10,22,40);
-    doc.rect(0,0,W,H,'F');
-    
-    // Gold border
-    doc.setDrawColor(203,171,71);
-    doc.setLineWidth(2.5);
-    doc.rect(28,28,W-56,H-56,'S');
-    doc.setLineWidth(0.8);
-    doc.rect(34,34,W-68,H-68,'S');
-    
-    // ACC logo placeholder circle
-    doc.setFillColor(13,31,60);
-    doc.circle(W/2,94,28,'F');
-    doc.setDrawColor(79,142,247);
-    doc.setLineWidth(1.5);
-    doc.circle(W/2,94,28,'S');
-    doc.setTextColor(79,142,247);
-    doc.setFontSize(9);
-    doc.setFont('helvetica','bold');
-    doc.text('ACC',W/2,98,{align:'center'});
-    
-    // Header
-    doc.setTextColor(79,142,247);
-    doc.setFontSize(10);
-    doc.text('ACCESSIBILITY COMPLIANCE CANADA INC.',W/2,136,{align:'center'});
-    
-    // Title
-    doc.setTextColor(232,237,248);
-    doc.setFontSize(24);
-    doc.text('Certificate of Completion',W/2,172,{align:'center'});
-    
-    // Gold line
-    doc.setDrawColor(203,171,71);
-    doc.setLineWidth(1);
-    doc.line(80,186,W-80,186);
-    
-    // "This certifies that"
-    doc.setTextColor(138,155,191);
-    doc.setFontSize(11);
-    doc.setFont('helvetica','normal');
-    doc.text('This certifies that',W/2,216,{align:'center'});
-    
-    // Name
-    doc.setTextColor(232,237,248);
-    doc.setFontSize(26);
-    doc.setFont('helvetica','bold');
-    doc.text(S.name,W/2,252,{align:'center'});
-    
-    // "has successfully completed"
-    doc.setTextColor(138,155,191);
-    doc.setFontSize(11);
-    doc.setFont('helvetica','normal');
-    doc.text('has successfully completed',W/2,278,{align:'center'});
-    
-    // Module box
-    doc.setFillColor(13,31,60);
-    doc.roundedRect(72,292,W-144,66,6,6,'F');
-    doc.setDrawColor(30,58,107);
-    doc.setLineWidth(0.8);
-    doc.roundedRect(72,292,W-144,66,6,6,'S');
-    
-    doc.setTextColor(79,142,247);
-    doc.setFontSize(8);
-    doc.setFont('helvetica','bold');
-    doc.text('MODULE '+S.mod,W/2,308,{align:'center'});
-    
-    doc.setTextColor(232,237,248);
-    doc.setFontSize(13);
-    doc.text(m.title,W/2,326,{align:'center'});
-    
-    doc.setTextColor(138,155,191);
-    doc.setFontSize(9);
-    doc.setFont('helvetica','normal');
-    doc.text('Accessibility for Ontarians with Disabilities Act (AODA) Training',W/2,344,{align:'center'});
-    
-    // Details row
-    doc.setFontSize(8);
-    doc.setFont('helvetica','bold');
-    doc.setTextColor(138,155,191);
-    var colW=(W-144)/3;
-    var labels=[['ORGANIZATION',S.org],['DATE COMPLETED',ds]];
-    labels.forEach(function(item,i){
-      var x=72+i*colW+colW/2;
-      doc.text(item[0],x,376,{align:'center'});
-      doc.setTextColor(232,237,248);
-      doc.setFontSize(10);
-      doc.text(item[1],x,392,{align:'center'});
-      doc.setTextColor(138,155,191);
-      doc.setFontSize(8);
+      S.maxPct = _naturalPct; // keep S.maxPct in sync with natural-only watermark
+
+      if (!done) {
+        var display = Math.round(_naturalPct * 100);
+        setP(Math.min(display, 99));
+        var pctEl = document.getElementById('cert-unlock-pct');
+        if (pctEl) pctEl.textContent = display + '%';
+
+        if (_naturalPct * 100 >= COMPLETION_PCT) {
+          done = true;
+          unlockCert();
+          document.getElementById('watch-hint').style.display = 'none';
+          onVidComplete();
+        }
+      }
     });
-    
-    // Divider
-    doc.setDrawColor(30,58,107);
-    doc.setLineWidth(0.6);
-    doc.line(80,408,W-80,408);
-    
-    // Cert ID
-    doc.setTextColor(138,155,191);
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica','normal');
-    doc.text('Certificate ID: '+certId,W/2,424,{align:'center'});
-    
-    // WCAG badge
-    doc.setDrawColor(56,217,169);
-    doc.setLineWidth(0.8);
-    doc.roundedRect((W-240)/2,440,240,26,13,13,'S');
-    doc.setTextColor(56,217,169);
-    doc.setFontSize(8);
-    doc.setFont('helvetica','bold');
-    doc.text('WCAG 2.1 AA  |  AODA 2005  |  Ontario Reg. 191/11',(W)/2,456,{align:'center'});
-    
-    // Signature line
-    doc.setDrawColor(30,58,107);
-    doc.setLineWidth(0.6);
-    doc.line(120,508,300,508);
-    doc.setTextColor(232,237,248);
-    doc.setFontSize(9);
-    doc.setFont('helvetica','bold');
-    doc.text('Compliance Director',210,522,{align:'center'});
-    doc.setTextColor(138,155,191);
-    doc.setFontSize(8);
-    doc.setFont('helvetica','normal');
-    doc.text('Accessibility Compliance Canada Inc.',210,534,{align:'center'});
-    
-    
-    // Official stamp circle
-    doc.setDrawColor(203,171,71);
-    doc.setLineWidth(1.5);
-    doc.circle(460,522,36,'S');
-    doc.setLineWidth(0.5);
-    doc.circle(460,522,30,'S');
-    doc.setTextColor(203,171,71);
-    doc.setFontSize(7);
-    doc.setFont('helvetica','bold');
-    doc.text('ACC OFFICIAL',460,516,{align:'center'});
-    doc.text('CERTIFICATE',460,526,{align:'center'});
-    doc.text('2026',460,536,{align:'center'});
-    
-    // Footer background
-    doc.setFillColor(6,13,26);
-    doc.rect(0,0,W,116,'F');
-    doc.setDrawColor(30,58,107);
-    doc.setLineWidth(0.6);
-    doc.line(40,116,W-40,116);
-    
-    // Footer text
-    doc.setTextColor(79,142,247);
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica','bold');
-    doc.text('LEGAL & PRIVACY NOTICE',W/2,100,{align:'center'});
-    
-    doc.setTextColor(138,155,191);
-    doc.setFontSize(6.5);
-    doc.setFont('helvetica','normal');
-    var footer=[
-      'This certificate is issued by Accessibility Compliance Canada Inc. and documents completion of AODA mandatory staff training under the Accessibility for',
-      'Ontarians with Disabilities Act, 2005 and Ontario Regulation 191/11. This document constitutes an official training record for AODA compliance evidence',
-      'purposes and does not constitute legal advice. Personal information is processed per PIPEDA and applicable Ontario privacy law. Records retained 7+ years.',
-      'Accessibility Compliance Canada Inc.  |  2150 Winston Park Dr, Unit 203, Oakville ON L6H 5V1  |  compliance@accessibilitycompliance.ca  |  accessibilitycompliance.ca'
-    ];
-    var fy=86;
-    footer.forEach(function(line){
-      doc.text(line,W/2,fy,{align:'center'});
-      fy-=10;
+
+    // end — fires when video reaches final frame
+    el.addEventListener('end', function() {
+      if (!done) {
+        done = true; S.maxPct = 1;
+        setP(100);
+        unlockCert();
+        document.getElementById('watch-hint').style.display = 'none';
+        onVidComplete();
+      }
     });
-    
-    doc.save('ACC_Certificate_'+S.name.replace(/\s+/g,'_')+'_Module'+S.mod+'_'+ds.replace(/,\s*/g,'_').replace(/\s+/g,'')+'.pdf');
-  } catch(err) {
-    alert('Certificate of Completion\n\nName: '+S.name+'\nModule: '+S.mod+' - '+m.title+'\nOrg: '+S.org+'\nDate: '+ds+'\nScore: '+S.qScore+'/'+m.quiz.length+'\nCert ID: '+certId+'\n\nIssued by Accessibility Compliance Canada Inc.');
+
+    // percentwatchedchanged — bonus: if it does fire, use it too
+    el.addEventListener('percentwatchedchanged', function(e) {
+      var pct = e.detail && e.detail.percent !== undefined ? e.detail.percent : null;
+      if (pct === null) return;
+      if (pct > S.maxPct) S.maxPct = pct;
+      if (!done) {
+        var display = Math.round(S.maxPct * 100);
+        setP(Math.min(display, 99));
+        var pctEl = document.getElementById('cert-unlock-pct');
+        if (pctEl) pctEl.textContent = display + '%';
+        if (S.maxPct * 100 >= COMPLETION_PCT) {
+          done = true; unlockCert();
+          document.getElementById('watch-hint').style.display = 'none';
+          onVidComplete();
+        }
+      }
+    });
+  }
+
+  tryAttach(0);
+}
+
+function unlockCert() {
+  var cpb = document.getElementById('cert-preview-btn');
+  if (cpb) {
+    cpb.disabled = false;
+    cpb.style.opacity = '1';
+    cpb.style.cursor = 'pointer';
+    cpb.innerHTML = '&#127941; Download Certificate';
   }
 }
 
-function nextMod(){if(S.mod<MODS.length){document.getElementById('done-card').classList.remove('show');loadMod(S.mod+1);}}
 
-function renderModNav(cur){
-  var h='';
-  MODS.forEach(function(m){
-    var done=S.done.indexOf(m.id)!==-1,isCur=m.id===cur;
-    h+='<div class="mod-card'+(done?' done':'')+(isCur?' cur':'')+'" onclick="switchMod('+m.id+')">';
-    h+='<div class="mod-num">Module '+m.id+(done?' ✓':'')+'</div>';
-    h+='<div class="mod-name">'+m.title+'</div>';
-    h+='<div class="mod-status">'+m.dur+(isCur?' — Current':(done?' — Completed':''))+'</div></div>';
-  });
-  document.getElementById('mod-nav').innerHTML=h;
+function destroyWistia() {
+  // Clearing innerHTML removes the wistia-player element and all its DOM listeners
+  _wqDone = false;
+  S.wPlayer = null;
+  var wc = document.getElementById('wistia-container');
+  if (wc) { wc.innerHTML = ''; wc.style.display = 'none'; }
 }
 
-function switchMod(n){
-  if(n===S.mod)return;
+// ── COMPLETION ──
+function onVidComplete() {
+  if (S.savedToDb) return;
+  setP(100);
+  var sp = document.getElementById('vid-splash');
+  sp.style.cssText = 'aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(10,22,40,.9)';
+  sp.innerHTML = '<div style="font-size:2rem">&#9989;</div><div style="font-size:.85rem;color:#38d9a9;font-weight:600">Video complete</div><div style="font-size:.75rem;color:#8a9bbf">Saving your record\u2026</div>';
+  sp.onclick = null;
+  saveToSupabase().then(showDoneCard);
+}
+
+async function saveToSupabase() {
+  if (S.savedToDb) return; S.savedToDb = true;
+  if (!S.clientId) return;
+  var m = MODS[S.mod-1];
+  try {
+    var { error } = await _sb.from('training_logs').insert({
+      client_id:    S.clientId,
+      staff_name:   S.name,
+      course_name:  'Module ' + S.mod + ' \u2014 ' + m.title,
+      completed_at: new Date().toISOString(),
+      notes:        'Passed'
+    });
+    if (!error) { var t = document.getElementById('save-toast'); t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); }, 3500); }
+  } catch(e) { console.warn('Supabase save failed:', e.message); }
+}
+
+function showDoneCard() {
+  var m  = MODS[S.mod-1];
+  var ds = new Date().toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('cert-name').textContent   = S.name;
+  document.getElementById('cert-detail').textContent = 'Module ' + S.mod + ': ' + (m.title.replace(/^Module\s+\d+[:\s\-\u2014]*\s*/i,'').trim()||m.title) + '\nCompleted: ' + ds + (S.org ? '\nOrganization: ' + S.org : '');
+  document.getElementById('done-msg').textContent    = 'Training complete! Your record has been saved' + (S.clientId ? ' to the training registry.' : '.');
+
+  var cub = document.getElementById('cert-unlock-bar');
+  if (cub) { cub.style.display = 'none'; }
+  document.getElementById('done-card').classList.add('show');
+  renderModNav(S.mod);
+  document.getElementById('done-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+  // Cert is generated on-demand when user clicks Download — no pre-fetch needed
+  var certStatus = document.getElementById('cert-status');
+  if (certStatus) certStatus.textContent = '';
+  var certBtn = document.getElementById('cert-btn');
+  if (certBtn) { certBtn.disabled = false; certBtn.innerHTML = '&#127941; Download Certificate'; }
+}
+
+// ── CERTIFICATE ──
+// dlCert — called by both cert-btn (done card) and cert-preview-btn (unlock bar)
+// Calls the edge function to get the same PDF the dashboard generates.
+// Falls back to local jsPDF only if edge fn fails.
+async function dlCert() {
+  var m  = MODS[S.mod-1];
+  var ds = new Date().toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
+
+  // Disable both cert buttons while generating
+  var btns = ['cert-btn','cert-preview-btn'].map(function(id){ return document.getElementById(id); });
+  btns.forEach(function(b){ if(b){ b.disabled=true; b.innerHTML='&#9203; Generating…'; } });
+
+  try {
+    var cleanTitle = m.title.replace(/^Module\s+\d+[:\s\-\u2014]*\s*/i,'').trim() || m.title;
+    var cn = 'Module ' + S.mod + ': ' + cleanTitle;
+    var now = new Date();
+
+    var r = await fetch(SUPABASE_URL + '/functions/v1/generate-training-certificate', {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_ANON,
+        'apikey':        SUPABASE_ANON
+      },
+      body: JSON.stringify({
+        client_id:       S.clientId,
+        employee_name:   S.name,
+        course_name:     cn,
+        completion_date: now.toISOString().substring(0,10),
+        org_name:        S.org || null
+      })
+    });
+
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var res = await r.json();
+
+    // Edge fn returns { file: "path/in/storage" } — download as signed URL
+    if (res && res.file) {
+      var dl = await _sb.storage.from('reports').download(res.file);
+      if (dl.data) {
+        var url = URL.createObjectURL(dl.data);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'ACC_Certificate_' + S.name.replace(/\s+/g,'_') + '.pdf';
+        a.click();
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 10000);
+        btns.forEach(function(b){ if(b){ b.disabled=false; b.innerHTML='&#127941; Download Certificate'; } });
+        return;
+      }
+    }
+    throw new Error('No file in response');
+
+  } catch(e) {
+    console.warn('Edge fn cert failed, falling back to local PDF:', e.message);
+    // Fallback: generate locally with jsPDF — same design as edge fn output
+    localCert(m, ds);
+    btns.forEach(function(b){ if(b){ b.disabled=false; b.innerHTML='&#127941; Download Certificate'; } });
+  }
+}
+
+function localCert(m, ds) {
+  // Clean module title — strip any "Module N:" prefix Wistia may have added
+  var cleanTitle = m.title.replace(/^Module\s+\d+[:\s\-\u2014]*\s*/i, '').trim() || m.title;
+  var certName   = 'Module ' + S.mod + ': ' + cleanTitle;
+  var orgName    = S.org || S.clientCode || 'ACC Client';
+  var cid        = 'ACC-2026-' + (S.clientCode||'PORTAL') + '-M' + S.mod + '-' + (Math.floor(Math.random()*9000)+1000);
+
+  function render() {
+    var doc = new window.jspdf.jsPDF({orientation:'portrait', unit:'pt', format:'letter'});
+    var W = 612, H = 792;
+
+    // ── Background ──
+    doc.setFillColor(10,22,40);
+    doc.rect(0,0,W,H,'F');
+
+    // ── Gold border (double rule) ──
+    doc.setDrawColor(203,171,71); doc.setLineWidth(2.5);
+    doc.rect(28,28,W-56,H-56,'S');
+    doc.setLineWidth(0.8);
+    doc.rect(34,34,W-68,H-68,'S');
+
+    // ── Header band ──
+    doc.setFillColor(6,13,26);
+    doc.rect(0,0,W,130,'F');
+    doc.setDrawColor(30,58,107); doc.setLineWidth(0.6);
+    doc.line(40,130,W-40,130);
+
+    // ── Footer legal text (rendered inside header band, top-to-bottom) ──
+    doc.setTextColor(138,155,191); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
+    var footerLines = [
+      'This certificate is issued by Accessibility Compliance Canada Inc. and documents completion of mandatory AODA staff training',
+      'under the Accessibility for Ontarians with Disabilities Act, 2005 and Ontario Regulation 191/11.',
+      'This document is an official training record for compliance evidence purposes and does not constitute legal advice.',
+      'Accessibility Compliance Canada Inc.  |  2150 Winston Park Dr, Unit 203, Oakville ON L6H 5V1  |  accessibilitycompliance.ca'
+    ];
+    var fy = 56;
+    footerLines.forEach(function(l){ doc.text(l, W/2, fy, {align:'center'}); fy += 10; });
+
+    // ── ACC logo circle ──
+    doc.setFillColor(13,31,60);
+    doc.circle(W/2, 170, 30, 'F');
+    doc.setDrawColor(79,142,247); doc.setLineWidth(1.5);
+    doc.circle(W/2, 170, 30, 'S');
+    doc.setTextColor(79,142,247); doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text('ACC', W/2, 174, {align:'center'});
+
+    // ── Issuer name ──
+    doc.setTextColor(79,142,247); doc.setFontSize(10); doc.setFont('helvetica','bold');
+    doc.text('ACCESSIBILITY COMPLIANCE CANADA INC.', W/2, 218, {align:'center'});
+
+    // ── Certificate title ──
+    doc.setTextColor(232,237,248); doc.setFontSize(26); doc.setFont('helvetica','bold');
+    doc.text('Certificate of Completion', W/2, 256, {align:'center'});
+
+    // ── Gold rule ──
+    doc.setDrawColor(203,171,71); doc.setLineWidth(1);
+    doc.line(80,268,W-80,268);
+
+    // ── "This certifies that" ──
+    doc.setTextColor(138,155,191); doc.setFontSize(11); doc.setFont('helvetica','normal');
+    doc.text('This certifies that', W/2, 298, {align:'center'});
+
+    // ── Employee name ──
+    doc.setTextColor(232,237,248); doc.setFontSize(28); doc.setFont('helvetica','bold');
+    doc.text(S.name, W/2, 336, {align:'center'});
+
+    // ── "has successfully completed" ──
+    doc.setTextColor(138,155,191); doc.setFontSize(11); doc.setFont('helvetica','normal');
+    doc.text('has successfully completed', W/2, 362, {align:'center'});
+
+    // ── Module box ──
+    doc.setFillColor(13,31,60);
+    doc.roundedRect(72,376,W-144,72,6,6,'F');
+    doc.setDrawColor(30,58,107); doc.setLineWidth(0.8);
+    doc.roundedRect(72,376,W-144,72,6,6,'S');
+    doc.setTextColor(79,142,247); doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.text('MODULE ' + S.mod, W/2, 394, {align:'center'});
+    doc.setTextColor(232,237,248); doc.setFontSize(13);
+    doc.text(cleanTitle, W/2, 414, {align:'center'});
+    doc.setTextColor(138,155,191); doc.setFontSize(9); doc.setFont('helvetica','normal');
+    doc.text('Accessibility for Ontarians with Disabilities Act (AODA) Training', W/2, 432, {align:'center'});
+
+    // ── Org + Date columns ──
+    var colW = (W-144)/2;
+    var cols = [
+      {label:'ORGANIZATION', value: orgName},
+      {label:'DATE COMPLETED', value: ds}
+    ];
+    cols.forEach(function(col, i) {
+      var cx = 72 + i*colW + colW/2;
+      doc.setTextColor(138,155,191); doc.setFontSize(8); doc.setFont('helvetica','bold');
+      doc.text(col.label, cx, 468, {align:'center'});
+      doc.setTextColor(232,237,248); doc.setFontSize(11); doc.setFont('helvetica','normal');
+      doc.text(col.value, cx, 484, {align:'center'});
+    });
+
+    // ── Divider ──
+    doc.setDrawColor(30,58,107); doc.setLineWidth(0.6);
+    doc.line(80,496,W-80,496);
+
+    // ── Certificate ID ──
+    doc.setTextColor(138,155,191); doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    doc.text('Certificate ID: ' + cid, W/2, 512, {align:'center'});
+
+    // ── Standards pill ──
+    doc.setDrawColor(56,217,169); doc.setLineWidth(0.8);
+    doc.roundedRect((W-260)/2, 526, 260, 26, 13, 13, 'S');
+    doc.setTextColor(56,217,169); doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.text('WCAG 2.1 AA  |  AODA 2005  |  Ontario Reg. 191/11', W/2, 542, {align:'center'});
+
+    // ── Signature line ──
+    doc.setDrawColor(30,58,107); doc.setLineWidth(0.6);
+    doc.line(100,610,310,610);
+    doc.setTextColor(232,237,248); doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text('Compliance Director', 205, 624, {align:'center'});
+    doc.setTextColor(138,155,191); doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text('Accessibility Compliance Canada Inc.', 205, 636, {align:'center'});
+
+    // ── Official seal ──
+    doc.setDrawColor(203,171,71); doc.setLineWidth(1.5);
+    doc.circle(450, 618, 38, 'S');
+    doc.setLineWidth(0.5);
+    doc.circle(450, 618, 31, 'S');
+    doc.setTextColor(203,171,71); doc.setFontSize(7); doc.setFont('helvetica','bold');
+    doc.text('ACC OFFICIAL', 450, 612, {align:'center'});
+    doc.text('CERTIFICATE',  450, 622, {align:'center'});
+    doc.text('2026',         450, 632, {align:'center'});
+
+    // ── Save ──
+    var fname = 'ACC_Certificate_' + S.name.replace(/\s+/g,'_') + '_Module' + S.mod + '_' + ds.replace(/,\s*/g,'_').replace(/\s+/g,'') + '.pdf';
+    doc.save(fname);
+  }
+
+  if (window.jspdf) { render(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s.onload = render;
+  document.head.appendChild(s);
+}
+
+// ── HELPERS ──
+function setP(p) { document.getElementById('prog-fill').style.width = p+'%'; document.getElementById('prog-label').textContent = p+'% complete'; }
+
+function renderModNav(cur) {
+  document.getElementById('mod-nav').innerHTML = MODS.map(function(m) {
+    var isCur = m.id === cur;
+    return '<div class="mod-card'+(isCur?' cur':'')+'" onclick="switchMod('+m.id+')">'
+      +'<div class="mod-num">Module '+m.id+'</div>'
+      +'<div class="mod-name">'+(m.title.replace(/^Module\s+\d+[:\s\-\u2014]*\s*/i,'').trim()||m.title)+'</div>'
+      +'<div class="mod-status">'+m.dur+(isCur?' \u2014 Currently viewing':'')+'</div></div>';
+  }).join('');
+}
+
+function switchMod(n) {
+  if (n === S.mod) return;
   document.getElementById('done-card').classList.remove('show');
-  document.getElementById('quiz-wrap').classList.remove('visible');
   loadMod(n);
 }
 </script>

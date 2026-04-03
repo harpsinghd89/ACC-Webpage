@@ -497,8 +497,8 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
     <div class="legal-check">
       <input type="checkbox" id="chk-terms" name="terms" required aria-required="true"/>
       <label for="chk-terms">
-        I agree to the <button type="button" onclick="openModal('terms-modal')"
-          style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:.8rem;padding:0;font-family:var(--font);text-decoration:underline">Terms of Service</button>
+        I agree to the <button type="button" onclick="openModal('msa-modal')"
+          style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:.8rem;padding:0;font-family:var(--font);text-decoration:underline">Master Service Agreement (MSA)</button>
         and <button type="button" onclick="openModal('privacy-modal')"
           style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:.8rem;padding:0;font-family:var(--font);text-decoration:underline">Privacy Policy</button>.
         I consent to recurring monthly billing until cancelled. I acknowledge this service supports AODA compliance but does not constitute legal advice.
@@ -995,7 +995,7 @@ function submitPayment(){
   ok=validateField('f-password','err-password',function(v){return v.length>=8&&/\d/.test(v);})&&ok;
   ok=validateField('f-bill-street','err-billing',function(v){return v.length>3;})&&ok;
   var terms=document.getElementById('chk-terms');
-  if(terms&&!terms.checked){ok=false;showCardError('Please accept the Terms of Service.');}
+  if(terms&&!terms.checked){ok=false;showCardError('Please accept the Master Service Agreement (MSA).');}
   if(!ok)return;
   if(currentTier==='t3'){window.location.href='mailto:partner@accessibilitycompliance.ca?subject=Tier%203%20Inquiry';return;}
   if(!_stripe||!_cardElement){showCardError('Payment system not loaded. Please refresh.');return;}
@@ -1030,7 +1030,12 @@ function submitPayment(){
     billingCountry:(document.getElementById('f-bill-country')||{value:'CA'}).value,
     password:document.getElementById('f-password').value,
     discountCode:document.getElementById('f-discount')?document.getElementById('f-discount').value.trim().toUpperCase():'',
-    discountPct:discountPct
+    discountPct:discountPct,
+    termsAccepted:(document.getElementById('chk-terms')||{checked:false}).checked,
+    marketingConsent:(document.getElementById('chk-casl')||{checked:false}).checked,
+    msaAccepted:(document.getElementById('chk-terms')||{checked:false}).checked,
+    msaVersion:'2026.1.0',
+    msaAcceptedAt:new Date().toISOString()
   };
 
   // Step 1: Get SetupIntent clientSecret from Edge Function
@@ -1242,7 +1247,12 @@ function createAccount(p){
         domain:p.domain||null, phone:p.phone||null,
         tier:p.tier||1, status:'active',
         start_date:today, renewal_date:renewal,
-        billing_cycle:p.billingCycle||'monthly'
+        billing_cycle:p.billingCycle||'monthly',
+        terms_accepted:p.termsAccepted||false,
+        marketing_consent:p.marketingConsent||false,
+        msa_accepted:p.msaAccepted||false,
+        msa_version:p.msaVersion||null,
+        msa_accepted_at:p.msaAcceptedAt||null
       })
     })
     .then(function(r){ return r.json().then(function(d){ return {client:d,token:token}; }); });
@@ -1319,6 +1329,61 @@ function showSuccessScreen(firstName, email){
     <p>(416) 526-9645<br>(647) 896-9132</p>
     <h3>Website</h3>
     <p><a href="https://accessibilitycompliance.ca" style="color:#4f8ef7">accessibilitycompliance.ca</a></p>
+  </div>
+</div>
+
+<div id="msa-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="msa-title">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('msa-modal')" aria-label="Close">&#x2715;</button>
+    <h2 id="msa-title">Master Service Agreement (MSA)</h2>
+    <p class="modal-date">Accessibility Compliance Canada Inc. &middot; Version: 2026.1.0 &middot; Jurisdiction: Ontario, Canada</p>
+    <span class="mlabel">Agreement</span>
+    <h3>1. The Compliance Ecosystem (Scope of Services)</h3>
+    <p>ACC grants Client a non-exclusive, revocable license to access the AODA Compliance Portal, mapping to the 11 provincial filing questions, including:</p>
+    <ul>
+      <li><strong>Triple-Pillar Training:</strong> Automated modules for Customer Service, IASR, and Ontario Human Rights Code.</li>
+      <li><strong>Documentation Engine:</strong> Templates for Written Policies, Multi-Year Accessibility Plans (MYAP), and Feedback Capture protocols.</li>
+      <li><strong>AI Widget:</strong> Web overlay for 90+ language support and automated WCAG 2.1 AA digital remediation.</li>
+      <li><strong>The Audit-Ready Binder:</strong> A centralized, time-stamped registry of all compliance actions and training logs.</li>
+    </ul>
+    <h3>2. AI Widget Performance &amp; Limitations</h3>
+    <ul>
+      <li><strong>2.1 Technical Remediation:</strong> The AI Widget provides automated, &ldquo;best-efforts&rdquo; digital remediation. Client acknowledges that the Widget cannot modify physical architecture, hardware, or legacy/third-party software outside the Widget&rsquo;s direct script control.</li>
+      <li><strong>2.2 Quality &amp; Aesthetics:</strong> ACC does not guarantee that the automated fixes will meet the Client&rsquo;s subjective aesthetic preferences or align with all third-party proprietary accessibility scanning tools.</li>
+      <li><strong>2.3 Functionality:</strong> The Widget is a supportive tool; it does not replace the requirement for the Client to maintain an inherently accessible underlying web architecture.</li>
+    </ul>
+    <h3>3. Templates &amp; &ldquo;Grey Spot&rdquo; SOPs</h3>
+    <ul>
+      <li><strong>3.1 License to Use:</strong> All templates and SOPs are &ldquo;Baselines&rdquo; licensed to the Client for internal use only.</li>
+      <li><strong>3.2 Client Responsibility:</strong> Client is solely responsible for tailoring these &ldquo;Baselines&rdquo; to their specific physical premises, employee headcounts, and operational realities.</li>
+    </ul>
+    <h3>4. Fees, Subscriptions, &amp; Recurring Renewal</h3>
+    <ul>
+      <li><strong>4.1 Flexible Billing:</strong> Services are provided on a subscription basis (Monthly or Yearly) at the rate selected by the Client at the time of signup.</li>
+      <li><strong>4.2 Automatic Renewal:</strong> All subscriptions automatically renew for successive periods of the same duration unless cancelled via settings prior to the renewal date.</li>
+      <li><strong>4.3 Non-Refundable:</strong> Due to the immediate digital delivery of proprietary templates and training logs, all fees are non-refundable.</li>
+    </ul>
+    <h3>5. Data Sovereignty, Privacy &amp; Security</h3>
+    <ul>
+      <li><strong>5.1 Canadian Residency:</strong> ACC warrants that 100% of Client &ldquo;Evidence Data&rdquo; is hosted on Canadian-based servers (AWS Canada Central).</li>
+      <li><strong>5.2 Security Standards:</strong> ACC utilizes SOC 2 Type 2 compliant infrastructure. Data is encrypted at rest (AES-256) and in transit (TLS).</li>
+    </ul>
+    <h3>6. Strategic Liability Protections</h3>
+    <ul>
+      <li><strong>6.1 Final Attestation:</strong> Client acknowledges that the Director or Officer of the Client company is the sole legal signatory for the AODA report. ACC is an &ldquo;Evidence Provider,&rdquo; not a legal representative or the &ldquo;Accountable Signatory.&rdquo;</li>
+      <li><strong>6.2 Limitation of Liability:</strong> ACC&rsquo;s total cumulative liability for any claim &mdash; including government fines, audit failures, or data loss &mdash; is strictly capped at the total fees paid by the Client in the 3 months preceding the claim.</li>
+      <li><strong>6.3 No Class Action:</strong> Client agrees that any dispute resolution will be conducted on an individual basis only and not in a class or representative action.</li>
+      <li><strong>6.4 Audit Support Disclaimer:</strong> ACC provides data for an audit; however, ACC does not represent the Client in front of any regulatory body. ACC is not liable for the findings of a Ministry audit or a third-party accessibility auditor.</li>
+      <li><strong>6.5 Specialist Referrals:</strong> ACC is not liable for the work, advice, or conduct of any third-party specialists (Legal, Engineering, HR) referred through the Portal.</li>
+    </ul>
+    <h3>7. Governing Law</h3>
+    <p>This Agreement is governed by the laws of the Province of Ontario and the federal laws of Canada.</p>
+    <h3>Privacy Policy (Core Summary)</h3>
+    <ul>
+      <li><strong>Data Collection:</strong> We collect only the data necessary to provide training logs and compliance evidence (Employee names, completion dates, and business registration info).</li>
+      <li><strong>Third-Party Sharing:</strong> We do not sell or trade user data. Data is shared only with our secure infrastructure providers (Supabase/AWS) for hosting purposes.</li>
+      <li><strong>PIPEDA Compliance:</strong> Our data handling practices align with the Personal Information Protection and Electronic Documents Act (PIPEDA).</li>
+    </ul>
   </div>
 </div>
 </body>

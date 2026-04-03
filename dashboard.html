@@ -353,6 +353,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
         <button class="nav-item" onclick="showPanel('account')">
           <span class="nav-icon" aria-hidden="true">&#128100;</span> Account & Billing
         </button>
+        <button class="nav-item" onclick="showPanel('legal')">
+          <span class="nav-icon" aria-hidden="true">&#128196;</span> Legal & Policies
+        </button>
       </div>
     </div>
 
@@ -694,9 +697,9 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
           <div style="display:flex;gap:12px;align-items:center">
-            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#4f8ef7" id="mod1-count">—</div><div style="font-size:.72rem;color:#8a9bbf">AODA Awareness</div></div>
-            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#38d9a9" id="mod2-count">—</div><div style="font-size:.72rem;color:#8a9bbf">Customer Service</div></div>
-            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#f5a623" id="mod3-count">—</div><div style="font-size:.72rem;color:#8a9bbf">Employment Std.</div></div>
+            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#4f8ef7" id="mod1-count">—</div><div style="font-size:.72rem;color:#8a9bbf">Customer Service Std.</div></div>
+            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#38d9a9" id="mod2-count">—</div><div style="font-size:.72rem;color:#8a9bbf">General Req. of IASR</div></div>
+            <div style="text-align:center"><div style="font-size:1.6rem;font-weight:700;color:#f5a623" id="mod3-count">—</div><div style="font-size:.72rem;color:#8a9bbf">Ontario Human Rights Code</div></div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <input class="finput" type="text" id="training-search" placeholder="Search staff…" style="width:170px;padding:7px 12px;font-size:.8rem" oninput="filterTraining()">
@@ -844,6 +847,31 @@ h1,h2,h3,h4,h5,h6{color:#fff !important}
           <p style="font-size:.85rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Feedback:</strong> We welcome feedback on the accessibility of this website. Please email <a href="/cdn-cgi/l/email-protection#721311111701011b101b1e1b060b32290b1d0700161d1f131b1c2f5c1113" style="color:#4f8ef7" id="stmt-email-display">accessibility@[yourdomain].ca</a>
           <a class="dl-btn" href="#" onclick="downloadA11yStatement()">&#8659; Download PDF</a>
           <button class="btn-sm btn-ghost" onclick="openStmtModal()">&#9998; Customize</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEGAL & POLICIES -->
+    <div class="panel" id="panel-legal">
+      <div class="page-header">
+        <h1>&#128196; Legal &amp; Policies</h1>
+        <p>Review the terms and policies governing your use of the Service.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <h2>&#128221; Master Service Agreement (MSA)</h2>
+          <p style="font-size:.88rem;color:var(--muted);margin-bottom:16px">Your organization is governed by MSA accepted on <span id="dash-msa-start-date">—</span>.</p>
+          <button onclick="openModal('legal-terms-modal')" class="btn-sm btn-ghost">Read MSA</button>
+        </div>
+        <div class="card">
+          <h2>&#128274; Privacy Policy</h2>
+          <p style="font-size:.88rem;color:var(--muted);margin-bottom:16px">How we collect, use, retain, and protect your personal information in compliance with PIPEDA and CASL.</p>
+          <button onclick="openModal('legal-privacy-modal')" class="btn-sm btn-ghost">Read Privacy Policy</button>
+        </div>
+        <div class="card">
+          <h2>&#128222; Contact Us</h2>
+          <p style="font-size:.88rem;color:var(--muted);margin-bottom:16px">Reach our team for support, billing questions, or accessibility feedback.</p>
+          <button onclick="openModal('legal-contact-modal')" class="btn-sm btn-ghost">View Contact Info</button>
         </div>
       </div>
     </div>
@@ -1511,10 +1539,9 @@ Questions? Reply to this email.
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('add-training-modal')" aria-label="Close">&#x2715;</button>
     <h2 id="add-training-title">Log Training Completion</h2>
-    <div class="fgroup"><label for="tr-emp">Employee Name</label><input class="finput" type="text" id="tr-emp" placeholder="Jane Smith" style="width:100%"/></div>
-    <div class="fgroup"><label for="tr-module">Module</label><select class="finput" id="tr-module" style="width:100%"><option>Module 1 — AODA Overview</option><option>Module 2 — WCAG 2.1 AA</option><option>Module 3 — Accessible Content</option></select></div>
+    <div class="fgroup"><label for="tr-emp">Staff Member</label><input class="finput" type="text" id="tr-emp" placeholder="Jane Smith" style="width:100%"/></div>
+    <div class="fgroup"><label for="tr-module">Type of Training</label><select class="finput" id="tr-module" style="width:100%"><option>Module 1: The Customer Service Standard</option><option>Module 2: General Requirements of IASR</option><option>Module 3: The Ontario Human Rights Code</option></select></div>
     <div class="fgroup"><label for="tr-date">Completion Date</label><input class="finput" type="date" id="tr-date" style="width:100%"/></div>
-    <div class="fgroup"><label for="tr-method">Method</label><select class="finput" id="tr-method" style="width:100%"><option>Online Video</option><option>In-Person</option><option>Webinar</option><option>Self-Study</option></select></div>
     <div class="btn-row" style="margin-top:8px">
       <button class="btn-sm btn-primary" onclick="saveTrainingRecord()">Save Record</button>
       <button class="btn-sm btn-ghost" onclick="closeModal('add-training-modal')">Cancel</button>
@@ -1780,7 +1807,7 @@ function showPanel(id) {
     'overview':'Dashboard','widget':'Widget Settings','embed':'Embed Code',
     'reports':'Audit Reports','evidence':'Evidence Binder','roadmap':'3-Year Roadmap',
     'standards':'Template Standards','training':'Training Logs','feedback':'Feedback Logs',
-    'a11y-stmt':'Accessibility Statement','account':'Account & Billing',
+    'a11y-stmt':'Accessibility Statement','account':'Account & Billing','legal':'Legal & Policies',
     'admin-overview':'Admin Overview','admin-clients':'Client Management',
     'admin-billing':'Billing','admin-discounts':'Discount Codes','admin-invoices':'Custom Invoices','admin-widgets':'Widget Deployment','admin-access':'Access Control'
   };
@@ -2538,9 +2565,9 @@ async function populateTraining(c) {
     var counts = { 1: 0, 2: 0, 3: 0 };
     (logs || []).forEach(function(log) {
       var name = (log.course_name || '').toLowerCase();
-      if (name.includes('module 1') || name.includes('aoda overview')) counts[1]++;
-      else if (name.includes('module 2') || name.includes('wcag')) counts[2]++;
-      else if (name.includes('module 3') || name.includes('customer service')) counts[3]++;
+      if (name.includes('module 1') || name.includes('customer service standard')) counts[1]++;
+      else if (name.includes('module 2') || name.includes('iasr')) counts[2]++;
+      else if (name.includes('module 3') || name.includes('human rights')) counts[3]++;
     });
 
     var m1 = document.getElementById('mod1-count');
@@ -2685,7 +2712,9 @@ function populateAccount(c, billingRows) {
   });
   // Update display spans
   set('acc-tier', tierName(c.tier));
-  var tierDescs = { 1: '1–19 Employees', 2: '20–199 Employees', 3: 'Enterprise / Custom' };
+  var msaDate = c.start_date ? fmtDateLong(c.start_date) : '—';
+  var el1 = document.getElementById('dash-msa-start-date'); if(el1) el1.textContent = msaDate;
+  var tierDescs = { 1: '', 2: '', 3: '' };
   set('acc-tier-desc', tierDescs[parseInt(c.tier)] || '');
   var cycleLabel = (c.billing_cycle === 'annual' || c.billing_cycle === 'yearly') ? 'Annual' : 'Monthly';
   var renewalEl = document.getElementById('acc-renewal-label');
@@ -4381,10 +4410,12 @@ function exportTableCSV(tableId, filename) {
 async function reloadFeedback() {
   if (!window._clientData) return;
   var all = [];
-  // Query by client_id (dashboard-submitted feedback)
+  // Query by client_id (widget-submitted feedback with client_id)
   try {
     var r1 = await _sb_client.from('feedback').select('*')
       .eq('client_id', _clientData.id)
+      .neq('source', 'audit')
+      .neq('type', 'scan_issue')
       .order('created_at', { ascending: false }).limit(50);
     if (r1.data) all = all.concat(r1.data);
   } catch(_) {}
@@ -4393,14 +4424,20 @@ async function reloadFeedback() {
     var r2 = await _sb_client.from('feedback').select('*')
       .eq('client_code', _clientData.client_code || '')
       .is('client_id', null)
+      .neq('source', 'audit')
+      .neq('type', 'scan_issue')
       .order('created_at', { ascending: false }).limit(50);
     if (r2.data) all = all.concat(r2.data);
   } catch(_) {}
   // De-duplicate by id, sort newest first
+  // Also filter out any records that look like auto-generated audit entries (no message content)
   var seen = new Set();
   var rows = all.filter(function(r) {
     if (seen.has(r.id)) return false;
-    seen.add(r.id); return true;
+    seen.add(r.id);
+    // Exclude records that appear to be auto-generated from audit/scan data
+    if (r.source === 'audit' || r.type === 'scan_issue') return false;
+    return true;
   }).sort(function(a,b){ return new Date(b.created_at) - new Date(a.created_at); });
   populateFeedback(rows);
 }
@@ -4865,5 +4902,189 @@ function openStmtModal() {
   }
 })();
 </script>
+<!-- ── Legal Modals ── -->
+<div id="legal-terms-modal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box" style="max-height:80vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('legal-terms-modal')" aria-label="Close">&times;</button>
+    <h2>Master Service Agreement (MSA)</h2>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px">Accessibility Compliance Canada Inc. &middot; Version: 2026.1.0 &middot; Jurisdiction: Ontario, Canada</p>
+    <h3>1. The Compliance Ecosystem (Scope of Services)</h3>
+    <p style="font-size:.88rem;color:var(--muted)">ACC grants Client a non-exclusive, revocable license to access the AODA Compliance Portal, mapping to the 11 provincial filing questions, including:</p>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">Triple-Pillar Training:</strong> Automated modules for Customer Service, IASR, and Ontario Human Rights Code.</li>
+      <li><strong style="color:var(--text)">Documentation Engine:</strong> Templates for Written Policies, Multi-Year Accessibility Plans (MYAP), and Feedback Capture protocols.</li>
+      <li><strong style="color:var(--text)">AI Widget:</strong> Web overlay for 90+ language support and automated WCAG 2.1 AA digital remediation.</li>
+      <li><strong style="color:var(--text)">The Audit-Ready Binder:</strong> A centralized, time-stamped registry of all compliance actions and training logs.</li>
+    </ul>
+    <h3>2. AI Widget Performance &amp; Limitations</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">2.1 Technical Remediation:</strong> The AI Widget provides automated, &ldquo;best-efforts&rdquo; digital remediation. Client acknowledges that the Widget cannot modify physical architecture, hardware, or legacy/third-party software outside the Widget&rsquo;s direct script control.</li>
+      <li><strong style="color:var(--text)">2.2 Quality &amp; Aesthetics:</strong> ACC does not guarantee that the automated fixes will meet the Client&rsquo;s aesthetic preferences or align with all third-party accessibility scanning tools.</li>
+      <li><strong style="color:var(--text)">2.3 Functionality:</strong> The Widget is a supportive tool; it does not replace the requirement for the Client to maintain an inherently accessible underlying web architecture.</li>
+    </ul>
+    <h3>3. Templates &amp; &ldquo;Grey Spot&rdquo; SOPs</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">3.1 License to Use:</strong> All templates and SOPs are &ldquo;Baselines&rdquo; licensed to the Client for internal use only.</li>
+      <li><strong style="color:var(--text)">3.2 Client Responsibility:</strong> Client is solely responsible for tailoring these &ldquo;Baselines&rdquo; to their specific physical premises, employee headcounts, and operational realities.</li>
+    </ul>
+    <h3>4. Fees, Subscriptions, &amp; Recurring Renewal</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">4.1 Flexible Billing:</strong> Services are provided on a subscription basis (Monthly or Yearly) at the rate selected by the Client at the time of signup.</li>
+      <li><strong style="color:var(--text)">4.2 Automatic Renewal:</strong> All subscriptions automatically renew unless cancelled via settings prior to the renewal date.</li>
+      <li><strong style="color:var(--text)">4.3 Non-Refundable:</strong> Due to the immediate digital delivery of proprietary templates and training logs, all fees are non-refundable.</li>
+    </ul>
+    <h3>5. Data Sovereignty, Privacy &amp; Security</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">5.1 Canadian Residency:</strong> ACC warrants that 100% of Client &ldquo;Evidence Data&rdquo; is hosted on Canadian-based servers (AWS Canada Central).</li>
+      <li><strong style="color:var(--text)">5.2 Security Standards:</strong> ACC utilizes SOC 2 Type 2 compliant infrastructure. Data is encrypted at rest (AES-256) and in transit (TLS).</li>
+    </ul>
+    <h3>6. Strategic Liability Protections</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">6.1 Final Attestation:</strong> Client acknowledges that the Director or Officer is the sole legal signatory for the AODA report. ACC is an &ldquo;Evidence Provider,&rdquo; not a legal representative or the &ldquo;Accountable Signatory.&rdquo;</li>
+      <li><strong style="color:var(--text)">6.2 Limitation of Liability:</strong> ACC&rsquo;s total cumulative liability is strictly capped at the total fees paid by the Client in the 3 months preceding the claim.</li>
+      <li><strong style="color:var(--text)">6.3 No Class Action:</strong> Any dispute resolution will be conducted on an individual basis only.</li>
+      <li><strong style="color:var(--text)">6.4 Audit Support Disclaimer:</strong> ACC provides data for an audit but does not represent the Client in front of any regulatory body.</li>
+      <li><strong style="color:var(--text)">6.5 Specialist Referrals:</strong> ACC is not liable for the work, advice, or conduct of any third-party specialists referred through the Portal.</li>
+    </ul>
+    <h3>7. Governing Law</h3>
+    <p style="font-size:.88rem;color:var(--muted)">This Agreement is governed by the laws of the Province of Ontario and the federal laws of Canada.</p>
+    <h3>Privacy Policy (Core Summary)</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">Data Collection:</strong> We collect only the data necessary to provide training logs and compliance evidence.</li>
+      <li><strong style="color:var(--text)">Third-Party Sharing:</strong> We do not sell or trade user data. Data is shared only with our secure infrastructure providers (Supabase/AWS).</li>
+      <li><strong style="color:var(--text)">PIPEDA Compliance:</strong> Our data handling practices align with the Personal Information Protection and Electronic Documents Act (PIPEDA).</li>
+    </ul>
+  </div>
+</div>
+<div id="legal-privacy-modal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box" style="max-height:80vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('legal-privacy-modal')" aria-label="Close">&times;</button>
+    <h2>Privacy Policy</h2>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px">Accessibility Compliance Canada Inc. &middot; Last Revised: March 2026 &mdash; Effective Date: March 2026</p>
+    <p style="font-size:.88rem;color:var(--muted);margin-bottom:12px"><strong style="color:var(--text)">Summary:</strong> We collect information you give us to provide AODA compliance services. We do not sell your data. We comply with PIPEDA and CASL. You can request access to or deletion of your information at any time.</p>
+    <h3>1. About This Policy</h3>
+    <p style="font-size:.88rem;color:var(--muted)">This Privacy Policy explains how Accessibility Compliance Canada Inc. collects, uses, discloses, and safeguards personal information in connection with our AODA compliance SaaS platform and our website at accessibilitycompliance.ca.</p>
+    <p style="font-size:.88rem;color:var(--muted)">We are subject to the <em>Personal Information Protection and Electronic Documents Act</em> (PIPEDA) and Canada&rsquo;s <em>Anti-Spam Legislation</em> (CASL). By using our Service, you consent to the practices described in this Policy.</p>
+    <p style="font-size:.88rem;color:var(--muted)">Contact our Privacy Officer at: <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
+    <h3>2. Information We Collect</h3>
+    <p style="font-size:.88rem;color:var(--muted)"><strong style="color:var(--text)">Account and Contact:</strong></p>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li>Business name, contact name, email address, phone number, mailing address</li>
+      <li>Login credentials (email and hashed password managed by Supabase Auth)</li>
+      <li>Billing address and payment method details (processed by Stripe; we do not store raw card numbers)</li>
+    </ul>
+    <p style="font-size:.88rem;color:var(--muted)"><strong style="color:var(--text)">Compliance and Business Data:</strong></p>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li>AODA audit scope details and compliance questionnaire responses you submit</li>
+      <li>Documents you upload including evidence, accessibility policies, and training records</li>
+      <li>Audit reports, evidence binders, invoices, and compliance letters we generate on your behalf</li>
+    </ul>
+    <p style="font-size:.88rem;color:var(--muted)"><strong style="color:var(--text)">Usage and Technical Data:</strong></p>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li>Log data: IP address, browser type, pages visited, timestamps</li>
+      <li>Authentication session tokens</li>
+      <li>Correspondence you send us via email or in-platform messaging</li>
+    </ul>
+    <h3>3. How We Use Your Information</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li>Deliver and manage your AODA compliance services &mdash; Performance of contract</li>
+      <li>Generate audit reports, invoices, and compliance documents &mdash; Performance of contract</li>
+      <li>Process payments through Stripe &mdash; Performance of contract</li>
+      <li>Send transactional emails (invoices, reports, alerts) &mdash; Performance of contract / CASL s.6(6)</li>
+      <li>Send service updates, newsletters, or promotional offers &mdash; Express or implied consent (CASL)</li>
+      <li>Improve our platform and features &mdash; Legitimate business interest</li>
+      <li>Comply with legal obligations (e.g., tax records) &mdash; Legal obligation</li>
+      <li>Detect and prevent fraud or security incidents &mdash; Legitimate business interest</li>
+    </ul>
+    <h3>4. Data Retention</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">Invoices and financial records:</strong> 7 years from date of issue (Ontario / CRA requirements)</li>
+      <li><strong style="color:var(--text)">Audit reports and compliance documents:</strong> Duration of subscription + 90 days after cancellation</li>
+      <li><strong style="color:var(--text)">Evidence binders uploaded by client:</strong> Duration of subscription + 90 days after cancellation</li>
+      <li><strong style="color:var(--text)">Account and contact information:</strong> Duration of subscription + 90 days after cancellation</li>
+      <li><strong style="color:var(--text)">Authentication logs:</strong> 12 months</li>
+      <li><strong style="color:var(--text)">Backups:</strong> Up to 30 days beyond primary deletion</li>
+    </ul>
+    <p style="font-size:.88rem;color:var(--muted)">Upon subscription cancellation, you will receive a <strong style="color:var(--text)">data export notice</strong> by email with instructions to download all your compliance documents before the 90-day deletion window closes.</p>
+    <h3>5. Sharing and Disclosure</h3>
+    <p style="font-size:.88rem;color:var(--muted)">We do <strong style="color:var(--text)">not sell</strong> your personal information. We share data only in the following circumstances:</p>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">Service Providers:</strong> Supabase (database and storage hosting, Canada/US), Stripe (payment processing, US), Resend (transactional email, US). Each is bound by a data processing agreement.</li>
+      <li><strong style="color:var(--text)">Legal Requirements:</strong> If required by law, court order, or government authority, we will disclose the minimum information required.</li>
+      <li><strong style="color:var(--text)">Business Transfer:</strong> In the event of a merger, acquisition, or sale of assets, your data may transfer to the successor entity, which will be bound by this Policy.</li>
+      <li><strong style="color:var(--text)">With Your Consent:</strong> We will share data for any other purpose only with your explicit consent.</li>
+    </ul>
+    <h3>6. Cross-Border Data Transfers</h3>
+    <p style="font-size:.88rem;color:var(--muted)">Our service providers (Supabase, Stripe, Resend) are based in or operate infrastructure in the United States. By using our Service, you acknowledge that your data may be processed outside Canada. We ensure appropriate contractual safeguards are in place with all third-party processors.</p>
+    <h3>7. Your Rights Under PIPEDA</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">Access:</strong> Request a copy of the personal information we hold about you</li>
+      <li><strong style="color:var(--text)">Correction:</strong> Ask us to correct inaccurate or incomplete information</li>
+      <li><strong style="color:var(--text)">Withdrawal of Consent:</strong> Withdraw consent at any time (subject to legal or contractual restrictions)</li>
+      <li><strong style="color:var(--text)">Data Export:</strong> Receive your compliance documents in a portable format</li>
+      <li><strong style="color:var(--text)">Complaint:</strong> File a complaint with the Office of the Privacy Commissioner of Canada</li>
+    </ul>
+    <p style="font-size:.88rem;color:var(--muted)">To exercise any of these rights, email <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a>. We will respond within <strong style="color:var(--text)">30 days</strong>.</p>
+    <h3>8. Electronic Communications (CASL)</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">Transactional messages</strong> (invoices, audit reports, account notices, security alerts) &mdash; sent in connection with your existing commercial relationship; do not require separate opt-in.</li>
+      <li><strong style="color:var(--text)">Commercial messages</strong> (newsletters, promotional offers, product updates) &mdash; sent only with your express or implied consent and include a clear <strong style="color:var(--text)">Unsubscribe</strong> link. We process unsubscribe requests within 10 business days.</li>
+    </ul>
+    <h3>9. Security</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li>Encryption in transit (HTTPS/TLS) and at rest</li>
+      <li>Row-Level Security (RLS) on our database ensuring each client can only access their own data</li>
+      <li>Access controls limiting staff access to personal data on a need-to-know basis</li>
+      <li>Secure, signed URLs for document downloads (files are not publicly accessible)</li>
+      <li>Stripe handles all payment card data; we do not store raw card numbers</li>
+    </ul>
+    <p style="font-size:.88rem;color:var(--muted)">In the event of a data breach that poses a real risk of significant harm, we will notify the Office of the Privacy Commissioner and affected individuals as required by PIPEDA.</p>
+    <h3>10. Cookies</h3>
+    <p style="font-size:.88rem;color:var(--muted)">Our website uses essential cookies for authentication sessions. We do not use advertising or tracking cookies. You may disable cookies in your browser settings; however, doing so will prevent you from logging into the Service.</p>
+    <h3>11. Children&rsquo;s Privacy</h3>
+    <p style="font-size:.88rem;color:var(--muted)">Our Service is designed for businesses and is not directed to individuals under 18 years of age. We do not knowingly collect personal information from minors.</p>
+    <h3>12. Changes to This Policy</h3>
+    <p style="font-size:.88rem;color:var(--muted)">We may update this Policy periodically. We will notify you by email and post the revised Policy on this page with an updated &ldquo;Last Revised&rdquo; date. Continued use of the Service after the effective date constitutes acceptance of the revised Policy.</p>
+    <h3>13. Contact Us</h3>
+    <p style="font-size:.88rem;color:var(--muted)"><strong style="color:var(--text)">Privacy Officer</strong><br>
+    Accessibility Compliance Canada Inc.<br>
+    Oakville, Ontario, Canada<br>
+    <a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a><br>
+    <a href="https://accessibilitycompliance.ca" style="color:#4f8ef7">accessibilitycompliance.ca</a></p>
+  </div>
+</div>
+<div id="legal-a11y-modal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box" style="max-height:80vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('legal-a11y-modal')" aria-label="Close">&times;</button>
+    <h2>Accessibility Statement</h2>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px">Accessibility Compliance Canada Inc. &middot; Last reviewed: March 2026</p>
+    <p style="font-size:.88rem;color:var(--muted)">We are committed to ensuring digital accessibility for people with disabilities and continually improving the experience for all users.</p>
+    <h3>Conformance</h3>
+    <ul style="padding-left:18px;font-size:.88rem;color:var(--muted)">
+      <li><strong style="color:var(--text)">WCAG 2.1 Level AA</strong> &mdash; Exceeds the current AODA minimum of WCAG 2.0 AA.</li>
+      <li><strong style="color:var(--text)">Keyboard Navigation</strong> &mdash; All interactive elements keyboard accessible.</li>
+      <li><strong style="color:var(--text)">Screen Reader Support</strong> &mdash; Semantic HTML, ARIA roles, labels, and live regions throughout.</li>
+      <li><strong style="color:var(--text)">Touch Targets</strong> &mdash; All interactive elements meet the 44x44px minimum touch target.</li>
+      <li><strong style="color:var(--text)">Color Contrast</strong> &mdash; All text meets WCAG 2.1 AA minimum 4.5:1 contrast ratio.</li>
+    </ul>
+    <h3>Feedback</h3>
+    <p style="font-size:.88rem;color:var(--muted)"><a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a> &middot; (416) 526-9645<br>We respond to accessibility feedback within 2 business days.</p>
+  </div>
+</div>
+<div id="legal-contact-modal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('legal-contact-modal')" aria-label="Close">&times;</button>
+    <h2>Contact Us</h2>
+    <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px">Accessibility Compliance Canada Inc. &middot; Oakville, Ontario, Canada</p>
+    <h3>Address</h3>
+    <p style="font-size:.88rem;color:var(--muted)">2150 Winston Park Dr, Unit 203, PMB#3018<br>Oakville, ON L6H 5V1</p>
+    <h3>Email</h3>
+    <p style="font-size:.88rem"><a href="mailto:partner@accessibilitycompliance.ca" style="color:#4f8ef7">partner@accessibilitycompliance.ca</a></p>
+    <h3>Phone</h3>
+    <p style="font-size:.88rem;color:var(--muted)">(416) 526-9645<br>(647) 896-9132</p>
+    <h3>Website</h3>
+    <p style="font-size:.88rem"><a href="https://accessibilitycompliance.ca" style="color:#4f8ef7">accessibilitycompliance.ca</a></p>
+  </div>
+</div>
 </body>
 </html>
