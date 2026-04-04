@@ -807,7 +807,7 @@ Scores show <em>site today → with widget applied</em>.
         <div class="fgroup"><label>Payment Method</label>
           <select class="finput" id="ce-payment"><option selected>Stripe</option><option>Invoice</option><option>Cheque</option></select>
         </div>
-        <div class="fgroup"><label>Discount Code <span style="font-size:.68rem;color:#8a9bbf;font-weight:400">(display note only — apply in Stripe Dashboard)</span></label><input class="finput" id="ce-discount" placeholder="e.g. SPRING25 or blank"><div style="font-size:.68rem;color:#8a9bbf;margin-top:3px">&#9432; Discounts must be applied directly on the Stripe subscription. This field is for your reference only and has no billing effect.</div></div>
+        
         <div class="fgroup"><label style="color:#8a9bbf">Rate</label><div style="font-size:.78rem;color:#8a9bbf;padding:8px 0">Set via tier selection above. Use Tier 4 Bespoke for custom pricing.</div></div>
         <div class="fgroup" style="grid-column:1/-1"><label>Custom Invoice Notes</label><textarea class="finput" id="ce-inv-notes" rows="2" placeholder="Notes that appear on invoices"></textarea></div>
       </div>
@@ -2057,7 +2057,6 @@ async function openClientEditor(btn) {
 
     // ── Billing tab ──
     f('ce-inv-notes',    c.billing_notes  || '');
-    f('ce-discount',     c.discount_code  || '');
     f('ce-rate',         c.monthly_rate != null ? c.monthly_rate : (c.tier==2 ? 199 : c.tier==3 ? '' : 69));
     f('ce-card-last4',   c.card_last4     || '');
     f('ce-card-expiry',  c.card_expiry    || '');
@@ -2373,7 +2372,6 @@ async function saveBilling() {
   try {
     var cycle = document.getElementById('ce-cycle');
     var inv   = (document.getElementById('ce-inv-notes')||{}).value||'';
-    var disc  = (document.getElementById('ce-discount')||{}).value||'';
     var pay   = document.getElementById('ce-payment');
     var rate  = parseFloat((document.getElementById('ce-rate')||{}).value||0) || null;
     var cardLast4  = (document.getElementById('ce-card-last4')  ||{}).value.trim();
@@ -2381,7 +2379,7 @@ async function saveBilling() {
     var cardName   = (document.getElementById('ce-card-name')   ||{}).value.trim();
     var r = await _sb.from('clients').update({
       billing_cycle:  cycle ? cycle.options[cycle.selectedIndex].text.toLowerCase() : 'monthly',
-      billing_notes:  inv||null, discount_code: disc||null,
+      billing_notes:  inv||null,
       payment_method: pay ? pay.options[pay.selectedIndex].text.toLowerCase() : 'stripe',
       monthly_rate:   rate,
       updated_at: new Date().toISOString()
