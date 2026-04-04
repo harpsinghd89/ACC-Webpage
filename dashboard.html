@@ -2848,16 +2848,35 @@ async function loadInvoiceHistory(c) {
     rawPrice = parseInt((tierPrice(c.tier)||'0').replace(/[^0-9]/g,'')) || 0;
   }
   var amount = isAnnual ? rawPrice * 10 : rawPrice;
+  // Fetch billing rows to get accurate status per period
+  var billingByYM = {};
+  try {
+    var _bfr = await _sb_client.from('billing').select('period,status,amount,failure_reason,paid_at')
+      .eq('client_id', c.id).order('period', { ascending: false }).limit(60);
+    (_bfr.data || []).forEach(function(b) {
+      var k = (b.period || '').substring(0, 7);
+      if (k) billingByYM[k] = b;
+    });
+  } catch(_) {}
   tbody.innerHTML = months.map(function(m) {
     var ym    = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0');
     var label = m.toLocaleDateString('en-CA', { year:'numeric', month:'long' });
     var hasFile = existingFiles.has(ym + '-invoice.html') || existingFiles.has(ym + '-invoice.pdf');
     var isPast  = m < now;
-    // Always show a View button for past periods — generates on first click if not yet stored
+    var bRow    = billingByYM[ym] || null;
+    // Status: use billing table status if available, otherwise derive from date
+    var st = bRow ? (bRow.status || 'pending').toLowerCase() : (isPast ? 'paid' : 'scheduled');
+    var rowAmt = bRow && bRow.amount != null ? '$' + parseFloat(bRow.amount).toFixed(2) : (amount ? '$' + parseFloat(amount).toFixed(2) : '—');
+    var pillCls = st === 'paid' ? 'green' : st === 'failed' || st === 'overdue' ? 'red' : st === 'scheduled' ? 'blue' : 'yellow';
+    var stLabel = st === 'paid' ? 'Paid' : st === 'failed' ? 'Failed' : st === 'overdue' ? 'Overdue' : st === 'scheduled' ? 'Scheduled' : st === 'pending' ? 'Pending' : st.charAt(0).toUpperCase() + st.slice(1);
+    var pillHtml = '<span class="pill ' + pillCls + '">' + stLabel + '</span>';
+    if (st === 'failed' && bRow && bRow.failure_reason) {
+      pillHtml += '<span style="font-size:.65rem;color:#f05f5f;display:block;margin-top:2px">' + esc(bRow.failure_reason) + '</span>';
+    }
     var dlBtn = isPast
       ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" data-ym="'+ym+'" onclick="generateAndDownloadInvoice(this.dataset.ym)">'+(hasFile?'↓ PDF':'&#128196; View')+'</button>'
       : '—';
-    return '<tr><td>'+label+'</td><td>'+(amount?'$'+parseFloat(amount).toFixed(2):'—')+'</td><td><span class="pill '+(isPast?'green':'blue')+'">'+(isPast?'Paid':'Scheduled')+'</span></td><td>'+dlBtn+'</td></tr>';
+    return '<tr><td>'+label+'</td><td>'+rowAmt+'</td><td>'+pillHtml+'</td><td>'+dlBtn+'</td></tr>';
   }).join('') || '<tr><td colspan="4" style="color:#8a9bbf;text-align:center;padding:16px">No invoices yet.</td></tr>';
 }
 
@@ -2870,13 +2889,36 @@ function populateBillingHistory(rows) {
     return;
   }
   tbody.innerHTML = rows.map(function(b) {
-    var ym = (b.paid_at||b.created_at||'').substring(0,7);
-    return '<tr>' +
-      '<td>' + fmtDate(b.paid_at||b.created_at) + '</td>' +
-      '<td>' + (b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) : '—') + '</td>' +
-      '<td><span class="pill ' + (b.status==='paid'?'green':'yellow') + '">' + esc(b.status) + '</span></td>' +
-      '<td><button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" onclick="generateAndDownloadInvoice(\'' + ym + '\')">&#8659; PDF</button></td>' +
-      '</tr>';
+    var ym = (b.period ? b.period.substring(0,7) : (b.paid_at||b.created_at||'').substring(0,7));
+    var dateLabel = fmtDate(b.paid_at || b.period || b.created_at);
+    var amt = b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) : '—';
+    // Status pill
+    var st = (b.status || 'pending').toLowerCase();
+    var pillCls = st === 'paid' ? 'green'
+      : st === 'failed' || st === 'overdue' ? 'red'
+      : st === 'cancelled' ? 'red'
+      : 'yellow';  // pending, processing, scheduled
+    var stLabel = st === 'paid' ? 'Paid'
+      : st === 'failed' ? 'Failed'
+      : st === 'overdue' ? 'Overdue'
+      : st === 'cancelled' ? 'Cancelled'
+      : st === 'pending' ? 'Pending'
+      : st.charAt(0).toUpperCase() + st.slice(1);
+    var pillHtml = '<span class="pill ' + pillCls + '">' + stLabel + '</span>';
+    // Failure reason tooltip
+    if (st === 'failed' && b.failure_reason) {
+      pillHtml += ' <span style="font-size:.65rem;color:#f05f5f;display:block;margin-top:2px">' + esc(b.failure_reason) + '</span>';
+    }
+    // PDF button — use invoice_no if available, otherwise fall back to ym
+    var dlBtn = ym
+      ? '<button class="btn-sm btn-ghost" style="font-size:.72rem;padding:3px 8px" data-ym="' + ym + '" onclick="generateAndDownloadInvoice(this.dataset.ym)">&#8659; PDF</button>'
+      : '';
+    return '<tr>'
+      + '<td>' + dateLabel + '</td>'
+      + '<td>' + amt + '</td>'
+      + '<td>' + pillHtml + '</td>'
+      + '<td>' + dlBtn + '</td>'
+      + '</tr>';
   }).join('');
 }
 

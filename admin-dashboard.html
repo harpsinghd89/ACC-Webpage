@@ -2045,17 +2045,28 @@ async function openClientEditor(btn) {
         } else {
           var code = window._editingClientCode || '';
           var rows = br.data.map(function(b) {
-            var ym       = (b.paid_at||b.created_at||'').substring(0,7);
-            var filePath = code + '/' + ym + '-invoice.pdf';
-            var dlBtn    = ym ? '<button class="btn-sm btn-ghost" style="padding:3px 8px;font-size:.7rem" data-bucket="invoices" data-path="' + filePath + '" onclick="downloadAdminFile(this.dataset.bucket,this.dataset.path)">&#8659;</button>' : '';
+            var ym = (b.period ? b.period.substring(0,7) : (b.paid_at||b.created_at||'').substring(0,7));
+            // Try .html first (new format), fall back to .pdf (legacy)
+            var filePathHtml = code + '/' + ym + '-invoice.html';
+            var filePathPdf  = code + '/' + ym + '-invoice.pdf';
+            // We'll attempt html; downloadAdminFile handles both
+            var dlBtn = ym
+              ? '<button class="btn-sm btn-ghost" style="padding:3px 8px;font-size:.7rem" data-bucket="invoices" data-path="' + filePathHtml + '" onclick="downloadAdminFile(this.dataset.bucket,this.dataset.path)">&#8659;</button>'
+              : '';
+            // Status pill
+            var st = (b.status || 'pending').toLowerCase();
+            var pillCls = st === 'paid' ? 'green' : st === 'failed' || st === 'overdue' ? 'red' : 'yellow';
+            var stLabel = st === 'paid' ? 'Paid' : st === 'failed' ? 'Failed' : st === 'overdue' ? 'Overdue' : st === 'cancelled' ? 'Cancelled' : st.charAt(0).toUpperCase() + st.slice(1);
+            var statusCell = '<span class="pill ' + pillCls + '">' + stLabel + '</span>'
+              + (st === 'failed' && b.failure_reason ? '<br><span style="font-size:.65rem;color:#f05f5f">' + esc(b.failure_reason) + '</span>' : '');
             return '<tr>' +
-              '<td>' + fmtDate(b.paid_at||b.created_at) + '</td>' +
+              '<td>' + fmtDate(b.paid_at||b.period||b.created_at) + '</td>' +
               '<td>' + (b.amount != null ? '$' + parseFloat(b.amount).toFixed(2) : '—') + '</td>' +
-              '<td><span class="pill ' + (b.status==='paid'?'green':'yellow') + '">' + esc(b.status||'pending') + '</span></td>' +
+              '<td>' + statusCell + '</td>' +
               '<td>' + dlBtn + '</td>' +
               '</tr>';
           }).join('');
-          bh.innerHTML = '<table class="data-table" style="font-size:.8rem"><thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>PDF</th></tr></thead><tbody>' + rows + '</tbody></table>';
+          bh.innerHTML = '<table class="data-table" style="font-size:.8rem"><thead><tr><th>Date</th><th>Amount</th><th>Status</th><th>Invoice</th></tr></thead><tbody>' + rows + '</tbody></table>';
         }
       } catch(e) { bh.innerHTML = '<div style="color:#8a9bbf;font-size:.8rem">Could not load billing.</div>'; }
     })();
@@ -2969,29 +2980,33 @@ async function generateInvoiceForClient() {
 }
 
 async function downloadAdminFile(bucket, path) {
-  try {
-    var r = await _sb.storage.from(bucket).createSignedUrl(path, 300);
-    if (r.error) throw r.error;
-    var signedUrl = r.data.signedUrl;
-    // HTML files: fetch and render via document.write (avoids raw text display)
-    if (path.endsWith('.html')) {
-      var res = await fetch(signedUrl);
-      if (!res.ok) throw new Error('Fetch failed: ' + res.status);
-      var html = await res.text();
-      var win = window.open('', '_blank');
-      if (!win) { alert('Please allow popups to view this file.'); return; }
-      win.document.open(); win.document.write(html); win.document.close();
-    } else {
-      // PDF and other binary files: direct signed URL download
-      var a = document.createElement('a');
-      a.href = signedUrl;
-      a.download = path.split('/').pop();
-      a.target = '_blank';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
-  } catch(e) {
-    showToastAdmin('Could not open file: ' + (e.message || e), 'error');
+  // For invoice paths: try .html first, then .pdf fallback
+  var pathsToTry = [path];
+  if (path.endsWith('.html')) pathsToTry.push(path.replace('.html', '.pdf'));
+  else if (path.endsWith('.pdf')) pathsToTry.unshift(path.replace('.pdf', '.html'));
+
+  for (var pi = 0; pi < pathsToTry.length; pi++) {
+    var tryPath = pathsToTry[pi];
+    try {
+      var r = await _sb.storage.from(bucket).createSignedUrl(tryPath, 300);
+      if (r.error) continue;  // try next extension
+      var signedUrl = r.data.signedUrl;
+      if (tryPath.endsWith('.html')) {
+        var res = await fetch(signedUrl);
+        if (!res.ok) continue;  // 404 — try next extension
+        var html = await res.text();
+        var win = window.open('', '_blank');
+        if (!win) { alert('Please allow popups to view this file.'); return; }
+        win.document.open(); win.document.write(html); win.document.close();
+      } else {
+        var a = document.createElement('a');
+        a.href = signedUrl; a.download = tryPath.split('/').pop(); a.target = '_blank';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      }
+      return;  // success
+    } catch(_) { continue; }
   }
+  showToastAdmin('Invoice file not found. Try generating it first using the ✎ Generate button.', 'error');
 }
 
 async function deleteAdminFile(bucket, path, bucketForRefresh, clientCode) {
