@@ -777,7 +777,7 @@ Scores show <em>site today → with widget applied</em>.
       </div>
       <div class="btn-row" style="margin-top:12px">
         <button class="btn-sm btn-primary" onclick="saveClientInfo()">&#10003; Save Info</button>
-        <button class="btn-sm btn-danger" onclick="if(confirm('Delete this client?'))alert('Client deleted.')">&#128465; Delete Client</button>
+        <button class="btn-sm btn-danger" onclick="deleteClient()">&#128465; Delete Client</button>
       </div>
     </div>
 
@@ -1590,6 +1590,38 @@ function defaultMilestones(clientId, tier) {
 }
 
 // ── Load & render clients table ──────────────────────────
+// ── Delete (soft-delete) client ───────────────────────────────────────────
+async function deleteClient() {
+  var id   = window._editingClientId;
+  var name = (document.getElementById('ce-name') || {}).value || 'this client';
+  if (!id) { showToastAdmin('No client selected', 'error'); return; }
+  if (!confirm('Permanently archive ' + name + '?\n\nThe client row will be soft-deleted (deleted_at set). This cannot be undone from the dashboard.')) return;
+
+  var btn = document.querySelector('#ctab-panel-info .btn-danger');
+  if (btn) { btn.disabled = true; btn.textContent = 'Deleting…'; }
+
+  try {
+    var r = await _sb.from('clients')
+      .update({ deleted_at: new Date().toISOString(), status: 'cancelled' })
+      .eq('id', id);
+    if (r.error) throw r.error;
+
+    // Soft-delete associated roadmap rows
+    try {
+      await _sb.from('roadmap')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('client_id', id);
+    } catch(_) {}
+
+    showToastAdmin(name + ' has been deleted.', 'success');
+    closeModal('client-detail-modal');
+    await loadClients();
+  } catch(e) {
+    showToastAdmin('Delete failed: ' + (e.message || e), 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '🗑 Delete Client'; }
+  }
+}
+
 async function loadClients() {
   var tbody = document.getElementById('client-tbody');
   try {
