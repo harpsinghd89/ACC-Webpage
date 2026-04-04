@@ -808,7 +808,7 @@ Scores show <em>site today → with widget applied</em>.
           <select class="finput" id="ce-payment"><option selected>Stripe</option><option>Invoice</option><option>Cheque</option></select>
         </div>
         <div class="fgroup"><label>Discount Code Applied</label><input class="finput" id="ce-discount" placeholder="e.g. SPRING25 or blank"></div>
-        <div class="fgroup"><label>Monthly Rate Override ($)</label><input class="finput" id="ce-rate" type="number" value="69"></div>
+        <div class="fgroup"><label style="color:#8a9bbf">Rate</label><div style="font-size:.78rem;color:#8a9bbf;padding:8px 0">Set via tier selection above. Use Tier 4 Bespoke for custom pricing.</div></div>
         <div class="fgroup" style="grid-column:1/-1"><label>Custom Invoice Notes</label><textarea class="finput" id="ce-inv-notes" rows="2" placeholder="Notes that appear on invoices"></textarea></div>
       </div>
       <h3 style="font-size:.88rem;margin-bottom:10px">&#128179; Card on File</h3>
@@ -1986,15 +1986,26 @@ async function openClientEditor(btn) {
     f('ce-renewal',      c.renewal_date || '');
     f('ce-billing-note', c.billing_notes || '');
 
-    var tierSel     = document.getElementById('ce-tier');
-    var tierVal     = tierSel ? parseInt(tierSel.value) : 1;
-    var bespokeData = tierVal === 4 ? {
-      billing_type:            'recurring',
-      bespoke_setup_price:     parseFloat((document.getElementById('ce-bespoke-setup')||{value:'0'}).value)||0,
-      bespoke_recurring_price: parseFloat((document.getElementById('ce-bespoke-recurring')||{value:'0'}).value)||0,
-      bespoke_trial_days:      parseInt((document.getElementById('ce-bespoke-trial')||{value:'0'}).value)||0,
-    } : tierVal === 3 ? { billing_type: 'one_time' } : { billing_type: 'recurring' };
+    var tierSel = document.getElementById('ce-tier');
     if (tierSel) tierSel.value = c.tier || '1';
+    var cTier = parseInt(c.tier) || 1;
+
+    // Reset + populate bespoke fields from this client's DB values
+    var bFields = document.getElementById('ce-bespoke-fields');
+    if (bFields) bFields.style.display = cTier === 4 ? 'block' : 'none';
+    var _setNum = function(id, val) { var el = document.getElementById(id); if (el) el.value = (val != null && val !== '') ? val : ''; };
+    _setNum('ce-bespoke-setup',     cTier === 4 ? c.bespoke_setup_price     : '');
+    _setNum('ce-bespoke-recurring', cTier === 4 ? c.bespoke_recurring_price : '');
+    _setNum('ce-bespoke-trial',     cTier === 4 ? (c.bespoke_trial_days || 0) : 0);
+
+    // Billing type indicator
+    var billingTypeRow = document.getElementById('ce-billing-type-row');
+    if (billingTypeRow) {
+      billingTypeRow.style.display = 'block';
+      var btLabel = document.getElementById('ce-billing-type-label');
+      if (btLabel) btLabel.textContent = c.billing_type === 'one_time' ? 'One-time (no recurring)'
+        : cTier === 4 ? 'Bespoke recurring' : 'Recurring subscription';
+    }
 
     var statusSel = document.getElementById('ce-status');
     if (statusSel) {

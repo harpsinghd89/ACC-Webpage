@@ -1793,6 +1793,28 @@ function showPanel(id) {
   if (id === 'feedback' && window._clientData) reloadFeedback();
   if (id === 'reports'  && window._clientData && _clientData.client_code) populateScanData(_clientData.client_code);
   if (id === 'evidence' && window._clientData) populateEvidence(_clientData, window._roadmapData || []);
+  // Account panel: always re-fetch client row so tier/status changes from admin are live
+  if (id === 'account' && window._sb_client && window._clientData) {
+    (async function() {
+      try {
+        var cr = await _sb_client.from('clients').select('*')
+          .eq('id', _clientData.id).single();
+        if (!cr.error && cr.data) {
+          _clientData = cr.data;
+          window._clientData = cr.data;
+        }
+      } catch(_) {}
+      // Re-fetch billing rows and repopulate entire account panel
+      try {
+        var br = await _sb_client.from('billing').select('*')
+          .eq('client_id', _clientData.id)
+          .order('created_at', { ascending: false }).limit(24);
+        populateAccount(_clientData, br.data || []);
+      } catch(_) {
+        populateAccount(_clientData, []);
+      }
+    })();
+  }
   document.querySelectorAll('.nav-item').forEach(b => {
     b.classList.remove('active');
     b.removeAttribute('aria-current');
@@ -2309,15 +2331,21 @@ function daysUntil(iso) {
 }
 
 function tierName(t) {
-  // DB stores tier as integer (1, 2, 3) — handle both formats
   var n = parseInt(t) || t;
   return (n===1||t==='tier1') ? 'Tier 1 — Essential'
        : (n===2||t==='tier2') ? 'Tier 2 — Managed'
+       : (n===4||t==='tier4') ? 'Tier 4 — Bespoke'
        : 'Tier 3 — Enterprise';
 }
 
-function tierPrice(t) {
+function tierPrice(t, clientData) {
   var n = parseInt(t) || t;
+  if (n===4 || t==='tier4') {
+    // Bespoke: show recurring price from client data if available
+    var c = clientData || window._clientData;
+    var p = c && c.bespoke_recurring_price != null ? c.bespoke_recurring_price : null;
+    return p != null ? '$' + parseFloat(p).toFixed(2) : 'Custom';
+  }
   return (n===1||t==='tier1') ? '$69'
        : (n===2||t==='tier2') ? '$199'
        : 'Custom';
@@ -2714,17 +2742,35 @@ function populateAccount(c, billingRows) {
   set('acc-tier', tierName(c.tier));
   var msaDate = c.start_date ? fmtDateLong(c.start_date) : '—';
   var el1 = document.getElementById('dash-msa-start-date'); if(el1) el1.textContent = msaDate;
-  var tierDescs = { 1: '', 2: '', 3: '' };
+  var tierDescs = {
+    1: 'Essential WCAG monitoring & widget',
+    2: 'Managed compliance with priority support',
+    3: 'Enterprise — custom agreement',
+    4: 'Bespoke — custom pricing & terms',
+  };
   set('acc-tier-desc', tierDescs[parseInt(c.tier)] || '');
   var cycleLabel = (c.billing_cycle === 'annual' || c.billing_cycle === 'yearly') ? 'Annual' : 'Monthly';
   var renewalEl = document.getElementById('acc-renewal-label');
   if (renewalEl) renewalEl.textContent = 'Next ' + cycleLabel + ' billing:';
   var cadenceEl = document.getElementById('acc-billing-cadence');
   if (cadenceEl) cadenceEl.textContent = 'CAD / ' + cycleLabel.toLowerCase();
-  set('acc-price', tierPrice(c.tier));
+  set('acc-price', tierPrice(c.tier, c));
   set('acc-renewal', fmtDateLong(c.renewal_date));
   set('acc-start-date', c.start_date ? fmtDateLong(c.start_date) : '—');
-  set('acc-status', (c.status || 'active').charAt(0).toUpperCase() + (c.status || 'active').slice(1));
+  var statusText = (c.status || 'active').charAt(0).toUpperCase() + (c.status || 'active').slice(1);
+  // Trial → friendly label
+  if (c.status === 'trialing') statusText = 'Free Trial';
+  if (c.status === 'past_due') statusText = 'Payment Due';
+  set('acc-status', statusText);
+  // Update status pill colour
+  var statusPillEl = document.getElementById('acc-status');
+  if (statusPillEl) {
+    statusPillEl.className = 'pill '
+      + (c.status === 'active' || c.status === 'trialing' ? 'green'
+       : c.status === 'past_due' ? 'yellow'
+       : c.status === 'cancelled' ? 'red'
+       : 'blue');
+  }
   // Dynamic upgrade button
   var upgradeBtn = document.getElementById('btn-upgrade-tier');
   if (upgradeBtn) {
@@ -2794,7 +2840,13 @@ async function loadInvoiceHistory(c) {
     var lr = await _sb_client.storage.from('invoices').list(c.client_code||'', { limit:100 });
     (lr.data||[]).forEach(function(f){ existingFiles.add(f.name); });
   } catch(_) {}
-  var rawPrice = parseInt((tierPrice(c.tier)||'0').replace(/[^0-9]/g,'')) || 0;
+  // Tier 4 Bespoke uses bespoke_recurring_price
+  var rawPrice;
+  if (parseInt(c.tier) === 4) {
+    rawPrice = parseFloat(c.bespoke_recurring_price || 0);
+  } else {
+    rawPrice = parseInt((tierPrice(c.tier)||'0').replace(/[^0-9]/g,'')) || 0;
+  }
   var amount = isAnnual ? rawPrice * 10 : rawPrice;
   tbody.innerHTML = months.map(function(m) {
     var ym    = m.getFullYear() + '-' + String(m.getMonth()+1).padStart(2,'0');
