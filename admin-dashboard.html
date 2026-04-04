@@ -1590,30 +1590,44 @@ function defaultMilestones(clientId, tier) {
 }
 
 // ── Load & render clients table ──────────────────────────
-// ── Delete (soft-delete) client ───────────────────────────────────────────
+// ── Delete client (hard delete) ───────────────────────────────────────────
+// Preserves billing rows (nulls client_id) for financial records.
+// Deletes client row — cascades to roadmap, scans, scan_issues, template_access via FK.
 async function deleteClient() {
   var id   = window._editingClientId;
+  var code = window._editingClientCode || '';
   var name = (document.getElementById('ce-name') || {}).value || 'this client';
   if (!id) { showToastAdmin('No client selected', 'error'); return; }
-  if (!confirm('Permanently archive ' + name + '?\n\nThe client row will be soft-deleted (deleted_at set). This cannot be undone from the dashboard.')) return;
+  if (!confirm(
+    'Permanently DELETE ' + name + '?\n\n'
+    + '• Client account and all compliance data will be removed\n'
+    + '• Billing/invoice records are preserved for accounting\n'
+    + '• This CANNOT be undone\n\n'
+    + 'Type OK to confirm.'
+  )) return;
 
   var btn = document.querySelector('#ctab-panel-info .btn-danger');
   if (btn) { btn.disabled = true; btn.textContent = 'Deleting…'; }
 
   try {
-    var r = await _sb.from('clients')
-      .update({ deleted_at: new Date().toISOString(), status: 'cancelled' })
-      .eq('id', id);
-    if (r.error) throw r.error;
-
-    // Soft-delete associated roadmap rows
+    // 1. Null out client_id on billing rows — preserve for financial records
     try {
-      await _sb.from('roadmap')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('client_id', id);
+      var bUpd = await _sb.from('billing').update({ client_id: null }).eq('client_id', id);
+      if (bUpd.error) console.warn('billing detach:', bUpd.error);
     } catch(_) {}
 
-    showToastAdmin(name + ' has been deleted.', 'success');
+    // 2. Hard delete the client row
+    // Child tables (roadmap, scans, scan_issues, template_access, feedback)
+    // must have ON DELETE CASCADE on their client_id FK for this to work cleanly.
+    // If not, delete them first:
+    try { await _sb.from('roadmap').delete().eq('client_id', id); } catch(_) {}
+    try { await _sb.from('template_access').delete().eq('client_id', id); } catch(_) {}
+    try { await _sb.from('feedback').delete().eq('client_id', id); } catch(_) {}
+
+    var r = await _sb.from('clients').delete().eq('id', id);
+    if (r.error) throw r.error;
+
+    showToastAdmin(name + ' has been permanently deleted.', 'success');
     closeModal('client-detail-modal');
     await loadClients();
   } catch(e) {
@@ -1897,13 +1911,37 @@ async function addClient() {
     var ef = document.getElementById('nc-email'); if (ef) ef.focus();
     return;
   }
+  if (!domain) {
+    if (ncErr) { ncErr.textContent = 'Website / Domain is required.'; ncErr.style.display = 'block'; }
+    var df = document.getElementById('nc-domain'); if (df) df.focus();
+    return;
+  }
 
   var btn = document.querySelector('#add-client-modal .btn-primary');
-  if (btn) { btn.textContent = 'Creating…'; btn.disabled = true; }
+  if (btn) { btn.textContent = 'Checking…'; btn.disabled = true; }
 
   try {
+    // Normalise domain for comparison (strip protocol/www)
+    var normDomain = domain.replace(/^https?:\/\//,'').replace(/^\.+|\.+$/g,'').replace(/^\/+|\/+$/g,'').toLowerCase();
+
+    // Check email uniqueness (active clients only)
+    var emailChk = await _sb.from('clients').select('id,name').eq('email', email).is('deleted_at', null).maybeSingle();
+    if (emailChk.data) {
+      if (ncErr) { ncErr.textContent = 'A client with email "' + email + '" already exists (' + emailChk.data.name + '). Each client must have a unique email.'; ncErr.style.display = 'block'; }
+      if (btn) { btn.textContent = '\u2713 Create Client'; btn.disabled = false; }
+      return;
+    }
+    // Check domain uniqueness
+    var domainChk = await _sb.from('clients').select('id,name').ilike('domain', '%' + normDomain + '%').is('deleted_at', null).maybeSingle();
+    if (domainChk.data) {
+      if (ncErr) { ncErr.textContent = 'Domain "' + normDomain + '" is already registered to ' + domainChk.data.name + '. Each client must have a unique domain.'; ncErr.style.display = 'block'; }
+      if (btn) { btn.textContent = '\u2713 Create Client'; btn.disabled = false; }
+      return;
+    }
+
+    if (btn) btn.textContent = 'Creating…';
     var code = genClientCode();
-    // Check uniqueness (retry once if collision)
+    // Check client_code uniqueness (retry once if collision)
     var check = await _sb.from('clients').select('id').eq('client_code', code).maybeSingle();
     if (check.data) code = genClientCode();
 

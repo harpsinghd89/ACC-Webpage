@@ -985,7 +985,7 @@ window.addEventListener('message',function(e){
 });
 
 
-function submitPayment(){
+async function submitPayment(){
   var ok=true;
   ok=validateField('f-fname','err-fname',function(v){return v.length>0;})&&ok;
   ok=validateField('f-lname','err-lname',function(v){return v.length>0;})&&ok;
@@ -999,6 +999,35 @@ function submitPayment(){
   if(!ok)return;
   if(currentTier==='t3'){window.location.href='mailto:partner@accessibilitycompliance.ca?subject=Tier%203%20Inquiry';return;}
   if(!_stripe||!_cardElement){showCardError('Payment system not loaded. Please refresh.');return;}
+
+  var emailVal   = document.getElementById('f-email').value.trim();
+  var domainVal  = (document.getElementById('f-website').value.trim()).replace(/^https?:\/\//,'').replace(/^www\./,'').split('/')[0].toLowerCase();
+  var ANON       = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
+  var SB_URL     = 'https://wfyzvmfvlukawidowuym.supabase.co';
+
+  // Check email uniqueness before charging card
+  try {
+    var emailRes = await fetch(SB_URL + '/rest/v1/clients?email=eq.' + encodeURIComponent(emailVal) + '&select=id,name&limit=1', {
+      headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON }
+    });
+    var emailRows = await emailRes.json();
+    if (Array.isArray(emailRows) && emailRows.length > 0) {
+      showCardError('An account with this email already exists. Please sign in instead, or use a different email address.');
+      return;
+    }
+  } catch(_) {} // network error — proceed; DB constraint will catch it on insert
+
+  // Check domain uniqueness before charging card
+  try {
+    var domainRes = await fetch(SB_URL + '/rest/v1/clients?domain=ilike.*' + encodeURIComponent(domainVal) + '*&select=id,name&limit=1', {
+      headers: { 'apikey': ANON, 'Authorization': 'Bearer ' + ANON }
+    });
+    var domainRows = await domainRes.json();
+    if (Array.isArray(domainRows) && domainRows.length > 0) {
+      showCardError('This domain is already registered to an existing account. Please contact us at partner@accessibilitycompliance.ca if you need help.');
+      return;
+    }
+  } catch(_) {} // network error — proceed
 
   var btn=document.getElementById('submit-btn'),lbl=document.getElementById('submit-label');
   if(btn)btn.disabled=true;
