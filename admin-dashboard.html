@@ -807,7 +807,7 @@ Scores show <em>site today → with widget applied</em>.
         <div class="fgroup"><label>Payment Method</label>
           <select class="finput" id="ce-payment"><option selected>Stripe</option><option>Invoice</option><option>Cheque</option></select>
         </div>
-        <div class="fgroup"><label>Discount Code Applied</label><input class="finput" id="ce-discount" placeholder="e.g. SPRING25 or blank"></div>
+        <div class="fgroup"><label>Discount Code <span style="font-size:.68rem;color:#8a9bbf;font-weight:400">(display note only — apply in Stripe Dashboard)</span></label><input class="finput" id="ce-discount" placeholder="e.g. SPRING25 or blank"><div style="font-size:.68rem;color:#8a9bbf;margin-top:3px">&#9432; Discounts must be applied directly on the Stripe subscription. This field is for your reference only and has no billing effect.</div></div>
         <div class="fgroup"><label style="color:#8a9bbf">Rate</label><div style="font-size:.78rem;color:#8a9bbf;padding:8px 0">Set via tier selection above. Use Tier 4 Bespoke for custom pricing.</div></div>
         <div class="fgroup" style="grid-column:1/-1"><label>Custom Invoice Notes</label><textarea class="finput" id="ce-inv-notes" rows="2" placeholder="Notes that appear on invoices"></textarea></div>
       </div>
@@ -1506,18 +1506,46 @@ async function sendSetupLink() {
       await _sb.from('clients').update({ stripe_customer_id: res.customerId }).eq('id', clientId);
     }
 
-    // Send setup link email via Resend
-    var setupUrl = 'https://accessibilitycompliance.ca/payment.html?setup=1&cid=' + clientId + '&email=' + encodeURIComponent(cl.email);
-    // NOTE: In production, send a real Stripe-hosted setup link. For now, send to payment page.
-    showToastAdmin('Setup link sent to ' + cl.email, 'success');
+    // Build setup URL for this client
+    var setupUrl = 'https://accessibilitycompliance.ca/payment.html'
+      + '?email=' + encodeURIComponent(cl.email || '')
+      + '&company=' + encodeURIComponent(cl.name || '')
+      + '&tier=' + encodeURIComponent(cl.tier || 1)
+      + '&cycle=' + encodeURIComponent(cl.billing_cycle || 'monthly');
 
-    // Log to billing as pending
-    await _sb.from('billing').insert({
-      client_id: clientId,
-      amount: amount,
-      status: 'pending',
-      description: 'Stripe payment setup link sent',
-    }).catch(function(){});
+    // Copy link to clipboard
+    try { await navigator.clipboard.writeText(setupUrl); } catch(_) {}
+
+    // Send email via Resend edge function (non-blocking)
+    try {
+      await fetch(SUPABASE_URL + '/functions/v1/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON },
+        body: JSON.stringify({
+          to: cl.email,
+          subject: 'Set up your ACC payment — ' + (cl.name || ''),
+          html: '<div style="font-family:system-ui,sans-serif;background:#060d1a;color:#e8edf8;padding:32px;max-width:520px;margin:0 auto">'
+            + '<h2 style="color:#4f8ef7">Complete your ACC subscription setup</h2>'
+            + '<p style="color:#8a9bbf">Hi ' + escHtml(cl.name || 'there') + ', your accessibility compliance account is ready. Please click below to enter your payment details.</p>'
+            + '<a href="' + setupUrl + '" style="display:inline-block;background:linear-gradient(135deg,#4f8ef7,#38d9a9);color:#0a1628;font-weight:700;padding:14px 28px;border-radius:8px;text-decoration:none;margin:16px 0">Set Up Payment</a>'
+            + '<p style="color:#4a5568;font-size:.78rem">Or copy this link: <a href="' + setupUrl + '" style="color:#4f8ef7">' + setupUrl + '</a></p>'
+            + '<p style="color:#4a5568;font-size:.75rem;margin-top:24px">ACC · accessibilitycompliance.ca</p>'
+            + '</div>'
+        })
+      });
+    } catch(_) {} // email failure is non-fatal
+
+    showToastAdmin('Setup link copied to clipboard & emailed to ' + cl.email, 'success');
+
+    // Log to billing as pending — flat try/catch (Supabase never rejects promises)
+    try {
+      await _sb.from('billing').insert({
+        client_id: clientId,
+        amount:    amount,
+        status:    'pending',
+        description: 'Payment setup link sent to ' + cl.email,
+      });
+    } catch(_) {} // non-fatal
 
   } catch(e) {
     showToastAdmin('Failed to send setup link: ' + (e.message || e), 'error');
