@@ -1038,7 +1038,8 @@ function submitPayment(){
     msaAcceptedAt:new Date().toISOString()
   };
 
-  // Step 1: Get SetupIntent clientSecret from Edge Function
+  // Step 1: Get SetupIntent + Stripe Customer/Price IDs from edge function
+  var _stripeCtx = {}; // holds customerId, priceId, promoCodeId between steps
   fetch('https://wfyzvmfvlukawidowuym.supabase.co/functions/v1/stripe-checkout',{
     method:'POST',
     headers:{
@@ -1052,7 +1053,11 @@ function submitPayment(){
   .then(function(res){
     if(res.error) throw new Error(res.error);
     if(!res.clientSecret) throw new Error('No client secret returned from payment server.');
-    // Step 2: Confirm card with Stripe Elements
+    // Capture Stripe context for later steps
+    _stripeCtx.customerId   = res.customerId   || null;
+    _stripeCtx.priceId      = res.priceId      || null;
+    _stripeCtx.promoCodeId  = res.promoCodeId  || null;
+    // Step 2: Confirm card with Stripe Elements (saves card to Stripe Customer)
     return _stripe.confirmCardSetup(res.clientSecret, {
       payment_method: {
         card: _cardElement,
@@ -1060,12 +1065,12 @@ function submitPayment(){
           name:  payload.firstName + ' ' + payload.lastName,
           email: payload.email,
           address: {
-              line1:       payload.billingAddr,
-              city:        payload.billingCity    || '',
-              state:       payload.billingProvince || 'ON',
-              postal_code: payload.billingPostal  || '',
-              country:     payload.billingCountry || 'CA'
-            }
+            line1:       payload.billingAddr,
+            city:        payload.billingCity    || '',
+            state:       payload.billingProvince || 'ON',
+            postal_code: payload.billingPostal  || '',
+            country:     payload.billingCountry || 'CA'
+          }
         }
       }
     });
@@ -1073,7 +1078,9 @@ function submitPayment(){
   .then(function(result){
     if(result.error) throw new Error(result.error.message);
     if(result.setupIntent && result.setupIntent.status === 'succeeded'){
-      return createAccount(payload);
+      // Attach payment_method_id to context for subscription creation
+      _stripeCtx.paymentMethodId = result.setupIntent.payment_method || null;
+      return createAccount(payload, _stripeCtx);
     }
     throw new Error('Card setup not completed.');
   })
@@ -1082,17 +1089,6 @@ function submitPayment(){
     resetSubmitBtn();
   });
 }
-
-function showCardError(msg){
-  var err=document.getElementById('err-card');if(!err)return;
-  err.style.display='block';err.textContent=msg;
-  err.scrollIntoView({behavior:'smooth',block:'center'});
-}
-function resetSubmitBtn(){
-  var btn=document.getElementById('submit-btn'),lbl=document.getElementById('submit-label');
-  if(btn)btn.disabled=false;if(lbl)lbl.textContent='Complete Subscription';
-}
-
 
 // ── Stripe Elements setup ─────────────────────────────────────────────────
 var _stripe      = null;
@@ -1219,7 +1215,8 @@ function resetSubmitBtn(){
 })();
 
 
-function createAccount(p){
+function createAccount(p, stripeCtx){
+  stripeCtx = stripeCtx || {};
   var ANON   = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmeXp2bWZ2bHVrYXdpZG93dXltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODE3MDksImV4cCI6MjA4ODg1NzcwOX0.UeVjqQtu-eBryHWAnH8wZoX0QPJ1ZNcdRCcAaUbWT1M';
   var SB_URL = 'https://wfyzvmfvlukawidowuym.supabase.co';
   return fetch(SB_URL+'/auth/v1/signup',{
@@ -1238,6 +1235,8 @@ function createAccount(p){
     var today   = new Date().toISOString().split('T')[0];
     var renewal = new Date(Date.now()+365*24*60*60*1000).toISOString().split('T')[0];
     var code    = 'CLI-'+Math.floor(10000+Math.random()*90000);
+    // Tier 3 is always one_time; T1/T2 are recurring
+    var billingType = (p.tier===3||p.tier==='3') ? 'one_time' : 'recurring';
     return fetch(SB_URL+'/rest/v1/clients',{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':ANON,'Authorization':'Bearer '+token,'Prefer':'return=representation'},
@@ -1248,6 +1247,9 @@ function createAccount(p){
         tier:p.tier||1, status:'active',
         start_date:today, renewal_date:renewal,
         billing_cycle:p.billingCycle||'monthly',
+        billing_type:billingType,
+        stripe_customer_id:stripeCtx.customerId||null,
+        stripe_promo_code_id:stripeCtx.promoCodeId||null,
         terms_accepted:p.termsAccepted||false,
         marketing_consent:p.marketingConsent||false,
         msa_accepted:p.msaAccepted||false,
@@ -1259,15 +1261,36 @@ function createAccount(p){
   })
   .then(function(res){
     var row = Array.isArray(res.client)?res.client[0]:res.client;
-    if(row&&row.id){
-      fetch(SB_URL+'/functions/v1/generate-invoice',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+res.token,'apikey':ANON},
-        body:JSON.stringify({client_id:row.id})
-      }).catch(function(e){ console.warn('invoice:',e); });
-    }
-    showSuccessScreen(p.firstName, p.email);
+    if(!row||!row.id){ showSuccessScreen(p.firstName, p.email); return; }
+
+    var billingType = (p.tier===3||p.tier==='3') ? 'one_time' : 'recurring';
+
+    // Step 3: Activate subscription (attaches card, creates Stripe Subscription)
+    var activatePromise = (billingType==='recurring' && stripeCtx.customerId && stripeCtx.priceId)
+      ? fetch(SB_URL+'/functions/v1/activate-subscription',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+ANON,'apikey':ANON},
+          body:JSON.stringify({
+            client_id:          row.id,
+            payment_method_id:  stripeCtx.paymentMethodId || null,
+            price_id:           stripeCtx.priceId,
+            customer_id:        stripeCtx.customerId,
+            promo_code_id:      stripeCtx.promoCodeId || null,
+            billing_type:       billingType
+          })
+        }).catch(function(e){ console.warn('activate-subscription:', e); })
+      : Promise.resolve();
+
+    // Step 4: Generate first invoice (non-blocking)
+    var invoicePromise = fetch(SB_URL+'/functions/v1/generate-invoice',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+ANON,'apikey':ANON},
+      body:JSON.stringify({client_id:row.id})
+    }).catch(function(e){ console.warn('invoice:', e); });
+
+    return Promise.all([activatePromise, invoicePromise]);
   })
+  .then(function(){ showSuccessScreen(p.firstName, p.email); })
   .catch(function(e){
     console.error('createAccount:',e);
     showSuccessScreen(p.firstName, p.email);

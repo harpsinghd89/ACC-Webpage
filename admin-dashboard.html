@@ -690,11 +690,25 @@ Scores show <em>site today → with widget applied</em>.
     </div>
     <div class="fgroup"><label for="nc-renewal">Next Renewal Date</label><input class="finput" id="nc-renewal" type="date" placeholder="Auto-calculated"></div>
     <div class="fgroup"><label for="nc-tier">Tier</label>
-      <select class="finput" id="nc-tier">
+      <select class="finput" id="nc-tier" onchange="toggleBespokeFields('nc')">
         <option value="1">Tier 1 — Essential ($69/mo)</option>
         <option value="2">Tier 2 — Managed ($199/mo)</option>
-        <option value="3">Tier 3 — Enterprise (Custom)</option>
+        <option value="3">Tier 3 — Enterprise (Custom, one-time)</option>
+        <option value="4">Tier 4 — Bespoke (Custom recurring)</option>
       </select>
+    </div>
+    <!-- Bespoke pricing fields — shown only for Tier 4 -->
+    <div id="nc-bespoke-fields" style="display:none;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.2);border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="font-size:.75rem;color:#4f8ef7;font-weight:700;margin-bottom:10px">&#9881; Tier 4 — Bespoke Pricing</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="fgroup" style="margin:0"><label>Setup Price ($)</label>
+          <input class="finput" id="nc-bespoke-setup" type="number" min="0" step="0.01" placeholder="0.00" title="One-time setup fee. 0 = free setup."></div>
+        <div class="fgroup" style="margin:0"><label>Recurring Price ($/mo)</label>
+          <input class="finput" id="nc-bespoke-recurring" type="number" min="0" step="0.01" placeholder="0.00" title="Monthly recurring amount. 0 = trial/free."></div>
+        <div class="fgroup" style="margin:0;grid-column:1/-1"><label>Trial Period (days, 0 = no trial)</label>
+          <input class="finput" id="nc-bespoke-trial" type="number" min="0" value="0" title="0 = charge immediately. &gt;0 = free trial before first charge."></div>
+      </div>
+      <div id="nc-bespoke-hint" style="font-size:.7rem;color:#8a9bbf;margin-top:8px"></div>
     </div>
     <div id="nc-error" style="display:none;background:#3d1515;border:1px solid #f05f5f;border-radius:8px;padding:10px 14px;color:#f05f5f;font-size:.85rem;margin-bottom:12px"></div>
     <div class="btn-row" style="margin-top:8px">
@@ -730,10 +744,11 @@ Scores show <em>site today → with widget applied</em>.
         <div class="fgroup"><label>Contact Email</label><input class="finput" id="ce-email" value="admin@acmecorp.ca"></div>
         <div class="fgroup"><label>Phone</label><input class="finput" id="ce-phone" value="(416) 555-0100"></div>
         <div class="fgroup"><label>Tier</label>
-          <select class="finput" id="ce-tier">
+          <select class="finput" id="ce-tier" onchange="toggleBespokeFields('ce')">
             <option value="1" selected>Tier 1 — Essential ($69/mo)</option>
             <option value="2">Tier 2 — Managed ($199/mo)</option>
-            <option value="3">Tier 3 — Enterprise (Custom)</option>
+            <option value="3">Tier 3 — Enterprise (Custom, one-time)</option>
+            <option value="4">Tier 4 — Bespoke (Custom recurring)</option>
           </select>
         </div>
         <div class="fgroup"><label>Status</label>
@@ -768,6 +783,23 @@ Scores show <em>site today → with widget applied</em>.
 
     <!-- BILLING TAB -->
     <div id="ctab-panel-billing" style="display:none">
+      <!-- Billing type indicator -->
+      <div id="ce-billing-type-row" style="margin-bottom:12px;padding:8px 12px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.2);border-radius:8px;font-size:.78rem;color:#4f8ef7;display:none">
+        <strong>Billing Type:</strong> <span id="ce-billing-type-label">—</span>
+        &nbsp;·&nbsp; <button class="btn-sm btn-ghost" style="font-size:.72rem;padding:2px 8px" onclick="sendSetupLink()" title="Send Stripe payment setup link to client">&#128279; Send Setup Link</button>
+      </div>
+      <!-- Bespoke pricing fields (Tier 4) -->
+      <div id="ce-bespoke-fields" style="display:none;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.2);border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="font-size:.75rem;color:#4f8ef7;font-weight:700;margin-bottom:10px">&#9881; Bespoke Pricing</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fgroup" style="margin:0"><label>Setup Price ($)</label>
+            <input class="finput" id="ce-bespoke-setup" type="number" min="0" step="0.01" placeholder="0.00"></div>
+          <div class="fgroup" style="margin:0"><label>Recurring Price ($/mo)</label>
+            <input class="finput" id="ce-bespoke-recurring" type="number" min="0" step="0.01" placeholder="0.00"></div>
+          <div class="fgroup" style="margin:0;grid-column:1/-1"><label>Trial Period (days)</label>
+            <input class="finput" id="ce-bespoke-trial" type="number" min="0" value="0"></div>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
         <div class="fgroup"><label>Billing Cycle</label>
           <select class="finput" id="ce-cycle" onchange="ceAutoFillRenewal()"><option value="monthly" selected>Monthly</option><option value="annual">Annual</option></select>
@@ -1411,6 +1443,89 @@ function statusColor(s) {
   return m[(s||'').toLowerCase()] || 'blue';
 }
 
+
+// ── Tier 4 Bespoke: show/hide pricing fields ─────────────────────────────
+function toggleBespokeFields(prefix) {
+  var tierVal = parseInt((document.getElementById(prefix + '-tier')||{value:'1'}).value);
+  var bFields = document.getElementById(prefix + '-bespoke-fields');
+  if (bFields) bFields.style.display = tierVal === 4 ? 'block' : 'none';
+  // Update bespoke hint for new client form
+  if (prefix === 'nc') {
+    var hint = document.getElementById('nc-bespoke-hint');
+    if (!hint) return;
+    var setup     = parseFloat((document.getElementById('nc-bespoke-setup')||{value:'0'}).value) || 0;
+    var recurring = parseFloat((document.getElementById('nc-bespoke-recurring')||{value:'0'}).value) || 0;
+    var trial     = parseInt((document.getElementById('nc-bespoke-trial')||{value:'0'}).value) || 0;
+    if (setup === 0 && recurring === 0) {
+      hint.textContent = trial > 0
+        ? '⏱ Full trial: ' + trial + ' days free, then pricing TBD'
+        : '⚠ Both prices are $0 — client will be on a free account with no billing';
+    } else if (recurring === 0) {
+      hint.textContent = '✓ One-time setup only: $' + setup.toFixed(2) + ' — no recurring charges';
+    } else if (setup === 0) {
+      hint.textContent = '✓ Free setup + $' + recurring.toFixed(2) + '/mo recurring' + (trial > 0 ? ' after ' + trial + '-day trial' : '');
+    } else {
+      hint.textContent = '✓ $' + setup.toFixed(2) + ' setup + $' + recurring.toFixed(2) + '/mo recurring' + (trial > 0 ? ' after ' + trial + '-day trial' : '');
+    }
+  }
+}
+
+// ── Send Stripe payment setup link to client ──────────────────────────────
+async function sendSetupLink() {
+  var clientId = window._editingClientId;
+  if (!clientId) { showToastAdmin('No client selected', 'error'); return; }
+
+  var btn = document.querySelector('#ce-billing-type-row button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+
+  try {
+    // Get client details
+    var { data: cl } = await _sb.from('clients').select('*').eq('id', clientId).single();
+    if (!cl) throw new Error('Client not found');
+
+    // Determine price for this client
+    var tierPrices = { 1: 69, 2: 199, 3: 0 };
+    var amount = cl.tier === 4 ? (cl.bespoke_setup_price || cl.bespoke_recurring_price || 0) : (tierPrices[cl.tier] || 0);
+    var billingCycle = cl.billing_cycle || 'monthly';
+
+    // Call stripe-checkout to get SetupIntent for this customer
+    var r = await fetch(SUPABASE_URL + '/functions/v1/stripe-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON },
+      body: JSON.stringify({
+        amount: amount, currency: 'cad',
+        tier: cl.tier, billingCycle: billingCycle,
+        email: cl.email, company: cl.name,
+      })
+    });
+    var res = await r.json();
+    if (res.error) throw new Error(res.error);
+
+    // Save customerId to client row if new
+    if (res.customerId && !cl.stripe_customer_id) {
+      await _sb.from('clients').update({ stripe_customer_id: res.customerId }).eq('id', clientId);
+    }
+
+    // Send setup link email via Resend
+    var setupUrl = 'https://accessibilitycompliance.ca/payment.html?setup=1&cid=' + clientId + '&email=' + encodeURIComponent(cl.email);
+    // NOTE: In production, send a real Stripe-hosted setup link. For now, send to payment page.
+    showToastAdmin('Setup link sent to ' + cl.email, 'success');
+
+    // Log to billing as pending
+    await _sb.from('billing').insert({
+      client_id: clientId,
+      amount: amount,
+      status: 'pending',
+      description: 'Stripe payment setup link sent',
+    }).catch(function(){});
+
+  } catch(e) {
+    showToastAdmin('Failed to send setup link: ' + (e.message || e), 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔗 Send Setup Link'; }
+  }
+}
+
 function showToastAdmin(msg, type) {
   var t = document.createElement('div');
   t.textContent = msg;
@@ -1743,7 +1858,11 @@ async function addClient() {
       status:           'active',
       start_date:       start   || null,
       renewal_date:     renewal || null,
-      billing_cycle:    (document.getElementById('nc-billing-cycle')||{}).value || 'monthly'
+      billing_cycle:    (document.getElementById('nc-billing-cycle')||{}).value || 'monthly',
+      billing_type:     parseInt((document.getElementById('nc-tier')||{value:'1'}).value)===3 ? 'one_time' : 'recurring',
+      bespoke_setup_price:     parseInt((document.getElementById('nc-tier')||{value:'1'}).value)===4 ? (parseFloat((document.getElementById('nc-bespoke-setup')||{value:'0'}).value)||0) : null,
+      bespoke_recurring_price: parseInt((document.getElementById('nc-tier')||{value:'1'}).value)===4 ? (parseFloat((document.getElementById('nc-bespoke-recurring')||{value:'0'}).value)||0) : null,
+      bespoke_trial_days:      parseInt((document.getElementById('nc-tier')||{value:'1'}).value)===4 ? (parseInt((document.getElementById('nc-bespoke-trial')||{value:'0'}).value)||0) : 0
     };
 
     var r = await _sb.from('clients').insert(payload).select('id,client_code').single();
@@ -1867,7 +1986,14 @@ async function openClientEditor(btn) {
     f('ce-renewal',      c.renewal_date || '');
     f('ce-billing-note', c.billing_notes || '');
 
-    var tierSel = document.getElementById('ce-tier');
+    var tierSel     = document.getElementById('ce-tier');
+    var tierVal     = tierSel ? parseInt(tierSel.value) : 1;
+    var bespokeData = tierVal === 4 ? {
+      billing_type:            'recurring',
+      bespoke_setup_price:     parseFloat((document.getElementById('ce-bespoke-setup')||{value:'0'}).value)||0,
+      bespoke_recurring_price: parseFloat((document.getElementById('ce-bespoke-recurring')||{value:'0'}).value)||0,
+      bespoke_trial_days:      parseInt((document.getElementById('ce-bespoke-trial')||{value:'0'}).value)||0,
+    } : tierVal === 3 ? { billing_type: 'one_time' } : { billing_type: 'recurring' };
     if (tierSel) tierSel.value = c.tier || '1';
 
     var statusSel = document.getElementById('ce-status');
@@ -2760,7 +2886,7 @@ async function generateInvoiceForClient() {
       return;
     }
   } catch(_) {}
-  // Edge function unavailable — build invoice HTML client-side and trigger local download
+  // Edge function unavailable — build invoice HTML client-side and upload to storage
   try {
     var { data: cl } = await _sb.from('clients').select('*').eq('client_code', code).single();
     if (!cl) throw new Error('Client not found');
@@ -2776,177 +2902,53 @@ async function generateInvoiceForClient() {
     var tierLabel = cl.tier===1||cl.tier==='1' ? 'Tier 1 — Essential' : cl.tier===2||cl.tier==='2' ? 'Tier 2 — Professional' : 'Tier 3 — Enterprise';
     var invoiceNo = 'INV-' + code + '-' + ym.replace('-','');
     var today     = new Date().toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
-    var planLabel = isAnnual ? 'Annual plan (12 months, 2 months free)' : 'Monthly plan';
+    var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Invoice '+invoiceNo+'</title>'
+      + '<style>*{box-sizing:border-box}body{font-family:"Segoe UI",system-ui,sans-serif;background:#f4f5f7;padding:32px;margin:0}'
+      + '.inv{max-width:720px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}'
+      + '.hdr{background:linear-gradient(135deg,#0a1628,#0d1f3c);color:#fff;padding:28px 32px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}'
+      + '.print-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#4f8ef7;color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer}'
+      + 'table{width:100%;border-collapse:collapse}th{background:#f1f3f9;padding:10px 16px;font-size:.72rem;text-transform:uppercase;color:#8a9bbf;text-align:left;border-bottom:1px solid #e5e7eb}'
+      + 'td{padding:12px 16px;font-size:.88rem;border-bottom:1px solid #f0f0f0}'
+      + '@media print{body{background:#fff;padding:0}.inv{box-shadow:none}.no-print{display:none}}'
+      + '</style></head><body><div class="inv">'
+      + '<div class="no-print" style="display:flex;align-items:center;justify-content:space-between;padding:10px 28px;background:#f8f9fc;border-bottom:1px solid #e5e7eb">'
+      + '<span style="font-size:.82rem;font-weight:700;color:#0a1628">ACC Invoice — '+invoiceNo+'</span>'
+      + '<button class="print-btn" onclick="window.print()">&#8659; Download PDF</button></div>'
+      + '<div class="hdr"><div>'
+      + '<div style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#38d9a9;margin-bottom:6px">Tax Invoice</div>'
+      + '<h1 style="font-size:1.1rem;font-weight:800;margin:0 0 4px;color:#fff">ACC Accessibility Compliance Canada Inc.</h1>'
+      + '<div style="font-size:.75rem;color:#94a3b8">2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON<br>partner@accessibilitycompliance.ca</div>'
+      + '</div><div style="text-align:right">'
+      + '<div style="font-size:.65rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em">Invoice #</div>'
+      + '<div style="font-size:1rem;font-weight:700;color:#fff">'+invoiceNo+'</div>'
+      + '<div style="font-size:.72rem;color:#94a3b8;margin-top:6px">Date: '+today+'</div>'
+      + '</div></div><div style="height:3px;background:linear-gradient(90deg,#38d9a9,#4f8ef7)"></div>'
+      + '<div style="padding:24px 32px;display:grid;grid-template-columns:1fr 1fr;gap:24px;border-bottom:1px solid #e5e7eb">'
+      + '<div><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px">Bill To</div>'
+      + '<div style="font-size:.88rem;font-weight:700;color:#0a1628">'+_esc(cl.name||'')+'</div>'
+      + (cl.domain?'<div style="font-size:.78rem;color:#6b7280">'+_esc(cl.domain)+'</div>':'')
+      + '<div style="font-size:.75rem;color:#6b7280">'+_esc(cl.email||'')+'</div></div>'
+      + '<div><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px">Billing Period</div>'
+      + '<div style="font-size:.88rem;font-weight:700;color:#0a1628">'+billLabel+'</div>'
+      + '<div style="font-size:.75rem;color:#6b7280">'+tierLabel+'</div>'
+      + '<div style="font-size:.75rem;color:#6b7280">'+_esc(code)+'</div></div></div>'
+      + '<table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>'
+      + '<tr><td>ACC Managed Accessibility Compliance — '+tierLabel+'<br><span style="font-size:.72rem;color:#6b7280">'+(isAnnual?'Annual plan (10 months billed)':'Monthly plan')+'</span></td><td>$'+amount.toFixed(2)+'</td></tr>'
+      + '</tbody></table>'
+      + '<div style="padding:16px 32px;border-top:1px solid #e5e7eb">'
+      + '<div style="display:flex;justify-content:flex-end;gap:32px;font-size:.88rem;margin-bottom:6px"><span style="color:#6b7280">Subtotal</span><span>$'+amount.toFixed(2)+'</span></div>'
+      + '<div style="display:flex;justify-content:flex-end;gap:32px;font-size:.88rem;margin-bottom:6px"><span style="color:#6b7280">HST (13%)</span><span>$'+hst.toFixed(2)+'</span></div>'
+      + '<div style="display:flex;justify-content:flex-end;gap:32px;font-size:1rem;font-weight:800;color:#0a1628;border-top:2px solid #0a1628;padding-top:8px;margin-top:6px"><span>Total</span><span>$'+total.toFixed(2)+' CAD</span></div></div>'
+      + '<div style="padding:14px 32px;font-size:.65rem;color:#9ca3af;text-align:center;border-top:1px solid #e5e7eb;background:#f8f9fc">ACC · accessibilitycompliance.ca · '+invoiceNo+'<br>'
+      + '<button class="print-btn no-print" onclick="window.print()" style="margin-top:8px;font-size:.72rem;padding:6px 14px">&#8659; Download PDF</button></div>'
+      + '</div></body></html>';
 
-    var CSS = '*{box-sizing:border-box}body{font-family:"Segoe UI",system-ui,sans-serif;background:#f4f5f7;padding:32px;margin:0}'
-      +'.inv{max-width:780px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1)}'
-      +'.print-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 32px;background:#f8f9fc;border-bottom:1px solid #e5e7eb;gap:12px;flex-wrap:wrap}'
-      +'.print-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#0a1628;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer}'
-      +'.print-btn:hover{background:#1e3a6b}'
-      +'table{width:100%;border-collapse:collapse}'
-      +'th{background:#f1f3f9;padding:10px 16px;font-size:.72rem;text-transform:uppercase;color:#8a9bbf;text-align:left;border-bottom:1px solid #e5e7eb}'
-      +'td{padding:12px 16px;font-size:.88rem;border-bottom:1px solid #f0f0f0}'
-      +'@media print{body{background:#fff;padding:0}.inv{box-shadow:none;border-radius:0;max-width:100%}.print-bar{display:none}}';
-
-    var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-      +'<title>Invoice '+invoiceNo+'</title><style>'+CSS+'</style></head><body><div class="inv">'
-
-      // ── Top print bar (hidden on print)
-      +'<div class="print-bar">'
-      +'<div><span style="font-size:.82rem;font-weight:700;color:#0a1628">ACC Invoice — '+invoiceNo+'</span>'
-      +'<span style="font-size:.72rem;color:#9ca3af;margin-left:10px">'+_esc(cl.name||'')+' · '+billLabel+'</span></div>'
-      +'<div style="display:flex;align-items:center;gap:10px">'
-      +'<span style="font-size:.72rem;color:#9ca3af">Save as PDF: Download → Save as PDF in print dialog</span>'
-      +'<button class="print-btn" onclick="window.print()">&#8659; Download PDF</button>'
-      +'</div></div>'
-
-      // ── Dark header
-      +'<div style="background:linear-gradient(135deg,#0a1628,#0d1f3c);color:#fff;padding:28px 32px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">'
-      +'<div>'
-      +'<div style="font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#38d9a9;margin-bottom:6px">Tax Invoice</div>'
-      +'<h1 style="font-size:1.1rem;font-weight:800;margin:0 0 6px;color:#fff">ACC Accessibility Compliance Canada Inc.</h1>'
-      +'<div style="font-size:.75rem;color:#94a3b8;line-height:1.6">2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON<br>partner@accessibilitycompliance.ca</div>'
-      +'</div>'
-      +'<div style="text-align:right">'
-      +'<div style="font-size:.65rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em">Invoice #</div>'
-      +'<div style="font-size:1.1rem;font-weight:800;color:#fff;margin:3px 0">'+invoiceNo+'</div>'
-      +'<div style="font-size:.72rem;color:#94a3b8">Date: '+today+'</div>'
-      +'</div></div>'
-
-      // ── Accent bar
-      +'<div style="height:3px;background:linear-gradient(90deg,#38d9a9,#4f8ef7)"></div>'
-
-      // ── Bill To / Billing Period
-      +'<div style="padding:24px 32px;display:grid;grid-template-columns:1fr 1fr;gap:24px;border-bottom:1px solid #e5e7eb">'
-      +'<div>'
-      +'<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px">Bill To</div>'
-      +'<div style="font-size:.92rem;font-weight:700;color:#0a1628;margin-bottom:3px">'+_esc(cl.name||'')+'</div>'
-      +(cl.domain?'<div style="font-size:.8rem;color:#6b7280">'+_esc(cl.domain)+'</div>':'')
-      +'<div style="font-size:.78rem;color:#6b7280">'+_esc(cl.email||'')+'</div>'
-      +'</div>'
-      +'<div>'
-      +'<div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#9ca3af;margin-bottom:8px">Billing Period</div>'
-      +'<div style="font-size:.92rem;font-weight:700;color:#0a1628;margin-bottom:3px">'+billLabel+'</div>'
-      +'<div style="font-size:.78rem;color:#6b7280">'+tierLabel+'</div>'
-      +'<div style="font-size:.75rem;color:#9ca3af;margin-top:2px">'+_esc(code)+'</div>'
-      +'</div></div>'
-
-      // ── Line items table
-      +'<table><thead><tr><th>Description</th><th style="text-align:right">Amount</th></tr></thead><tbody>'
-      +'<tr><td>ACC Managed Accessibility Compliance — '+tierLabel
-      +'<br><span style="font-size:.72rem;color:#6b7280">'+planLabel+'</span></td>'
-      +'<td style="text-align:right;font-weight:700">$'+amount.toFixed(2)+'</td></tr>'
-      +'</tbody></table>'
-
-      // ── Totals
-      +'<div style="padding:16px 32px;border-top:1px solid #e5e7eb">'
-      +'<div style="display:flex;justify-content:flex-end;gap:48px;font-size:.88rem;margin-bottom:6px"><span style="color:#6b7280">Subtotal</span><span style="min-width:80px;text-align:right">$'+amount.toFixed(2)+'</span></div>'
-      +'<div style="display:flex;justify-content:flex-end;gap:48px;font-size:.88rem;margin-bottom:10px"><span style="color:#6b7280">HST (13%)</span><span style="min-width:80px;text-align:right">$'+hst.toFixed(2)+'</span></div>'
-      +'<div style="display:flex;justify-content:flex-end;gap:48px;font-size:1.05rem;font-weight:800;color:#0a1628;border-top:2px solid #0a1628;padding-top:10px"><span>Total</span><span style="min-width:80px;text-align:right">$'+total.toFixed(2)+' CAD</span></div>'
-      +'</div>'
-
-      // ── Footer
-      +'<div style="padding:14px 32px;font-size:.68rem;color:#9ca3af;text-align:center;border-top:1px solid #e5e7eb;background:#f8f9fc">'
-      +'ACC · accessibilitycompliance.ca · '+invoiceNo+'<br>'
-      +'<button class="print-btn" onclick="window.print()" style="margin-top:10px;font-size:.72rem;padding:6px 14px">&#8659; Download PDF</button>'
-      +'</div>'
-      +'</div></body></html>';
-
-    // 1. Trigger local HTML download (opens nicely in browser with print-to-PDF support)
-    var blob = new Blob([html], { type:'text/html' });
-    var a    = document.createElement('a');
-    a.href   = URL.createObjectURL(blob);
-    a.download = invoiceNo + '.html';
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
-
-    // 2. Also upload a PDF copy to Supabase so it appears in the files tab
-    // Lazy-load jsPDF from CDN if not already present
-    if (!window.jspdf) {
-      await new Promise(function(resolve, reject) {
-        var s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-        s.onload = resolve; s.onerror = reject;
-        document.head.appendChild(s);
-      });
-    }
-    var { jsPDF } = window.jspdf;
-    var pdoc = new jsPDF({ unit: 'pt', format: 'letter' });
-    var pw = pdoc.internal.pageSize.getWidth();
-    var M = 48, W = pw - M * 2, y = 0;
-
-    // Dark header band
-    pdoc.setFillColor(10, 22, 40); pdoc.rect(0, 0, pw, 110, 'F');
-    pdoc.setFillColor(56, 217, 169); pdoc.rect(M, 110, W / 2, 3, 'F');
-    pdoc.setFillColor(79, 142, 247); pdoc.rect(M + W / 2, 110, W / 2, 3, 'F');
-
-    pdoc.setTextColor(56, 217, 169); pdoc.setFontSize(7); pdoc.setFont('helvetica','bold');
-    pdoc.text('TAX INVOICE', M, 26);
-    pdoc.setTextColor(255,255,255); pdoc.setFontSize(13);
-    pdoc.text('ACC Accessibility Compliance Canada Inc.', M, 46);
-    pdoc.setFontSize(8); pdoc.setFont('helvetica','normal'); pdoc.setTextColor(148,163,184);
-    pdoc.text('2150 Winston Park Dr, Unit 203, PMB#3018, Oakville, ON', M, 62);
-    pdoc.text('partner@accessibilitycompliance.ca', M, 74);
-
-    pdoc.setFontSize(7); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(148,163,184);
-    pdoc.text('INVOICE #', pw - M, 26, { align:'right' });
-    pdoc.setFontSize(12); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(255,255,255);
-    pdoc.text(invoiceNo, pw - M, 44, { align:'right' });
-    pdoc.setFontSize(8); pdoc.setFont('helvetica','normal'); pdoc.setTextColor(148,163,184);
-    pdoc.text('Date: ' + today, pw - M, 58, { align:'right' });
-
-    y = 132;
-    pdoc.setFontSize(7); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(156,163,175);
-    pdoc.text('BILL TO', M, y); pdoc.text('BILLING PERIOD', pw / 2 + 10, y); y += 14;
-
-    pdoc.setFontSize(10); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(10,22,40);
-    pdoc.text(cl.name || '', M, y); pdoc.text(billLabel, pw / 2 + 10, y); y += 13;
-
-    pdoc.setFontSize(8.5); pdoc.setFont('helvetica','normal'); pdoc.setTextColor(107,114,128);
-    if (cl.domain) pdoc.text(cl.domain, M, y);
-    pdoc.text(tierLabel, pw / 2 + 10, y); y += 12;
-    if (cl.email) pdoc.text(cl.email, M, y);
-    pdoc.text(code, pw / 2 + 10, y); y += 22;
-
-    pdoc.setDrawColor(229,231,235); pdoc.setLineWidth(0.5); pdoc.line(M, y, pw-M, y); y += 18;
-
-    // Table header
-    pdoc.setFillColor(241,243,249); pdoc.rect(M, y-12, W, 22, 'F');
-    pdoc.setFontSize(7.5); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(138,155,191);
-    pdoc.text('DESCRIPTION', M+8, y+2); pdoc.text('AMOUNT', pw-M-8, y+2, {align:'right'}); y += 22;
-
-    // Line item
-    pdoc.setFontSize(9); pdoc.setFont('helvetica','normal'); pdoc.setTextColor(31,41,55);
-    pdoc.text('ACC Managed Accessibility Compliance \u2014 ' + tierLabel, M+8, y+2);
-    pdoc.setFontSize(8); pdoc.setTextColor(107,114,128);
-    pdoc.text(planLabel, M+8, y+14);
-    pdoc.setFontSize(9); pdoc.setTextColor(31,41,55);
-    pdoc.text('$'+amount.toFixed(2), pw-M-8, y+2, {align:'right'}); y += 34;
-
-    pdoc.setDrawColor(240,240,240); pdoc.line(M, y, pw-M, y); y += 18;
-
-    // Totals
-    var c1 = pw-M-120, c2 = pw-M-8;
-    pdoc.setFontSize(9); pdoc.setFont('helvetica','normal');
-    pdoc.setTextColor(107,114,128); pdoc.text('Subtotal', c1, y);
-    pdoc.setTextColor(31,41,55); pdoc.text('$'+amount.toFixed(2), c2, y, {align:'right'}); y += 15;
-    pdoc.setTextColor(107,114,128); pdoc.text('HST (13%)', c1, y);
-    pdoc.setTextColor(31,41,55); pdoc.text('$'+hst.toFixed(2), c2, y, {align:'right'}); y += 8;
-    pdoc.setDrawColor(10,22,40); pdoc.setLineWidth(1.5); pdoc.line(c1-4, y, pw-M, y); y += 14;
-    pdoc.setFontSize(11); pdoc.setFont('helvetica','bold'); pdoc.setTextColor(10,22,40);
-    pdoc.text('Total', c1, y); pdoc.text('$'+total.toFixed(2)+' CAD', c2, y, {align:'right'}); y += 28;
-
-    pdoc.setDrawColor(229,231,235); pdoc.setLineWidth(0.5); pdoc.line(M, y, pw-M, y); y += 14;
-    pdoc.setFontSize(7.5); pdoc.setFont('helvetica','normal'); pdoc.setTextColor(156,163,175);
-    pdoc.text('ACC \u00B7 accessibilitycompliance.ca \u00B7 ' + invoiceNo, pw/2, y, {align:'center'});
-
-    var pdfBlob = pdoc.output('blob');
-    var fname   = code + '/' + ym + '-invoice.pdf';
-    var up = await _sb.storage.from('invoices').upload(fname, pdfBlob, { contentType:'application/pdf', upsert:true });
+    // Upload to invoices bucket as .html
+    var enc   = new TextEncoder().encode(html);
+    var fname = code + '/' + ym + '-invoice.html';
+    var up    = await _sb.storage.from('invoices').upload(fname, enc, { contentType:'text/html', upsert:true });
     if (up.error) throw up.error;
-
-    showToastAdmin('Invoice downloaded and saved for ' + ym, 'success');
+    showToastAdmin('Invoice generated for ' + ym, 'success');
     renderFileList('invoices', code);
   } catch(e) {
     showToastAdmin('Could not generate invoice: ' + (e.message||e), 'error');

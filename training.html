@@ -100,6 +100,7 @@ html,body{background:#0a1628;color:#e8edf8;font-family:'Sora',sans-serif;min-hei
   .mod-title{font-size:1.1rem}
   .mod-nav{grid-template-columns:1fr}
 }
+.wistia-wrap{position:relative}
 </style>
 </head>
 <body>
@@ -387,6 +388,27 @@ function startVideo() {
   wc.innerHTML = '<div class="wistia-wrap"><wistia-player id="wp-el" media-id="' + m.wistiaId + '" aspect="1.7777777777777777"></wistia-player></div>';
 
   attachWistiaEvents(m.wistiaId);
+
+  // Block Left/Right arrow keys that Wistia uses for seeking
+  window._scrubKeyHandler = function(e) {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+  document.addEventListener('keydown', window._scrubKeyHandler, true);
+
+  // Block fullscreen — dblclick on video enters fullscreen, escaping our overlay.
+  // We intercept: (a) dblclick on the player, (b) any fullscreenchange event.
+  window._dblclickHandler = function(e) {
+    var wc = document.getElementById('wistia-container');
+    if (wc && wc.contains(e.target)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+  document.addEventListener('dblclick', window._dblclickHandler, true);
+
 }
 
 // ── WISTIA PROGRESS TRACKING ──
@@ -425,46 +447,60 @@ function attachWistiaEvents(mediaId) {
       return m._durSecs || 0;
     }
 
-    // timechange — fires continuously with {timePosition: <seconds>}
-    // Anti-cheat: track a "naturalPct" watermark that only advances during
-    // genuine playback (small forward steps). Scrubbing jumps > 3s are ignored
-    // for watermark purposes — the display bar may jump but S.maxPct won't.
-    var _lastPos  = null; // null = not yet seeded
-    var _naturalPct = 0;  // 0-1, only moves during real playback
-    var MAX_STEP  = 3;    // seconds; larger delta = seek/scrub
+    // timechange — fires with {timePosition: <seconds>}
+    // Anti-seek: track the furthest position reached by natural playback (_lastGoodPos).
+    // If a new position exceeds _lastGoodPos by more than MAX_JUMP seconds,
+    // we treat it as a seek and snap the player back to _lastGoodPos immediately.
+    var _lastGoodPos = 0;  // furthest position legitimately reached
+    var _snapPending = false;
+    var MAX_JUMP = 3;      // seconds — anything larger is a seek
 
     el.addEventListener('timechange', function(e) {
       var pos = e.detail && e.detail.timePosition !== undefined ? e.detail.timePosition : null;
       if (pos === null) return;
 
       if (!_duration) _duration = getDur();
-      if (!_duration) { _lastPos = pos; return; } // seed position, wait for duration
+      if (!_duration) return;
 
-      if (_lastPos === null) {
-        // First reading — seed without counting as progress
-        _lastPos = pos;
-        return;
+      // Detect forward seek: jumped ahead beyond natural playback
+      var jumped = pos - _lastGoodPos;
+      if (jumped > MAX_JUMP && !done && !_snapPending) {
+        // Snap back to last good position
+        _snapPending = true;
+        var snapTo = _lastGoodPos;
+        try {
+          // wistia-player web component: currentTime is a settable property
+          if (typeof el.currentTime !== 'undefined') {
+            el.currentTime = snapTo;
+          }
+          // Also try the seek() method if available
+          if (typeof el.seek === 'function') {
+            el.seek(snapTo);
+          }
+        } catch(ex) {}
+        setTimeout(function(){ _snapPending = false; }, 500);
+        return; // don't count this position
       }
 
-      var step = pos - _lastPos;
-      _lastPos = pos;
-
-      // Natural playback: small positive step
-      if (step > 0 && step <= MAX_STEP) {
-        var pct = pos / _duration;
-        if (pct > _naturalPct) _naturalPct = pct;
+      // Backward seek (rewind) — allowed but don't advance progress
+      if (jumped <= 0) {
+        // just update lastGoodPos if we're at a position we've already reached
+        // (don't regress it)
+      } else {
+        // Natural forward playback — advance lastGoodPos
+        _lastGoodPos = pos;
       }
-      // Rewinding (step < 0) or big jump: do NOT advance _naturalPct
 
-      S.maxPct = _naturalPct; // keep S.maxPct in sync with natural-only watermark
+      var pct = _lastGoodPos / _duration; // 0-1 based on furthest legit position
+      if (pct > S.maxPct) S.maxPct = pct;
 
       if (!done) {
-        var display = Math.round(_naturalPct * 100);
+        var display = Math.round(S.maxPct * 100);
         setP(Math.min(display, 99));
         var pctEl = document.getElementById('cert-unlock-pct');
         if (pctEl) pctEl.textContent = display + '%';
 
-        if (_naturalPct * 100 >= COMPLETION_PCT) {
+        if (S.maxPct * 100 >= COMPLETION_PCT) {
           done = true;
           unlockCert();
           document.getElementById('watch-hint').style.display = 'none';
@@ -518,7 +554,15 @@ function unlockCert() {
 
 
 function destroyWistia() {
-  // Clearing innerHTML removes the wistia-player element and all its DOM listeners
+  // Remove all seek/fullscreen blockers
+  if (window._scrubKeyHandler) {
+    document.removeEventListener('keydown', window._scrubKeyHandler, true);
+    window._scrubKeyHandler = null;
+  }
+  if (window._dblclickHandler) {
+    document.removeEventListener('dblclick', window._dblclickHandler, true);
+    window._dblclickHandler = null;
+  }
   _wqDone = false;
   S.wPlayer = null;
   var wc = document.getElementById('wistia-container');
@@ -573,22 +617,29 @@ function showDoneCard() {
 }
 
 // ── CERTIFICATE ──
-// dlCert — called by both cert-btn (done card) and cert-preview-btn (unlock bar)
-// Calls the edge function to get the same PDF the dashboard generates.
-// Falls back to local jsPDF only if edge fn fails.
+// dlCert — called by cert-btn (done card) and cert-preview-btn (unlock bar)
+// Matches the dashboard's generateCertificate call exactly.
 async function dlCert() {
   var m  = MODS[S.mod-1];
   var ds = new Date().toLocaleDateString('en-CA', { year:'numeric', month:'long', day:'numeric' });
+  var cleanTitle = m.title.replace(/^Module\s+\d+[:\s\-\u2014]*\s*/i,'').trim() || m.title;
+  var courseName = 'Module ' + S.mod + ': ' + cleanTitle;
+  var now = new Date();
+  var dateStr = now.toISOString().substring(0,10);
 
-  // Disable both cert buttons while generating
+  // Disable both buttons
   var btns = ['cert-btn','cert-preview-btn'].map(function(id){ return document.getElementById(id); });
   btns.forEach(function(b){ if(b){ b.disabled=true; b.innerHTML='&#9203; Generating…'; } });
 
-  try {
-    var cleanTitle = m.title.replace(/^Module\s+\d+[:\s\-\u2014]*\s*/i,'').trim() || m.title;
-    var cn = 'Module ' + S.mod + ': ' + cleanTitle;
-    var now = new Date();
+  var resetBtns = function(){ btns.forEach(function(b){ if(b){ b.disabled=false; b.innerHTML='&#127941; Download Certificate'; } }); };
 
+  // Edge fn requires client_id — must be resolved from URL token at boot
+  if (!S.clientId) {
+    console.warn('No clientId resolved — falling back to local PDF');
+    localCert(m, ds); resetBtns(); return;
+  }
+
+  try {
     var r = await fetch(SUPABASE_URL + '/functions/v1/generate-training-certificate', {
       method: 'POST',
       headers: {
@@ -599,168 +650,170 @@ async function dlCert() {
       body: JSON.stringify({
         client_id:       S.clientId,
         employee_name:   S.name,
-        course_name:     cn,
-        completion_date: now.toISOString().substring(0,10),
-        org_name:        S.org || null
+        course_name:     courseName,
+        completion_date: dateStr
       })
     });
 
-    if (!r.ok) throw new Error('HTTP ' + r.status);
     var res = await r.json();
+    if (!r.ok) throw new Error(res.error || 'HTTP ' + r.status);
 
-    // Edge fn returns { file: "path/in/storage" } — download as signed URL
-    if (res && res.file) {
-      var dl = await _sb.storage.from('reports').download(res.file);
-      if (dl.data) {
-        var url = URL.createObjectURL(dl.data);
-        var a = document.createElement('a');
-        a.href = url; a.download = 'ACC_Certificate_' + S.name.replace(/\s+/g,'_') + '.pdf';
-        a.click();
-        setTimeout(function(){ URL.revokeObjectURL(url); }, 10000);
-        btns.forEach(function(b){ if(b){ b.disabled=false; b.innerHTML='&#127941; Download Certificate'; } });
-        return;
-      }
-    }
-    throw new Error('No file in response');
+    // Edge fn returns { success, cert_no, file: "CLIENT_CODE/cert-name-YYYYMM.pdf" }
+    if (!res.file) throw new Error('No file path in response');
+
+    var dl = await _sb.storage.from('reports').download(res.file);
+    if (!dl.data) throw new Error('Storage download failed');
+
+    var url = URL.createObjectURL(dl.data);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'ACC_Certificate_' + S.name.replace(/\s+/g,'_') + '.pdf';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 15000);
+    resetBtns();
 
   } catch(e) {
-    console.warn('Edge fn cert failed, falling back to local PDF:', e.message);
-    // Fallback: generate locally with jsPDF — same design as edge fn output
+    console.warn('Edge fn cert failed (' + e.message + ') — falling back to local PDF');
     localCert(m, ds);
-    btns.forEach(function(b){ if(b){ b.disabled=false; b.innerHTML='&#127941; Download Certificate'; } });
+    resetBtns();
   }
 }
 
 function localCert(m, ds) {
-  // Clean module title — strip any "Module N:" prefix Wistia may have added
-  var cleanTitle = m.title.replace(/^Module\s+\d+[:\s\-\u2014]*\s*/i, '').trim() || m.title;
-  var certName   = 'Module ' + S.mod + ': ' + cleanTitle;
+  var cleanTitle = m.title.replace(/^Module\s+\d+[:\s\-\u2014]*\s*/i,'').trim() || m.title;
+  var courseName = 'Module ' + S.mod + ': ' + cleanTitle;
   var orgName    = S.org || S.clientCode || 'ACC Client';
-  var cid        = 'ACC-2026-' + (S.clientCode||'PORTAL') + '-M' + S.mod + '-' + (Math.floor(Math.random()*9000)+1000);
+  var now        = new Date();
+  var expiryDate = new Date(now); expiryDate.setFullYear(expiryDate.getFullYear()+1);
+  var expiresOn  = expiryDate.toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
+  var certNo     = 'CERT-' + (S.clientCode||'ACC') + '-' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '-' + (Math.floor(Math.random()*9000)+1000);
 
   function render() {
-    var doc = new window.jspdf.jsPDF({orientation:'portrait', unit:'pt', format:'letter'});
-    var W = 612, H = 792;
+    // LANDSCAPE — matches edge fn exactly: 792 x 612
+    var doc = new window.jspdf.jsPDF({orientation:'landscape', unit:'pt', format:'letter'});
+    var PW = 792, PH = 612, M = 56;
 
-    // ── Background ──
-    doc.setFillColor(10,22,40);
-    doc.rect(0,0,W,H,'F');
+    // Helper: jsPDF y-axis is from bottom; edge fn uses top-down. Invert here.
+    // jsPDF fillRect(x,y,w,h) — y is top-left corner from bottom of page
+    // We'll work top-down and convert: jY = PH - topY - h
 
-    // ── Gold border (double rule) ──
-    doc.setDrawColor(203,171,71); doc.setLineWidth(2.5);
-    doc.rect(28,28,W-56,H-56,'S');
-    doc.setLineWidth(0.8);
-    doc.rect(34,34,W-68,H-68,'S');
+    // ── Full background (darknavy) ──
+    doc.setFillColor(6,13,26); doc.rect(0,0,PW,PH,'F');
 
-    // ── Header band ──
-    doc.setFillColor(6,13,26);
-    doc.rect(0,0,W,130,'F');
-    doc.setDrawColor(30,58,107); doc.setLineWidth(0.6);
-    doc.line(40,130,W-40,130);
+    // ── Decorative border ──
+    doc.setDrawColor(30,58,107); doc.setLineWidth(1);
+    doc.rect(16,16,PW-32,PH-32,'S');
+    doc.setDrawColor(79,142,247); doc.setLineWidth(0.5);
+    doc.rect(22,22,PW-44,PH-44,'S');
 
-    // ── Footer legal text (rendered inside header band, top-to-bottom) ──
-    doc.setTextColor(138,155,191); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
-    var footerLines = [
-      'This certificate is issued by Accessibility Compliance Canada Inc. and documents completion of mandatory AODA staff training',
-      'under the Accessibility for Ontarians with Disabilities Act, 2005 and Ontario Regulation 191/11.',
-      'This document is an official training record for compliance evidence purposes and does not constitute legal advice.',
-      'Accessibility Compliance Canada Inc.  |  2150 Winston Park Dr, Unit 203, Oakville ON L6H 5V1  |  accessibilitycompliance.ca'
-    ];
-    var fy = 56;
-    footerLines.forEach(function(l){ doc.text(l, W/2, fy, {align:'center'}); fy += 10; });
+    // ── Left teal accent bar ──
+    doc.setFillColor(56,217,169); doc.rect(28,28,6,PH-56,'F');
 
-    // ── ACC logo circle ──
-    doc.setFillColor(13,31,60);
-    doc.circle(W/2, 170, 30, 'F');
-    doc.setDrawColor(79,142,247); doc.setLineWidth(1.5);
-    doc.circle(W/2, 170, 30, 'S');
-    doc.setTextColor(79,142,247); doc.setFontSize(9); doc.setFont('helvetica','bold');
-    doc.text('ACC', W/2, 174, {align:'center'});
+    // ── Top header band (navy) ──
+    doc.setFillColor(10,22,40); doc.rect(34,28,PW-62,80,'F');
+    doc.setDrawColor(56,217,169); doc.setLineWidth(2);
+    doc.line(34,108,PW-28,108);
 
-    // ── Issuer name ──
-    doc.setTextColor(79,142,247); doc.setFontSize(10); doc.setFont('helvetica','bold');
-    doc.text('ACCESSIBILITY COMPLIANCE CANADA INC.', W/2, 218, {align:'center'});
+    // ACC wordmark
+    doc.setTextColor(79,142,247); doc.setFontSize(30); doc.setFont('helvetica','bold');
+    doc.text('ACC', M+10, 68);
+    doc.setTextColor(138,155,191); doc.setFontSize(10); doc.setFont('helvetica','normal');
+    doc.text('Accessibility Compliance Canada Inc.', M+10, 88);
 
-    // ── Certificate title ──
-    doc.setTextColor(232,237,248); doc.setFontSize(26); doc.setFont('helvetica','bold');
-    doc.text('Certificate of Completion', W/2, 256, {align:'center'});
-
-    // ── Gold rule ──
-    doc.setDrawColor(203,171,71); doc.setLineWidth(1);
-    doc.line(80,268,W-80,268);
-
-    // ── "This certifies that" ──
-    doc.setTextColor(138,155,191); doc.setFontSize(11); doc.setFont('helvetica','normal');
-    doc.text('This certifies that', W/2, 298, {align:'center'});
-
-    // ── Employee name ──
-    doc.setTextColor(232,237,248); doc.setFontSize(28); doc.setFont('helvetica','bold');
-    doc.text(S.name, W/2, 336, {align:'center'});
-
-    // ── "has successfully completed" ──
-    doc.setTextColor(138,155,191); doc.setFontSize(11); doc.setFont('helvetica','normal');
-    doc.text('has successfully completed', W/2, 362, {align:'center'});
-
-    // ── Module box ──
-    doc.setFillColor(13,31,60);
-    doc.roundedRect(72,376,W-144,72,6,6,'F');
-    doc.setDrawColor(30,58,107); doc.setLineWidth(0.8);
-    doc.roundedRect(72,376,W-144,72,6,6,'S');
-    doc.setTextColor(79,142,247); doc.setFontSize(8); doc.setFont('helvetica','bold');
-    doc.text('MODULE ' + S.mod, W/2, 394, {align:'center'});
-    doc.setTextColor(232,237,248); doc.setFontSize(13);
-    doc.text(cleanTitle, W/2, 414, {align:'center'});
+    // Certificate label top-right
+    doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
+    doc.text('CERTIFICATE OF COMPLETION', PW-M-240, 62);
     doc.setTextColor(138,155,191); doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.text('Accessibility for Ontarians with Disabilities Act (AODA) Training', W/2, 432, {align:'center'});
+    doc.text('AODA Accessibility Training Program', PW-M-240, 78);
+    doc.setFontSize(8);
+    doc.text('Cert #: ' + certNo, PW-M-240, 93);
 
-    // ── Org + Date columns ──
-    var colW = (W-144)/2;
+    // ── Body — working top-down from y=138 ──
+    var y = 138;
+
+    // "THIS IS TO CERTIFY THAT"
+    doc.setTextColor(138,155,191); doc.setFontSize(11); doc.setFont('helvetica','bold');
+    doc.text('THIS IS TO CERTIFY THAT', PW/2, y, {align:'center'});
+    y += 34;
+
+    // Employee name
+    doc.setTextColor(232,237,248); doc.setFontSize(32); doc.setFont('helvetica','bold');
+    doc.text(S.name, PW/2, y, {align:'center'});
+    y += 10;
+
+    // Gold line under name
+    doc.setDrawColor(245,200,51); doc.setLineWidth(1.5);
+    doc.line(PW/2-180, y, PW/2+180, y);
+    y += 22;
+
+    // "has successfully completed"
+    doc.setTextColor(138,155,191); doc.setFontSize(11); doc.setFont('helvetica','italic');
+    doc.text('has successfully completed', PW/2, y, {align:'center'});
+    y += 28;
+
+    // Course name (teal)
+    doc.setTextColor(56,217,169); doc.setFontSize(16); doc.setFont('helvetica','bold');
+    doc.text(courseName, PW/2, y, {align:'center'});
+    y += 22;
+
+    // "on behalf of org"
+    doc.setTextColor(138,155,191); doc.setFontSize(10); doc.setFont('helvetica','normal');
+    doc.text('on behalf of ' + orgName, PW/2, y, {align:'center'});
+    y += 36;
+
+    // ── Detail columns ──
+    var colW = (PW - M*2 - 20) / 4;
     var cols = [
-      {label:'ORGANIZATION', value: orgName},
-      {label:'DATE COMPLETED', value: ds}
+      {label:'COMPLETED',   value: ds},
+      {label:'VALID UNTIL', value: expiresOn},
+      {label:'STANDARD',    value: 'WCAG 2.1 AA / AODA IASR'},
+      {label:'ISSUED BY',   value: 'Accessibility Compliance Canada Inc.'}
     ];
     cols.forEach(function(col, i) {
-      var cx = 72 + i*colW + colW/2;
-      doc.setTextColor(138,155,191); doc.setFontSize(8); doc.setFont('helvetica','bold');
-      doc.text(col.label, cx, 468, {align:'center'});
-      doc.setTextColor(232,237,248); doc.setFontSize(11); doc.setFont('helvetica','normal');
-      doc.text(col.value, cx, 484, {align:'center'});
+      var cx = M + 10 + i * colW;
+      if (i > 0) { doc.setDrawColor(30,58,107); doc.setLineWidth(0.5); doc.line(cx-6, y-10, cx-6, y+24); }
+      doc.setTextColor(79,142,247); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+      doc.text(col.label, cx, y);
+      doc.setTextColor(232,237,248); doc.setFontSize(8.5); doc.setFont('helvetica','normal');
+      doc.text(col.value, cx, y+14);
     });
+    y += 44;
 
-    // ── Divider ──
-    doc.setDrawColor(30,58,107); doc.setLineWidth(0.6);
-    doc.line(80,496,W-80,496);
-
-    // ── Certificate ID ──
-    doc.setTextColor(138,155,191); doc.setFontSize(7.5); doc.setFont('helvetica','normal');
-    doc.text('Certificate ID: ' + cid, W/2, 512, {align:'center'});
-
-    // ── Standards pill ──
-    doc.setDrawColor(56,217,169); doc.setLineWidth(0.8);
-    doc.roundedRect((W-260)/2, 526, 260, 26, 13, 13, 'S');
-    doc.setTextColor(56,217,169); doc.setFontSize(8); doc.setFont('helvetica','bold');
-    doc.text('WCAG 2.1 AA  |  AODA 2005  |  Ontario Reg. 191/11', W/2, 542, {align:'center'});
-
-    // ── Signature line ──
-    doc.setDrawColor(30,58,107); doc.setLineWidth(0.6);
-    doc.line(100,610,310,610);
-    doc.setTextColor(232,237,248); doc.setFontSize(9); doc.setFont('helvetica','bold');
-    doc.text('Compliance Director', 205, 624, {align:'center'});
+    // ── Signature area ──
+    // Left sig line
+    doc.setDrawColor(30,58,107); doc.setLineWidth(0.5);
+    doc.line(M+10, y, M+190, y);
     doc.setTextColor(138,155,191); doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.text('Accessibility Compliance Canada Inc.', 205, 636, {align:'center'});
+    doc.text('Authorized Signature', M+10, y+14);
+    doc.setTextColor(232,237,248); doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.text('Accessibility Compliance Canada Inc.', M+10, y+26);
 
-    // ── Official seal ──
-    doc.setDrawColor(203,171,71); doc.setLineWidth(1.5);
-    doc.circle(450, 618, 38, 'S');
-    doc.setLineWidth(0.5);
-    doc.circle(450, 618, 31, 'S');
-    doc.setTextColor(203,171,71); doc.setFontSize(7); doc.setFont('helvetica','bold');
-    doc.text('ACC OFFICIAL', 450, 612, {align:'center'});
-    doc.text('CERTIFICATE',  450, 622, {align:'center'});
-    doc.text('2026',         450, 632, {align:'center'});
+    // Centre seal
+    doc.setFillColor(12,28,51); doc.rect(PW/2-44, y-12, 88, 48, 'F');
+    doc.setDrawColor(56,217,169); doc.setLineWidth(1.5); doc.line(PW/2-44, y+36, PW/2+44, y+36);
+    doc.setTextColor(56,217,169); doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text('CERTIFIED', PW/2, y+2, {align:'center'});
+    doc.setTextColor(255,255,255); doc.setFontSize(8);
+    doc.text('AODA TRAINING', PW/2, y+14, {align:'center'});
+    doc.setTextColor(138,155,191); doc.setFontSize(10);
+    doc.text(String(now.getFullYear()), PW/2, y+28, {align:'center'});
 
-    // ── Save ──
-    var fname = 'ACC_Certificate_' + S.name.replace(/\s+/g,'_') + '_Module' + S.mod + '_' + ds.replace(/,\s*/g,'_').replace(/\s+/g,'') + '.pdf';
+    // Right sig line
+    doc.setDrawColor(30,58,107); doc.setLineWidth(0.5);
+    doc.line(PW-M-190, y, PW-M-10, y);
+    doc.setTextColor(138,155,191); doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text('Date of Issue', PW-M-190, y+14);
+    doc.setTextColor(232,237,248); doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text(ds, PW-M-190, y+26);
+
+    // ── Footer ──
+    doc.setDrawColor(30,58,107); doc.setLineWidth(0.5); doc.line(34, PH-42, PW-28, PH-42);
+    doc.setTextColor(138,155,191); doc.setFontSize(7); doc.setFont('helvetica','normal');
+    doc.text('Accessibility Compliance Canada Inc.  |  accessibilitycompliance.ca', M, PH-28);
+    doc.setFontSize(6.5);
+    doc.text('This certificate is issued by Accessibility Compliance Canada Inc. and constitutes an official training record.', M, PH-16);
+
+    var fname = 'ACC_Certificate_' + S.name.replace(/\s+/g,'_') + '_Module' + S.mod + '.pdf';
     doc.save(fname);
   }
 
